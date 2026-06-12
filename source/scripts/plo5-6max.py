@@ -35,7 +35,15 @@ init(autoreset=True)
 EPS         = 1e-9
 MAX_PLAYERS = 6  # variant max; actual count determined from input
 NUM_PLAYERS = 6  # will be overridden after parsing input
-HOLE_CARDS  = 5
+HOLE_CARDS = 5
+
+def validate_no_duplicates(cards, context=""):
+    seen = set()
+    for c in cards:
+        s = str(c)
+        if s in seen:
+            raise ValueError(f"DUPLICATE_CARD_DETECTED: {s}" + (f" [{context}]" if context else ""))
+        seen.add(s)
 
 def hdr(title, color=Fore.CYAN):
     pad = (88 - len(title)) // 2
@@ -235,7 +243,11 @@ def _worker_river_only(args):
     return wA, wB, ties
 
 def exact_equity_hu_plo5(holeA, holeB, board, dead=()):
-    used      = set(str(c) for c in list(holeA) + list(holeB) + list(board) + list(dead))
+    all_cards = list(holeA) + list(holeB) + list(board) + list(dead)
+    validate_no_duplicates(all_cards, "exact_equity_hu_plo4")
+    used      = set(str(c) for c in all_cards)
+    if len(all_cards) != len(used):
+        raise RuntimeError(f"INVALID_DECK_STATE: expected {len(all_cards)} cards, got {len(used)} unique")
     deck_s    = [str(c) for c in eval7.Deck().cards if str(c) not in used]
     holeA_s   = [str(c) for c in holeA]
     holeB_s   = [str(c) for c in holeB]
