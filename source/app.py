@@ -31,6 +31,7 @@ import secrets
 import threading
 import subprocess
 import tempfile
+import logging
 from pathlib import Path
 from datetime import datetime as dt
 
@@ -362,7 +363,7 @@ def run_engine():
                 clean = strip_ansi(line)
                 jobs[job_id]["lines"].append(clean)
                 q.put(clean)
-            proc.wait()
+            proc.wait(timeout=30)
             # Parse structured results now that the job is done
             full_text = "".join(jobs[job_id]["lines"])
             try:
@@ -370,6 +371,10 @@ def run_engine():
             except Exception as parse_err:
                 jobs[job_id]["results"] = {"error": str(parse_err)}
             q.put(f"\n__EXIT__{proc.returncode}__\n")
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            q.put("\n__ERROR__Engine subprocess timed out after 30s__\n")
         except Exception as e:
             q.put(f"\n__ERROR__{e}__\n")
         finally:
@@ -686,7 +691,7 @@ def run_batch():
                     clean = strip_ansi(line)
                     sample_lines.append(clean)
                     q.put(clean)
-                proc.wait()
+                proc.wait(timeout=30)
 
                 full_text = "".join(sample_lines)
                 try:
@@ -712,6 +717,10 @@ def run_batch():
                 else:
                     q.put(f"  -> No matchups found in sample {i+1}\n")
 
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+                q.put(f"  -> TIMEOUT in sample {i+1}: engine subprocess timed out after 30s\n")
             except Exception as e:
                 q.put(f"  -> ERROR in sample {i+1}: {str(e)}\n")
 
@@ -776,13 +785,19 @@ def _run_single(variant, hands, names):
                 clean = strip_ansi(line)
                 jobs[job_id]["lines"].append(clean)
                 q.put(clean)
-            proc.wait()
+            proc.wait(timeout=30)
             full_text = "".join(jobs[job_id]["lines"])
             try:
                 jobs[job_id]["results"] = parse_results(full_text)
             except Exception as e:
                 jobs[job_id]["results"] = {"error": str(e)}
             q.put(f"\n__EXIT__{proc.returncode}__\n")
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            logging.warning('[ENGINE] Subprocess timed out after 30s for job_id=%s', job_id)
+            jobs[job_id]["results"] = {"error": "Engine subprocess timed out after 30s"}
+            q.put("\n__ERROR__Engine subprocess timed out after 30s__\n")
         except Exception as e:
             q.put(f"\n__ERROR__{e}__\n")
         finally:
@@ -917,13 +932,19 @@ def on_run_session_engine(data):
                 clean = strip_ansi(line)
                 jobs[job_id]["lines"].append(clean)
                 q.put(clean)
-            proc.wait()
+            proc.wait(timeout=30)
             full_text = "".join(jobs[job_id]["lines"])
             try:
                 jobs[job_id]["results"] = parse_results(full_text)
             except Exception as e:
                 jobs[job_id]["results"] = {"error": str(e)}
             q.put(f"\n__EXIT__{proc.returncode}__\n")
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            logging.warning('[ENGINE] Subprocess timed out after 30s for job_id=%s', job_id)
+            jobs[job_id]["results"] = {"error": "Engine subprocess timed out after 30s"}
+            q.put("\n__ERROR__Engine subprocess timed out after 30s__\n")
         except Exception as e:
             q.put(f"\n__ERROR__{e}__\n")
         finally:
@@ -1573,13 +1594,19 @@ def collector_send_to_engine():
                 clean = strip_ansi(line)
                 jobs[job_id]["lines"].append(clean)
                 q.put(clean)
-            proc.wait()
+            proc.wait(timeout=30)
             full_text = "".join(jobs[job_id]["lines"])
             try:
                 jobs[job_id]["results"] = parse_results(full_text)
             except Exception as e:
                 jobs[job_id]["results"] = {"error": str(e)}
             q.put(f"\n__EXIT__{proc.returncode}__\n")
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            logging.warning('[ENGINE] Subprocess timed out after 30s for job_id=%s', job_id)
+            jobs[job_id]["results"] = {"error": "Engine subprocess timed out after 30s"}
+            q.put("\n__ERROR__Engine subprocess timed out after 30s__\n")
         except Exception as e:
             q.put(f"\n__ERROR__{e}__\n")
         finally:
