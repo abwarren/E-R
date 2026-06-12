@@ -75,6 +75,39 @@ def _equity_sse_notify(data):
 def register_equity_routes(app):
     """Register all equity engine routes on the Flask app."""
 
+    # ── Serialized worker pool — no concurrent overlap ──
+    _engine_busy = threading.Lock()
+    _run_queue = []
+    _run_queue_lock = threading.Lock()
+
+    def _enqueue_run(run_id, fn):
+        """Enqueue a run function for serialized execution."""
+        with _run_queue_lock:
+            _run_queue.append((run_id, fn))
+        logger.debug('[SERIAL] Enqueued run_id=%s (queue depth=%d)', run_id, len(_run_queue))
+        # Kick off a dequeue worker if one isn't already running
+        t = threading.Thread(target=_dequeue_and_run, name=f"serial-worker-{run_id}", daemon=True)
+        t.start()
+
+    def _dequeue_and_run():
+        """Process the next queued run, if any, with no concurrent overlap."""
+        # Only one thread runs this at a time due to _engine_busy
+        if not _engine_busy.acquire(blocking=False):
+            return  # Another run is in progress; the running thread will chain
+        try:
+            while True:
+                with _run_queue_lock:
+                    if not _run_queue:
+                        break
+                    run_id, fn = _run_queue.pop(0)
+                logger.info('[SERIAL] Dequeued run_id=%s (remaining=%d)', run_id, len(_run_queue))
+                try:
+                    fn()
+                except Exception as e:
+                    logger.exception('[SERIAL] Run function for %s crashed: %s', run_id, e)
+        finally:
+            _engine_busy.release()
+
     # ── Collector pre-normalizer — reads latest saved hands from collector files ──
     def _read_hands_from_collector():
         """Try to read canonical hands+board from the latest collector save file.
@@ -84,12 +117,16 @@ def register_equity_routes(app):
         """
         # ── Phase 1: Check in-memory ring buffer first (fast path) ──
         try:
-            snapshot = get_latest_snapshot()
-            if snapshot:
-                hands, board = extract_hands_and_board(snapshot)
-                if hands and len(hands) >= 2:
-                    logger.info('[BUFFER] Loaded %d hands from in-memory buffer', len(hands))
-                    return hands, board or ''
+            frame = get_latest_snapshot()
+            if frame:
+                # Unwrap the immutable frame: {'data': {...}, 'seq': N, 'ts': T}
+                snapshot = frame.get('data')
+                if snapshot:
+                    hands, board = extract_hands_and_board(snapshot)
+                    if hands and len(hands) >= 2:
+                        logger.info('[BUFFER] Loaded %d hands from in-memory buffer (seq=%s)',
+                                    len(hands), frame.get('seq', '?'))
+                        return hands, board or ''
         except Exception as e:
             logger.warning('[BUFFER] Read error (will fall through to disk): %s', e)
 
@@ -415,8 +452,7 @@ def register_equity_routes(app):
                         'error': str(e),
                     })
 
-            t = threading.Thread(target=_run_equity, name=f"equity-{run_id}", daemon=True)
-            t.start()
+            _enqueue_run(run_id, _run_equity)
 
             return jsonify({
                 'ok': True,
