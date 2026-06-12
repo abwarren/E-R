@@ -1803,6 +1803,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     clearTimeout(window._w4p_cmdTimer);
     clearInterval(window._w4p_bbTimer);
     if (_cashoutTimer) clearInterval(_cashoutTimer);
+    stopObserver();
     console.log('[W4P] stopped');
   };
 }
