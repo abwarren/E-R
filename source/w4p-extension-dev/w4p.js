@@ -297,6 +297,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var _cashoutPre = false;   // when true, hyper-poll for cashout DOM element
   var _cashoutTimer = null;
   var _lastBoardLen = 0;     // track board cards for new hand detection
+  var _wasHeroTurn = false;  // state-change gate: prevent repeated HERO_TURN activation
   var _snapshotInFlight = false;    // guard: prevent overlapping snapshot POSTs
   var _nextSnapshotAllowedAt = 0;   // throttle: timestamp when next snapshot is allowed
   var _lastSnapshotHash = '';       // dedup: hash of last sent snapshot state
@@ -890,7 +891,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 
     for (var i = 0; i < containers.length; i++) {
       var ct = containers[i];
-      var isHero = ct.classList.contains('self-player') || String(ct.className || '').indexOf('self-player') !== -1 || !!ct.querySelector('.self-player, [class*="self-player"]');
+      var isHero = ct.classList.contains('self-player');  // canonical: ONLY reliable hero signal (see line 913 comment)
 
       var posMatch = ct.className.match(/position-(\d+)/);
       var seatIdx = posMatch ? parseInt(posMatch[1]) : i;
@@ -1626,6 +1627,24 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 
     // Try cashout BEFORE mode calculation (cashout button may appear at any time)
     tryCashout();
+
+    // ── State-change gate: prevent repeated HERO_TURN reactivation ──
+    // self-player is a STATE SOURCE, not an event trigger.
+    // Only change mode on a genuine state transition, not on every DOM tick.
+    var _isHeroTurnNow = avail.length > 0;
+    var _modeChanged = false;
+
+    if (_isHeroTurnNow && !_wasHeroTurn) {
+      _modeChanged = true;
+      if (_n <= 10 || _n % 20 === 0)
+        console.log('[W4P][STATE] IDLE/HAND_ACTIVE → HERO_TURN (avail=' + avail.join(',') + ')');
+    }
+    if (!_isHeroTurnNow && _wasHeroTurn) {
+      _modeChanged = true;
+      if (_n <= 10 || _n % 20 === 0)
+        console.log('[W4P][STATE] HERO_TURN → IDLE/HAND_ACTIVE');
+    }
+    _wasHeroTurn = _isHeroTurnNow;
 
     if (avail.length > 0) _mode = 'HERO_TURN';
     else if (snap.street !== 'PREFLOP') _mode = 'HAND_ACTIVE';
