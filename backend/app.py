@@ -29,6 +29,36 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from buffer import push_snapshot, extract_hands_and_board
 
+# ── PID lock file ─────────────────────────────────────────────────────────────
+
+LOCK_FILE = '/tmp/w4p_backend.lock'
+
+def _check_lock():
+    if os.path.exists(LOCK_FILE):
+        with open(LOCK_FILE) as f:
+            old_pid = f.read().strip()
+        if old_pid:
+            try:
+                os.kill(int(old_pid), 0)
+                print(f'FATAL: Another instance is running (PID {old_pid}). Exiting.', file=sys.stderr)
+                sys.exit(1)
+            except (OSError, ValueError):
+                pass  # stale lock — overwrite
+    with open(LOCK_FILE, 'w') as f:
+        f.write(str(os.getpid()))
+
+def _cleanup_lock():
+    try:
+        if os.path.exists(LOCK_FILE):
+            os.remove(LOCK_FILE)
+    except Exception:
+        pass
+
+_check_lock()
+atexit.register(_cleanup_lock)
+signal.signal(signal.SIGTERM, lambda *a: (_cleanup_lock(), os._exit(0)))
+signal.signal(signal.SIGINT, lambda *a: (_cleanup_lock(), os._exit(0)))
+
 # ── Process start time (used by /api/health) ────────────────────────────────────
 
 START_TIME = time.time()
@@ -1472,13 +1502,29 @@ def health():
     with _store_lock:
         n_tables = len(_tables)
         n_cmds   = sum(1 for c in _command_queue.values() if c and c.get('status') == 'pending')
+
+    # Buffer state
+    try:
+        from buffer import get_latest_snapshot
+        snap = get_latest_snapshot()
+        buffer_has_data = snap is not None
+        buffer_table = snap.get('table_id', '?') if snap else None
+    except Exception:
+        buffer_has_data = False
+        buffer_table = None
+
     return jsonify({
-        'ok':           True,
-        'environment':  os.getenv('FLASK_ENV', 'production'),
-        'version':      'remote-control-3.0',
-        'timestamp':    datetime.utcnow().isoformat(),
-        'active_tables': n_tables,
-        'pending_cmds':  n_cmds,
+        'ok':              True,
+        'status':          'healthy',
+        'environment':     os.getenv('FLASK_ENV', 'production'),
+        'version':         'remote-control-3.0',
+        'pid':             os.getpid(),
+        'uptime_seconds':  round(time.time() - START_TIME, 2),
+        'timestamp':       datetime.utcnow().isoformat(),
+        'active_tables':   n_tables,
+        'pending_cmds':    n_cmds,
+        'buffer_has_data': buffer_has_data,
+        'buffer_table':    buffer_table,
     })
 
 
@@ -2541,30 +2587,6 @@ def api_goldrush_latest():
     except Exception as e:
         app.logger.error(f"[GoldRush] Error: {e}")
         return jsonify({"ok": False, "error": str(e)}), 500
-
-@app.route('/api/health', methods=['GET'])
-def health():
-    """Public health endpoint — no auth required. Returns uptime, memory, buffer state."""
-    import os as _os
-    try:
-        from buffer import get_latest_snapshot
-        snap = get_latest_snapshot()
-        buffer_has_data = snap is not None
-        buffer_table = snap.get('table_id', '?') if snap else None
-    except Exception:
-        buffer_has_data = False
-        buffer_table = None
-
-    return jsonify({
-        'ok': True,
-        'status': 'healthy',
-        'pid': _os.getpid(),
-        'uptime_seconds': round(time.time() - START_TIME, 2),
-        'buffer_has_data': buffer_has_data,
-        'buffer_table': buffer_table,
-        'live_tables': len(_tables),
-    })
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', '4000')), debug=False)
