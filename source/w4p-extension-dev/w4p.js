@@ -90,6 +90,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     if (window._w4p_cmdTimer) { clearTimeout(window._w4p_cmdTimer); window._w4p_cmdTimer = null; }
     if (window._w4p_bbTimer) { clearInterval(window._w4p_bbTimer); window._w4p_bbTimer = null; }
     if (window._w4p) { clearInterval(window._w4p); window._w4p = null; }
+    stopObserver();
   }
 
   var _nonPokerStopLogged = false;
@@ -998,29 +999,29 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       return null;
     }
 
-    return {
-      table_id:      tableId,
-      bot_id:        heroName,
-      client_id:     _clientId,
-      session_id:    _sessionId,
-      seats:         seats,
-      board: {
-        flop:  boardCards.slice(0, 3),
-        turn:  boardCards[3] || null,
-        river: boardCards[4] || null
-      },
-      pot_zar:       potZar,
-      dealer_seat:   dealerSeat,
-      street:        street,
-      variant:       'plo',
-      buttons:       buttons,
-      available_actions: avail,
-      active_player: activePlayerName,
-      ts:            new Date().toISOString(),
-      source_key:    'w4p_inject',
-      frame_locked:  true,
-      frame_url:     location.href
-    };
+    // ── Zero-alloc: mutate persistent _snapshot object ──
+    _snapshot.table_id = tableId;
+    _snapshot.bot_id = heroName;
+    _snapshot.client_id = _clientId;
+    _snapshot.session_id = _sessionId;
+    // seats already set above via _snapshot.seats.push()
+    if (!_snapshot.board) _snapshot.board = {};
+    _snapshot.board.flop = boardCards.slice(0, 3);
+    _snapshot.board.turn = boardCards[3] || null;
+    _snapshot.board.river = boardCards[4] || null;
+    _snapshot.pot_zar = potZar;
+    _snapshot.dealer_seat = dealerSeat;
+    _snapshot.street = street;
+    _snapshot.variant = 'plo';
+    _snapshot.buttons = buttons;
+    _snapshot.available_actions = avail;
+    _snapshot.active_player = activePlayerName;
+    _snapshot.ts = new Date().toISOString();
+    _snapshot.source_key = 'w4p_inject';
+    _snapshot.frame_locked = true;
+    _snapshot.frame_url = location.href;
+    _snapshot.dirty = true;
+    return _snapshot;
   }
 
   // ── State hash for dedup ─────────────────────────────────────
@@ -1631,9 +1632,11 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     }
   }
 
-  function tick() {
+  // ── Core tick logic (driven by MutationObserver + rAF primary, setTimeout fallback) ──
+  function processTick() {
     if (_n === 0) console.log('[W4P][TICK_ENTER] first tick — frame validated, starting loop');
     _n++;
+    _lastTickTime = Date.now();
     if (stopNonPokerScrapeContext('tick')) return;
 
     var snap = buildSnapshot();
@@ -1705,19 +1708,67 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     window._w4p_timer = setTimeout(tick, pollMs);
   }
 
+  // ── Tick entry point (used by setTimeout fallback — primary driver is MutationObserver) ──
+  function tick() {
+    processTick();
+  }
+
+  // ── MutationObserver: DOM-driven primary tick scheduler ───────
+  function scheduleTick() {
+    if (_tickScheduled) return;
+    _tickScheduled = true;
+    requestAnimationFrame(function() {
+      _tickScheduled = false;
+      processTick();
+    });
+  }
+
+  function startObserver() {
+    if (_observer) return;
+    try {
+      _observer = new MutationObserver(function() {
+        scheduleTick();
+      });
+      _observer.observe(document.body, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['class', 'style']
+      });
+      console.log('[W4P][OBSERVER] MutationObserver started — DOM-driven ticks active');
+    } catch (e) {
+      console.warn('[W4P][OBSERVER] MutationObserver failed — falling back to interval only:', e.message);
+      _observer = null;
+    }
+
+    // Fallback interval: catch anything the observer misses (500ms safety net)
+    window._w4p_fallback = setInterval(function() {
+      if (Date.now() - _lastTickTime > 500) {
+        scheduleTick();
+      }
+    }, 500);
+  }
+
+  function stopObserver() {
+    if (_observer) { _observer.disconnect(); _observer = null; }
+    if (window._w4p_fallback) { clearInterval(window._w4p_fallback); window._w4p_fallback = null; }
+  }
+
   // ── Start ────────────────────────────────────────────────────
   untickWaitBB();
   window._w4p_bbTimer = setInterval(untickWaitBB, 5000);
 
-  var _buildTag = 'v22-stable-hardened';
-  var _buildTs  = '2026-04-26T02:30:00Z';
+  var _buildTag = 'v22-stable-hardened+phase2';
+  var _buildTs  = '2026-06-12T00:00:00Z';
   console.log('[W4P] ═══════════════════════════════════════════════');
   console.log('[W4P] ' + _buildTag + ' | built=' + _buildTs + ' | session=' + _sessionId);
   console.log('[W4P] guards: dup-cmd, cooldown=' + _ACTION_COOLDOWN_MS + 'ms, preset-cd=' + _PRESET_COOLDOWN_MS + 'ms');
   console.log('[W4P] polling: hero=' + POLL_MS.HERO_TURN + 'ms cmd=' + CMD_MS.HERO_TURN + 'ms cashout-hyper=' + CASHOUT_POLL_MS + 'ms');
   console.log('[W4P] API: ' + API_BASE + ' | rollback: w4p.js.v22-stable.bak');
+  console.log('[W4P] Phase 2: MutationObserver + zero-alloc snapshot + heroSeatIndex cache');
   console.log('[W4P] ═══════════════════════════════════════════════');
   tick();
+  startObserver();  // Phase 2: primary tick driver (MutationObserver + rAF)
 
   // ── Public API for debugging ─────────────────────────────────
   window._w4p_buildSnapshot = buildSnapshot;

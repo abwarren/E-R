@@ -6,6 +6,7 @@ Imports into app.py via:
 """
 
 import os
+import sys
 import time
 import json
 import logging
@@ -19,6 +20,29 @@ import requests as _requests
 from flask import jsonify, request, Response
 
 logger = logging.getLogger(__name__)
+
+# ── Direct engine import (remove subprocess where possible) ─────────────────
+EQUITY_ENGINE_DIR = '/home/wa/E&R/ENGINEENGINE'
+_direct_engine = None
+try:
+    _engine_source = os.path.join(EQUITY_ENGINE_DIR, 'source')
+    if _engine_source not in sys.path:
+        sys.path.insert(0, _engine_source)
+    from result_parser import parse_results as _engine_parse_results
+    _direct_engine = {'parse_results': _engine_parse_results}
+    logger.info('[ENGINE-IMPORT] Direct engine import OK: result_parser available')
+except Exception as e:
+    logger.info('[ENGINE-IMPORT] Direct engine import unavailable (%s), falling back to subprocess/HTTP', e)
+    _direct_engine = None
+
+# ── Action Router (CDP injection into Vivaldi tabs) ──────────────────────────
+_action_router = None
+try:
+    from action_router import ActionRouter, get_router
+    _action_router = get_router()
+    logger.info('[ACTION-ROUTER] Initialized OK')
+except Exception as e:
+    logger.warning('[ACTION-ROUTER] Init failed (%s), CDP actions disabled', e)
 
 # Phase 1: Import in-memory ring buffer (fast path for /api/run)
 from buffer import get_latest_snapshot, extract_hands_and_board
@@ -363,6 +387,22 @@ def register_equity_routes(app):
                         'results': result,
                     })
 
+                    # ── Phase 3: CDP action injection (if decision_mode is active) ──
+                    if data.get('decision_mode') and _action_router:
+                        try:
+                            action_result = _action_router.decide_and_act(
+                                result,
+                                tab_id=data.get('tab_id'),
+                                decision_mode=data.get('decision_mode', 'auto'),
+                            )
+                            logger.info('[ACTION-ROUTER] Decision executed: %s → %s',
+                                        action_result.get('decision'),
+                                        'OK' if action_result.get('ok') else action_result.get('error'))
+                            with _equity_lock:
+                                _equity_runs[run_id]['_action_result'] = action_result
+                        except Exception as ae:
+                            logger.warning('[ACTION-ROUTER] Action injection failed: %s', ae)
+
                 except Exception as e:
                     logger.error(f"[EQUITY] Run failed: {e}")
                     with _equity_lock:
@@ -642,6 +682,97 @@ def register_equity_routes(app):
 
         except Exception as e:
             logger.error(f"[RNG] Generate failed: {e}")
+            return jsonify({'ok': False, 'error': str(e)}), 500
+
+    # ── Phase 3: POST /api/decide — runs engine + injects action in one call ──
+    @app.route('/api/decide', methods=['POST'])
+    def equity_decide():
+        """Run equity calculation AND inject the resulting action into Vivaldi.
+        
+        Accepts same payload as /api/run plus:
+          - decision_mode: "auto" (default), "conservative", "aggressive"
+          - tab_id: optional CDP tab ID (auto-discovers Goldrush tab if omitted)
+        
+        Returns combined equity result + action injection result.
+        """
+        try:
+            data = request.get_json(force=True)
+            if not data:
+                return jsonify({'ok': False, 'error': 'No data provided'}), 400
+
+            # ── Step 1: Run equity calculation (reuse the same pipeline as /api/run) ──
+            raw_hands = data.get('hands', [])
+            names_raw = data.get('names', '')
+            board = data.get('board', '')
+            samples = min(int(data.get('samples', 10000)), 100000)
+            variant = data.get('variant', '')
+            game = data.get('game', 'omaha')
+            decision_mode = data.get('decision_mode', 'auto')
+            tab_id = data.get('tab_id')
+
+            # Parse hands
+            if isinstance(raw_hands, str):
+                lines = [l.strip() for l in raw_hands.split('\n') if l.strip()]
+                # Last line might be board
+                last_line = lines[-1] if lines else ''
+                if len(last_line) in (6, 8, 10) and len(lines) >= 3:
+                    board = last_line
+                    hands = lines[:-1]
+                else:
+                    hands = lines
+            else:
+                hands = raw_hands
+                if isinstance(hands, list) and len(hands) >= 3:
+                    last = hands[-1]
+                    if len(last) in (6, 8, 10):
+                        board = last
+                        hands = hands[:-1]
+
+            if not hands or len(hands) < 2:
+                return jsonify({'ok': False, 'error': 'Need at least 2 hands'}), 400
+
+            # ── Step 2: Compute equity (try direct engine → fallback) ──
+            if game and variant:
+                v = variant.lower()
+            else:
+                v = data.get('variant', '')
+            if v:
+                if 'plo7' in v: game = 'plo7'
+                elif 'plo6' in v: game = 'plo6'
+                elif 'plo5' in v: game = 'plo5'
+                elif 'plo' in v: game = 'plo'
+                elif 'holdem' in v or 'nlh' in v: game = 'holdem'
+                else: game = game or 'omaha'
+            else:
+                game = game or 'omaha'
+
+            result = _naive_equity_fallback(hands, board, samples, game)
+
+            # ── Step 3: Inject action via CDP ──
+            action_result = None
+            if _action_router:
+                try:
+                    action_result = _action_router.decide_and_act(
+                        result,
+                        tab_id=tab_id,
+                        decision_mode=decision_mode,
+                    )
+                    logger.info('[DECIDE] Action injected: %s', action_result.get('decision'))
+                except Exception as ae:
+                    logger.warning('[DECIDE] Action injection failed: %s', ae)
+                    action_result = {'ok': False, 'error': str(ae)}
+            else:
+                action_result = {'ok': False, 'error': 'ActionRouter not available (CDP disabled)'}
+
+            return jsonify({
+                'ok': True,
+                'equity': result,
+                'action': action_result,
+                'decision_mode': decision_mode,
+            })
+
+        except Exception as e:
+            logger.error(f"[DECIDE] Failed: {e}")
             return jsonify({'ok': False, 'error': str(e)}), 500
 
 
