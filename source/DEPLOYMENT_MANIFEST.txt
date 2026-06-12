@@ -1,0 +1,96 @@
+ENGINE BACKEND DEPLOYMENT - DUBLIN
+===================================
+Date: 2026-04-09 02:54 UTC
+Instance: Dublin (52.16.14.220)
+Location: /opt/plo-engine-backend/
+
+DEPLOYMENT STATUS: ✅ SUCCESSFUL
+
+FILES DEPLOYED:
+===============
+Source: plo@nuts4poker.com:/opt/plo-equity/ (READ-ONLY COPY)
+Total: 15 files (43KB core + dependencies)
+
+Core Files:
+- app.py (76KB) - Flask API backend
+- result_parser.py (18KB) - Result parsing
+- ai_guard.py (895 bytes) - AI safety
+- .env (287 bytes) - Configuration
+- scripts/ (12 files, ~280KB) - Equity calculators
+  * plo4-6max.py, plo4-8max.py, plo4-9max.py
+  * plo5-5max.py, plo5-6max.py, plo5-8max.py, plo5-9max.py
+  * plo6-5max.py, plo6-6max.py, plo6-8max.py
+  * plo7-5max.py, plo7-6max.py
+
+CONFIGURATION:
+==============
+- Port: 5002 (modified from 5000 to avoid conflict)
+- Host: 0.0.0.0 (all interfaces)
+- Python: 3.14.3
+- Virtual environment: /opt/plo-engine-backend/venv/
+
+DEPENDENCIES INSTALLED:
+=======================
+- Flask==3.0.0
+- Flask-SocketIO==5.3.5
+- Flask-CORS==4.0.0
+- eventlet==0.41.0 (upgraded for Python 3.14 compatibility)
+- eval7==0.1.10 (poker hand evaluator)
+- colorama==0.4.6
+- python-socketio==5.10.0
+- python-engineio==4.8.0
+- + all sub-dependencies
+
+SYSTEMD SERVICE:
+================
+- Service: plo-engine.service
+- Status: ✅ Active (running)
+- User: ubuntu
+- Working Dir: /opt/plo-engine-backend
+- Logs: /opt/plo-engine-backend/logs/
+  * engine.log (stdout)
+  * engine-error.log (stderr)
+- Auto-start: Enabled
+- Restart policy: Always (10s delay)
+
+API ENDPOINTS:
+==============
+Base URL: http://localhost:5002
+
+Available Routes:
+- POST /api/run - Start equity calculation
+- GET  /api/stream/<job_id> - SSE stream of job output
+- GET  /api/results/<job_id> - JSON results
+- POST /api/validate - Validate hands file
+- POST /api/fix - Apply card fix
+- GET  /api/download/<job_id> - Download results
+- POST /api/run-batch - Batch calculations
+
+Tested:
+✅ POST /api/run returns job_id
+
+VERIFICATION:
+=============
+✅ Service running (PID: 37546)
+✅ Port 5002 listening
+✅ API responding
+✅ Logs directory created
+✅ All dependencies installed
+✅ Python 3.14 compatibility resolved
+✅ No port conflicts (5000 used by remote control)
+
+NUTS4POKER.COM STATUS:
+======================
+✅ All source files unchanged
+✅ No modifications made
+✅ Temp files cleaned up
+✅ Services still running
+✅ READ-ONLY operation confirmed
+
+NEXT STEPS:
+===========
+1. Configure nginx on Dublin to proxy /api/engine/ to port 5002
+2. Set up connection from Cape Town frontend to Dublin backend
+3. Test complete end-to-end equity calculation
+4. Deploy hand collector (if needed)
+

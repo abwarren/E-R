@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PLO Equity Engine — Local</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d1117; color: #c9d1d9; font-family: sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+    .container { max-width: 900px; width: 100%; }
+    h1 { font-size: 1.8em; font-weight: 700; color: #58a6ff; text-align: center; margin: 20px 0 10px; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+    label { display: block; font-size: 0.85em; color: #8b949e; margin-bottom: 4px; }
+    textarea { width: 100%; min-height: 140px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 0.85em; resize: vertical; }
+    .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
+    select, button { padding: 8px 12px; border-radius: 6px; }
+    .btn { background: #238636; color: #fff; border: none; }
+    .status { margin-top: 12px; }
+    .results { margin-top: 12px; }
+    pre { font-family: monospace; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Local PLO Equity Engine</h1>
+  <div class="card">
+    <h2>Hands (one per line)</h2>
+    <textarea id="hands">AhKhQhJh
+AdKdQdJd
+AsKsQsJs
+AcKcQcJc
+2h3h4h5h
+2d3d4d5d</textarea>
+  </div>
+  <div class="card">
+    <div class="controls">
+      <label for="samples">Samples</label>
+      <select id="samples"><option>500</option><option>1000</option><option selected>2000</option></select>
+      <button class="btn" id="run-btn">Run</button>
+    </div>
+  </div>
+  <div id="status" class="status"></div>
+  <div id="results" class="results"></div>
+  <div class="card" style="margin-top:16px;">
+    <h2>API</h2>
+    <pre><code>POST /api/run
+POST /api/login
+GET /api/results/&lt;run_id&gt;
+GET /api/stream/&lt;run_id&gt; (SSE)</code></pre>
+  </div>
+</div>
+<script>
+function $id(id){return document.getElementById(id)}
+$id('run-btn').addEventListener('click', function(){
+  var hands=$id('hands').value.split('\n').filter(Boolean);
+  var samples=parseInt($id('samples').value);
+  $id('status').textContent='Submitting...';
+  fetch('/api/run', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hands:hands,samples:samples})})
+    .then(r=>r.json()).then(d=>{
+      if(!d.ok){$id('status').textContent='Error: '+(d.error||JSON.stringify(d));return}
+      $id('status').textContent='Job queued: '+d.run_id+' — polling results';
+      pollResults(d.run_id);
+    }).catch(e=>{$id('status').textContent='Network error: '+e.message});
+});
+function pollResults(id){
+  var iv=setInterval(()=>{
+    fetch('/api/results/'+id).then(r=>r.json()).then(d=>{
+      if(d.status==='done'){
+        clearInterval(iv); $id('status').textContent='Done'; $id('results').innerHTML='<pre>'+JSON.stringify(d.data,null,2)+'</pre>';
+      }
+    }).catch(()=>{});
+  },1500);
+}
+</script>
+</body>
+</html>

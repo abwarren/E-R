@@ -1,0 +1,26 @@
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:1080
+
+  PLO Engine UI — Standalone (port 4001)
+  ------------------------------------------
+
+  URLs:
+    Engine UI:       http://localhost:4001/engine
+    Calculator:      http://localhost:4001/engine/calculator
+    Health:          http://localhost:4001/health
+
+  Routing:
+    Equity/RNG API:  /api/* → http://127.0.0.1:5002 (real engine)
+    Shared API:      /api/* → http://127.0.0.1:1080 (table state)
+
+  Prerequisites:
+    Engine Flask:  http://127.0.0.1:5002 (python app.py)
+    Shared API:    http://127.0.0.1:1080 (python app.py from REMOTEREMOTE)
+
+  Press Ctrl+C to stop.
+
+  ✓ Engine UI server is running on port 4001
+[ROUTE] shared → 1080: GET /health
+[ROUTE] equity → 5002: POST /login
+[ROUTE] equity → 5002: POST /login
+[ROUTE] equity → 5002: POST /logout

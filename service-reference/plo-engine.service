@@ -1,0 +1,14 @@
+[Unit]
+Description=PLO Equity Engine Backend
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/plo-engine-backend
+ExecStart=/opt/plo-engine-backend/venv/bin/python app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

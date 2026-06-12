@@ -1,0 +1,491 @@
+"""
+result_parser.py
+================
+Parses ANSI-stripped PLO equity engine output into structured JSON
+suitable for the React frontend to render.
+
+Also contains the full batch-parser pipeline used by the
+/api/batch/* endpoints:
+
+  parse_batch_text(raw)          -> list[SampleResult]
+  validate_sample(sample)        -> ValidationResult
+  normalize_sample(sample)       -> SampleResult  (keys renamed)
+  build_pair_dataset(samples)    -> list[PairRow]
+  extract_best_pair(samples)     -> list[PairRow]  (1 per sample)
+  compare_winners(samples)       -> list[PairRow]  (ranked by EV)
+  filter_pairs(rows, mode)       -> list[PairRow]
+
+Market-model field mapping
+--------------------------
+  Engine name    -> Market model name
+  underdog       -> BUY
+  favourite      -> REVERSE BUYER
+  und_raw        -> PRICE
+  und_real       -> Reverse Buy Hit %
+  fav_raw        -> RvsPrice
+  fav_real       -> HitRate %
+  disparity      -> EV
+"""
+import re
+
+
+def _strip_ansi(text: str) -> str:
+    return re.sub(r'\x1b\[[0-9;]*m', '', text)
+
+
+def parse_results(lines_text: str) -> dict:
+    """
+    Parse the full ANSI-stripped engine output text into a structured dict.
+    Returns:
+        {
+            "street":  "FLOP",
+            "runtime": "4.93s",
+            "cores":   4,
+            "pairs_evaluated": 36,
+            "players": [{"slot":1,"hand":"AhKhQdJd","name":"hero"}, ...],
+            "matchups": [
+                {
+                    "rank": 1, "pair_num": 34,
+                    "underdog_hand": "3s2hAsKs", "underdog_name": "Player7",
+                    "favourite_hand": "QcJcTh9h", "favourite_name": "Player8",
+                    "und_raw": 19.8171, "und_real": 3.2051,
+                    "disparity": -16.6119,
+                    "fav_raw": 80.1829, "fav_real": 96.7949,
+                },
+                ...
+            ]
+        }
+    """
+
+    # ── Street ───────────────────────────────────────────────────────────────
+    street_m = re.search(r'Street\s{5,}(\S+)', lines_text)
+    street = street_m.group(1) if street_m else "UNKNOWN"
+
+    # ── Runtime ───────────────────────────────────────────────────────────────
+    rt_m = re.search(r'Total runtime\s+([\d.]+(?:s|m \d+\.\d+s))', lines_text)
+    runtime = rt_m.group(1) if rt_m else ""
+
+    # ── Cores ────────────────────────────────────────────────────────────────
+    cores_m = re.search(r'CPU cores used\s+(\d+)', lines_text)
+    cores = int(cores_m.group(1)) if cores_m else 1
+
+    # ── Pairs evaluated ───────────────────────────────────────────────────────
+    pairs_m = re.search(r'Pairs evaluated\s+(\d+)', lines_text)
+    pairs = int(pairs_m.group(1)) if pairs_m else 0
+
+    # ── Players ──────────────────────────────────────────────────────────────
+    # Lines like:   "  Player  1  AhKhQdJd       (hero)  ->  ..."
+    player_pat = re.compile(
+        r'Player\s+(\d+)\s+(\w{8,10})\s+\(([^)]+)\)',
+        re.MULTILINE
+    )
+    players = []
+    seen_slots = set()
+    for m in player_pat.finditer(lines_text):
+        slot = int(m.group(1))
+        if slot not in seen_slots:
+            seen_slots.add(slot)
+            players.append({
+                "slot": slot,
+                "hand": m.group(2),
+                "name": m.group(3).strip(),
+            })
+    players.sort(key=lambda p: p["slot"])
+
+    # ── Ranked matchup table ──────────────────────────────────────────────────
+    # Only parse rows from the "ALL MATCHUPS" section onwards
+    split = lines_text.split("ALL MATCHUPS")
+    ranked_section = split[1] if len(split) > 1 else lines_text
+
+    # Each row (after ANSI strip) looks like:
+    #    1    1  AhKhQdJd (hero)          Ts9s8c7c (villan)        45.1234%   46.2345%  +  1.1111%   54.8766%   53.7655%
+    # Disparity can be:
+    #   positive: "+   1.1111%"  (dsn='+' prepended, then right-aligned float)
+    #   negative: "  -16.6119%"  (dsn='', float has own minus)
+    #   zero:     "   0.0000%"
+
+    row_pat = re.compile(
+        r'^\s{2,}(\d+)\s{2,}(\d+)\s+'         # rank, pair_num
+        r'(\w+)\s+\(([^)]+?)\)\s+'             # underdog hand (name)
+        r'(\w+)\s+\(([^)]+?)\)\s+'             # favourite hand (name)
+        r'([\d.]+)%\s+'                         # und_raw
+        r'([\d.]+)%\s+'                         # und_real
+        r'([+\-]?\s*[\d.]+)%\s+'               # disparity (sign + optional space + digits)
+        r'([\d.]+)%\s+'                         # fav_raw
+        r'([\d.]+)%',                           # fav_real
+        re.MULTILINE,
+    )
+
+    matchups = []
+    for m in row_pat.finditer(ranked_section):
+        # Disparity may be "+   1.1111" – strip spaces before converting
+        disp_raw = m.group(9).replace(' ', '')
+        try:
+            disp = float(disp_raw)
+        except ValueError:
+            disp = 0.0
+
+        matchups.append({
+            "rank":           int(m.group(1)),
+            "pair_num":       int(m.group(2)),
+            "underdog_hand":  m.group(3),
+            "underdog_name":  m.group(4).strip(),
+            "favourite_hand": m.group(5),
+            "favourite_name": m.group(6).strip(),
+            "und_raw":        float(m.group(7)),
+            "und_real":       float(m.group(8)),
+            "disparity":      disp,
+            "fav_raw":        float(m.group(10)),
+            "fav_real":       float(m.group(11)),
+        })
+
+    # Fallback: parse per-pair blocks if ranked table had no matches
+    if not matchups:
+        pair_pat = re.compile(
+            r'Pair\s+(\d+)/\d+.*?'
+            r'Underdog:\s+(\w+)\s+\(([^)]+)\)\s+raw\s+([\d.]+)%\s+realized\s+([\d.]+)%\s+disparity\s+([+\-]?[\d.]+)%.*?'
+            r'Favourite:\s+(\w+)\s+\(([^)]+)\)\s+raw\s+([\d.]+)%\s+realized\s+([\d.]+)%',
+            re.DOTALL
+        )
+        for rank, pm in enumerate(pair_pat.finditer(ranked_section), 1):
+            matchups.append({
+                "rank": rank,
+                "pair_num": int(pm.group(1)),
+                "underdog_hand": pm.group(2),
+                "underdog_name": pm.group(3).strip(),
+                "favourite_hand": pm.group(7),
+                "favourite_name": pm.group(8).strip(),
+                "und_raw": float(pm.group(4)),
+                "und_real": float(pm.group(5)),
+                "disparity": float(pm.group(6)),
+                "fav_raw": float(pm.group(9)),
+                "fav_real": float(pm.group(10)),
+            })
+
+    # Sort ascending by disparity (most negative = best underdog first)
+    matchups.sort(key=lambda r: r["disparity"])
+
+    return {
+        "street":          street,
+        "runtime":         runtime,
+        "cores":           cores,
+        "pairs_evaluated": pairs,
+        "players":         players,
+        "matchups":        matchups,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ██  BATCH PARSER PIPELINE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── Market-model field mapping ────────────────────────────────────────────────
+_FIELD_MAP = {
+    "underdog_name":  "BUY",
+    "favourite_name": "REVERSE_BUYER",
+    "und_raw":        "PRICE",
+    "und_real":       "REVERSE_BUY_HIT_PCT",
+    "fav_raw":        "RVS_PRICE",
+    "fav_real":       "HIT_RATE_PCT",
+    "disparity":      "EV",
+    # hand strings kept as-is, but mirrored under friendly aliases
+    "underdog_hand":  "BUY_HAND",
+    "favourite_hand": "REVERSE_BUYER_HAND",
+}
+
+# Human-readable display labels (used in API responses)
+_DISPLAY_LABELS = {
+    "BUY":                  "BUY",
+    "REVERSE_BUYER":        "REVERSE BUYER",
+    "PRICE":                "PRICE",
+    "REVERSE_BUY_HIT_PCT":  "Reverse Buy Hit %",
+    "RVS_PRICE":            "RvsPrice",
+    "HIT_RATE_PCT":         "HitRate %",
+    "EV":                   "EV",
+    "BUY_HAND":             "BUY Hand",
+    "REVERSE_BUYER_HAND":   "REVERSE BUYER Hand",
+}
+
+# Required section markers present in well-formed engine output
+_REQUIRED_SECTIONS = [
+    "header",        # player list / street header block
+    "player_list",   # at least one Player N line
+    "flop",          # street is FLOP / TURN / RIVER (not PREFLOP)
+    "matchup_rows",  # at least one ranked matchup row
+    "ranked_table",  # the ALL MATCHUPS section header
+    "final_result",  # the disparity summary line
+]
+
+
+def _strip_ansi(text: str) -> str:
+    return re.sub(r'\x1b\[[0-9;]*m', '', text)
+
+
+# ── Split raw batch text into individual sample blocks ────────────────────────
+def split_batch_blocks(raw: str) -> list:
+    """
+    Split raw batch text into individual sample strings.
+    Blocks are separated by:
+      - Two or more consecutive blank / whitespace-only lines
+      - A line containing only dashes (--- or ===)
+    Returns a list of stripped non-empty block strings.
+    """
+    # Normalise ANSI codes first
+    clean = _strip_ansi(raw)
+    # Split on blank-line boundaries OR divider lines
+    blocks = re.split(r'(?:\n\s*){2,}|\n-{3,}\n|\n={3,}\n', clean)
+    return [b.strip() for b in blocks if b.strip()]
+
+
+# ── Parse a single sample block ───────────────────────────────────────────────
+def _parse_single_block(block: str, sample_id: int) -> dict:
+    """
+    Parse one block of engine output text into a structured sample dict.
+    Uses the existing parse_results() logic for the matchup table,
+    then layers on batch-specific metadata.
+    """
+    sample = {
+        "sample_id":    sample_id,
+        "raw":          block,
+        "street":       "UNKNOWN",
+        "runtime":      "",
+        "cores":        1,
+        "pairs_evaluated": 0,
+        "players":      [],
+        "matchups":     [],      # raw engine field names
+        "pairs":        [],      # normalised market-model field names
+        "winner":       None,    # best pair (lowest EV / most negative disparity)
+        "parse_errors": [],
+        "sections_found": [],
+    }
+
+    try:
+        parsed = parse_results(block)
+        sample["street"]          = parsed.get("street", "UNKNOWN")
+        sample["runtime"]         = parsed.get("runtime", "")
+        sample["cores"]           = parsed.get("cores", 1)
+        sample["pairs_evaluated"] = parsed.get("pairs_evaluated", 0)
+        sample["players"]         = parsed.get("players", [])
+        sample["matchups"]        = parsed.get("matchups", [])
+    except Exception as exc:
+        sample["parse_errors"].append(f"parse_results failed: {exc}")
+
+    # ── Detect which sections are present ────────────────────────────────────
+    sections = []
+    if re.search(r'Street\s+\S+', block):
+        sections.append("header")
+    if re.search(r'Player\s+\d+', block, re.IGNORECASE):
+        sections.append("player_list")
+    street_val = sample["street"]
+    if street_val not in ("UNKNOWN", "PREFLOP", ""):
+        sections.append("flop")
+    if "ALL MATCHUPS" in block:
+        sections.append("ranked_table")
+    if sample["matchups"]:
+        sections.append("matchup_rows")
+    if re.search(r'[Bb]est\s+disparity|[Rr]ank\s+1', block):
+        sections.append("final_result")
+    # Fallback: if we parsed at least one matchup, treat that as final_result
+    if sample["matchups"] and "final_result" not in sections:
+        sections.append("final_result")
+    sample["sections_found"] = sections
+
+    # ── Build normalised pairs list ───────────────────────────────────────────
+    normalised = []
+    for i, m in enumerate(sample["matchups"]):
+        row = _normalise_matchup_row(m, sample_id, i)
+        normalised.append(row)
+    sample["pairs"] = normalised
+
+    # Winner = first normalised pair (already sorted by disparity asc)
+    if normalised:
+        sample["winner"] = normalised[0]
+
+    return sample
+
+
+def _normalise_matchup_row(m: dict, sample_id: int, row_idx: int) -> dict:
+    """
+    Convert an engine matchup dict into the market-model field schema.
+    """
+    return {
+        # Identity
+        "sample_id":        sample_id,
+        "row_idx":          row_idx,
+        "rank":             m.get("rank", row_idx + 1),
+        "pair_num":         m.get("pair_num", 0),
+        # Market model fields
+        "BUY":              m.get("underdog_name", ""),
+        "REVERSE_BUYER":    m.get("favourite_name", ""),
+        "PRICE":            m.get("und_raw"),
+        "REVERSE_BUY_HIT_PCT": m.get("und_real"),
+        "RVS_PRICE":        m.get("fav_raw"),
+        "HIT_RATE_PCT":     m.get("fav_real"),
+        "EV":               m.get("disparity"),
+        # Hand strings
+        "BUY_HAND":         m.get("underdog_hand", ""),
+        "REVERSE_BUYER_HAND": m.get("favourite_hand", ""),
+        # Raw engine originals (kept for diagnostics)
+        "_raw": m,
+    }
+
+
+# ── Public: parse whole batch ─────────────────────────────────────────────────
+def parse_batch_text(raw: str) -> list:
+    """
+    Top-level entry point for the batch parser.
+    Split raw text into blocks, parse each one, return list of sample dicts.
+    """
+    blocks = split_batch_blocks(raw)
+    if not blocks:
+        return []
+    return [_parse_single_block(block, idx + 1) for idx, block in enumerate(blocks)]
+
+
+# ── Public: validate a parsed sample ─────────────────────────────────────────
+def validate_sample(sample: dict) -> dict:
+    """
+    Check that a parsed sample contains all required sections.
+    Returns:
+        {
+            "sample_id": int,
+            "ok": bool,
+            "missing": [str, ...],
+            "found": [str, ...],
+            "pair_count": int,
+            "player_count": int,
+        }
+    """
+    found   = sample.get("sections_found", [])
+    missing = [s for s in _REQUIRED_SECTIONS if s not in found]
+    return {
+        "sample_id":    sample["sample_id"],
+        "ok":           len(missing) == 0,
+        "missing":      missing,
+        "found":        found,
+        "pair_count":   len(sample.get("pairs", [])),
+        "player_count": len(sample.get("players", [])),
+        "parse_errors": sample.get("parse_errors", []),
+    }
+
+
+# ── Public: build flat pair dataset from all samples ─────────────────────────
+def build_pair_dataset(samples: list) -> list:
+    """
+    Extract every pair row from every sample into one flat list.
+    Each row already has sample_id set.
+    """
+    rows = []
+    for sample in samples:
+        rows.extend(sample.get("pairs", []))
+    return rows
+
+
+# ── Public: extract best pair per sample ─────────────────────────────────────
+def extract_best_pair(samples: list) -> list:
+    """
+    Return a list of one winner row per sample.
+    Winner = pair with lowest EV (most negative disparity = strongest BUY signal).
+    Samples with no pairs are skipped.
+    """
+    winners = []
+    for sample in samples:
+        winner = sample.get("winner")
+        if winner:
+            winners.append(winner)
+    return winners
+
+
+# ── Public: compare sample winners ranked by EV ───────────────────────────────
+def compare_winners(samples: list) -> list:
+    """
+    Return the winner from each sample sorted by EV ascending
+    (most negative = strongest BUY = rank 1).
+    """
+    winners = extract_best_pair(samples)
+    return sorted(
+        winners,
+        key=lambda r: r["EV"] if r["EV"] is not None else 0.0,
+    )
+
+
+# ── Public: filter a pair list by mode ────────────────────────────────────────
+def filter_pairs(rows: list, mode: str) -> list:
+    """
+    Filter a list of normalised pair rows by mode.
+
+    Modes
+    -----
+    all          : return everything (no filter)
+    winners      : rows where rank == 1 (best per their sample)
+    pos_ev       : EV > +0.5  (REVERSE BUYER has edge)
+    neg_ev       : EV < -0.5  (BUY has edge)
+    near_zero    : |EV| <= 0.5  (near-fair pricing)
+    top_buy      : EV < 0 sorted asc, top 20
+    top_reverse  : EV > 0 sorted desc, top 20
+    buy          : EV < 0 (any BUY edge)
+    reverse      : EV > 0 (any REVERSE BUYER edge)
+    """
+    mode = (mode or "all").lower().strip()
+
+    def safe_ev(r):
+        return r["EV"] if r["EV"] is not None else 0.0
+
+    if mode == "all":
+        return rows
+
+    if mode == "winners":
+        return [r for r in rows if r.get("rank") == 1]
+
+    if mode == "pos_ev":
+        return [r for r in rows if safe_ev(r) > 0.5]
+
+    if mode == "neg_ev":
+        return [r for r in rows if safe_ev(r) < -0.5]
+
+    if mode == "near_zero":
+        return [r for r in rows if abs(safe_ev(r)) <= 0.5]
+
+    if mode == "top_buy":
+        filtered = [r for r in rows if safe_ev(r) < 0]
+        return sorted(filtered, key=safe_ev)[:20]
+
+    if mode == "top_reverse":
+        filtered = [r for r in rows if safe_ev(r) > 0]
+        return sorted(filtered, key=safe_ev, reverse=True)[:20]
+
+    if mode == "buy":
+        return [r for r in rows if safe_ev(r) < 0]
+
+    if mode == "reverse":
+        return [r for r in rows if safe_ev(r) > 0]
+
+    # Unknown mode — return all
+    return rows
+
+
+# ── Public: summary stats for a pair list ─────────────────────────────────────
+def batch_summary(samples: list, pairs: list) -> dict:
+    """
+    Compute summary statistics across a parsed batch.
+    Returns a dict suitable for the API response envelope.
+    """
+    evs = [r["EV"] for r in pairs if r.get("EV") is not None]
+    buy_rows     = [r for r in pairs if (r.get("EV") or 0) < 0]
+    reverse_rows = [r for r in pairs if (r.get("EV") or 0) > 0]
+    near_rows    = [r for r in pairs if abs(r.get("EV") or 0) <= 0.5]
+
+    return {
+        "total_samples":   len(samples),
+        "total_pairs":     len(pairs),
+        "valid_samples":   sum(1 for s in samples if not s.get("parse_errors")
+                               and s.get("pairs")),
+        "buy_edge_count":  len(buy_rows),
+        "rev_edge_count":  len(reverse_rows),
+        "near_zero_count": len(near_rows),
+        "avg_ev":          round(sum(evs) / len(evs), 4) if evs else None,
+        "min_ev":          round(min(evs), 4) if evs else None,
+        "max_ev":          round(max(evs), 4) if evs else None,
+        "top_buy_ev":      round(min(evs), 4) if evs else None,
+        "top_reverse_ev":  round(max(evs), 4) if evs else None,
+    }

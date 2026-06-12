@@ -1,0 +1,14 @@
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy rewrite rule created: "^/engine/api" ~> "/api"
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+
+  PLO Equity Engine - Local Clone
+  ----------------------------------------
+  Local URL:    http://localhost:4002
+  Engine URL:   http://localhost:4002/engine
+  Flask API:    http://localhost:5002
+  Login:        admin / PokerPass12345
+
+[HPM] server close signal received: closing proxy server
+[HPM] server close signal received: closing proxy server

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PLO Equity Engine — localhost:4002/engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script>
+    // ── Auto-login: inject auth token so the React SPA auto-authenticates ──
+    (function autoLogin() {
+      var saved = localStorage.getItem('auth_token');
+      if (saved) {
+        // Token exists — verify it's still valid
+        var x = new XMLHttpRequest();
+        x.open('GET', '/engine/api/auth/verify', false);
+        x.setRequestHeader('X-Auth-Token', saved);
+        try { x.send(); } catch(e) {}
+        if (x.status === 200) {
+          console.log('[AutoLogin] Token valid');
+          return;
+        }
+        console.log('[AutoLogin] Stored token expired, re-logging in');
+        localStorage.removeItem('auth_token');
+      }
+
+      // Login with known credentials
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/login', false);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      try {
+        xhr.send(JSON.stringify({ username: 'admin', password: 'PokerPass12345' }));
+        if (xhr.status === 200) {
+          var data = JSON.parse(xhr.responseText);
+          if (data.ok && data.token) {
+            localStorage.setItem('auth_token', data.token);
+            localStorage.setItem('auth_username', data.username || 'admin');
+            console.log('[AutoLogin] Auto-authenticated as admin');
+          }
+        } else {
+          console.warn('[AutoLogin] Login failed:', xhr.status, xhr.responseText);
+        }
+      } catch(e) {
+        console.error('[AutoLogin] Error:', e);
+      }
+    })();
+  </script>
+  <script type="module" crossorigin src="/engine/assets/index-Ddit1nUd.js"></script>
+  <link rel="stylesheet" crossorigin href="/engine/assets/index-DgTzSuxS.css">
+</head>
+<body>
+  <div id="root"></div>
+  <script defer src="/engine/assets/engine_flow_controls.js?v=1779696136"></script>
+</body>
+</html>

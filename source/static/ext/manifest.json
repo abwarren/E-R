@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "PLO Remote Control",
+  "version": "1.0",
+  "description": "Auto-injects table scraper into PokerBet poker iframe",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "http://172.31.17.239:5000/*",
+    "http://52.16.14.220:5000/*",
+    "*://poker-web.pokerbet.co.za/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://poker-web.pokerbet.co.za/*"],
+      "js": ["content.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {}
+}
