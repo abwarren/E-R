@@ -1216,6 +1216,12 @@ def post_snapshot():
     except Exception:
         pass
 
+    # ── Phase 1: Push snapshot to in-memory ring buffer (fast path for /api/run) ──
+    try:
+        push_snapshot(payload)
+    except Exception:
+        pass  # Buffer push must never fail the snapshot endpoint
+
     return jsonify({
         'ok':         True,
         'seat_token': token,

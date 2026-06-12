@@ -302,6 +302,46 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var _nextSnapshotAllowedAt = 0;   // throttle: timestamp when next snapshot is allowed
   var _lastSnapshotHash = '';       // dedup: hash of last sent snapshot state
 
+  // ── Phase 2: MutationObserver + zero-alloc snapshot ──
+  var _heroSeatIndex = null;        // cached hero seat index — don't re-query every tick
+  var _observer = null;             // MutationObserver instance
+  var _lastTickTime = 0;            // timestamp of last processTick for fallback interval
+  var _tickScheduled = false;       // guard: prevent rAF stacking
+  var _snapshot = {                 // persistent mutable snapshot (zero-alloc — reused each tick)
+    seats: [],
+    board: null,
+    dirty: false
+  };
+
+  // ── Cache hero seat index at init, don't re-query every tick ──
+  function getHeroIndex() {
+    if (_heroSeatIndex !== null) return _heroSeatIndex;
+    var containers = document.querySelectorAll('sg-poker-table-seat');
+    if (!containers.length) containers = document.querySelectorAll('.player-mini-container-p');
+    for (var i = 0; i < containers.length; i++) {
+      if (containers[i].classList.contains('self-player')) {
+        _heroSeatIndex = i;
+        return i;
+      }
+    }
+    _heroSeatIndex = -1;
+    return -1;
+  }
+
+  // ── Zero-alloc: patch a single seat in the persistent snapshot ──
+  function patchSeat(index, changes) {
+    if (!_snapshot.seats[index]) {
+      _snapshot.seats[index] = {};
+    }
+    var seat = _snapshot.seats[index];
+    for (var key in changes) {
+      if (changes.hasOwnProperty(key)) {
+        seat[key] = changes[key];
+      }
+    }
+    _snapshot.dirty = true;
+  }
+
   // ── v22-hardened: duplicate command guard + action cooldowns ──
   var _lastCmdId = null;              // last executed command ID — reject duplicates
   var _actionCooldowns = {};          // { 'action_name': timestamp } — per-action cooldown
@@ -886,7 +926,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     }
 
     // ── Scrape ALL seats ────────────────────────────────────────
-    var seats = [];
+    _snapshot.seats.length = 0;  // zero-alloc: clear persistent array
     var heroName = null;
 
     for (var i = 0; i < containers.length; i++) {
@@ -927,7 +967,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       else if (isFolded) status = 'folded';
       else if (holeCards.length === 0 && street !== 'PREFLOP') status = 'folded';
 
-      seats.push({
+      _snapshot.seats.push({
         seat_index:        seatIdx,
         name:              name,
         stack_zar:         stackZar,

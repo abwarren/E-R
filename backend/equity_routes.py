@@ -20,6 +20,9 @@ from flask import jsonify, request, Response
 
 logger = logging.getLogger(__name__)
 
+# Phase 1: Import in-memory ring buffer (fast path for /api/run)
+from buffer import get_latest_snapshot, extract_hands_and_board
+
 # Collector integration: canonical hand source for /api/run
 _COLLECTOR_SAVE_DIR = Path('/home/wa/REMOTEREMOTE/data/hand-collector/saved_hands')
 _COLLECTOR_FILE_MAX_AGE = 60.0
@@ -50,7 +53,23 @@ def register_equity_routes(app):
 
     # ── Collector pre-normalizer — reads latest saved hands from collector files ──
     def _read_hands_from_collector():
-        """Try to read canonical hands+board from the latest collector save file."""
+        """Try to read canonical hands+board from the latest collector save file.
+
+        Phase 1: Checks in-memory ring buffer first (fast path from /api/snapshot).
+        Falls back to disk-based collector files if buffer is empty.
+        """
+        # ── Phase 1: Check in-memory ring buffer first (fast path) ──
+        try:
+            snapshot = get_latest_snapshot()
+            if snapshot:
+                hands, board = extract_hands_and_board(snapshot)
+                if hands and len(hands) >= 2:
+                    logger.info('[BUFFER] Loaded %d hands from in-memory buffer', len(hands))
+                    return hands, board or ''
+        except Exception as e:
+            logger.warning('[BUFFER] Read error (will fall through to disk): %s', e)
+
+        # ── Fallback: Disk-based collector files ──
         try:
             candidates = sorted(
                 _COLLECTOR_SAVE_DIR.glob('*.txt'),
