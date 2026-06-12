@@ -24,7 +24,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 // v22-stable-hardened: guards, cooldowns, duplicate command protection, enhanced logging. No behaviour changes.
 // Extension runtime: deployed to KasmVNC containers via docker cp
 // Rollback: w4p.js.v22-stable.bak in same directory
-// Paste into skillgames iframe console, or: fetch('https://potlimitomaha.xyz/remote/w4p.js').then(r=>r.text()).then(eval)
+// Paste into skillgames iframe console, or: fetch('http://127.0.0.1:4000/remote/w4p.js').then(r=>r.text()).then(eval)
 // Scrapes ALL seats, sends structured snapshots with button detection, polls commands, clicks buttons
 // No chrome.runtime deps — pure fetch-based
 
@@ -38,6 +38,81 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var _frameSrc = _frameEl ? (_frameEl.src || '') : '';
   var _locHref = location.href || '';
   var _timeOrigin = (typeof performance !== 'undefined' && performance.timeOrigin) || '';
+
+  var _host = location.hostname || '';
+  var _path = location.pathname || '';
+  var _href = _locHref;
+
+  // ── URL Guard: only run on real PokerBet/GoldRush poker game frames ──
+  function hasPokerTableProof() {
+    try {
+      return !!document.querySelector(
+        'sg-poker-table, sg-poker-table-seat, .player-mini-container-p, .control-b-view-p, .pot-w-view-p, .single-cart-view-p'
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isPokerScrapeContext() {
+    var href = location.href || '';
+    var host = location.hostname || '';
+    var path = location.pathname || '';
+
+    if (
+      host === '192.168.0.106' ||
+      host === 'localhost' ||
+      host === '127.0.0.1'
+    ) {
+      return false;
+    }
+
+    if (href === 'about:blank' || href.indexOf('about:blank') === 0) return false;
+
+    if (host.indexOf('poker-web.goldrush.co.za') !== -1) {
+      return true;
+    }
+
+    if (host.indexOf('games.goldrush.co.za') !== -1) {
+      if (/\/LaunchGame|\/Inner\/authorization\.php|authorization/i.test(href)) return false;
+      return hasPokerTableProof();
+    }
+
+    if (host.indexOf('www.goldrush.co.za') !== -1 && path.indexOf('/live-poker') !== -1) {
+      return hasPokerTableProof();
+    }
+
+    return false;
+  }
+
+  function stopW4PTimers() {
+    if (window._w4p_timer) { clearTimeout(window._w4p_timer); window._w4p_timer = null; }
+    if (window._w4p_cmdTimer) { clearTimeout(window._w4p_cmdTimer); window._w4p_cmdTimer = null; }
+    if (window._w4p_bbTimer) { clearInterval(window._w4p_bbTimer); window._w4p_bbTimer = null; }
+    if (window._w4p) { clearInterval(window._w4p); window._w4p = null; }
+  }
+
+  var _nonPokerStopLogged = false;
+  function stopNonPokerScrapeContext(stage) {
+    if (isPokerScrapeContext()) return false;
+    stopW4PTimers();
+    if (!_nonPokerStopLogged) {
+      _nonPokerStopLogged = true;
+      console.log('[W4P][STOP] non-poker scrape context', {
+        href: location.href,
+        title: document.title,
+        host: location.hostname,
+        stage: stage || 'guard'
+      });
+    }
+    return true;
+  }
+
+  if (!isPokerScrapeContext()) {
+    stopNonPokerScrapeContext('startup');
+    return;
+  }
+
   var _urlTableId = (_locHref.match(/\/tbl\/(\d+)/) || _locHref.match(/openGames=(\d+)/) || _locHref.match(/game[_-]?id[=\/](\d+)/i) || [,''])[1] || '';
 
   console.log('[W4P_BOOT] frameId=' + (_frameId || 'none') + ' url=' + _locHref.substring(0, 80) + ' ts=' + Date.now());
@@ -158,16 +233,16 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 
   // ── Config ───────────────────────────────────────────────────
   // API_BASE: set via window.__W4P_API_BASE before injection, or defaults:
-  //   Local dev:  http://127.0.0.1:1080/api
-  //   Production: https://haaats.xyz/api
-  var API_BASE = window.__W4P_API_BASE || 'http://127.0.0.1:1080/api';
+  //   Local dev:  http://127.0.0.1:4000/api
+  //   Production: http://127.0.0.1:4000/api
+  var API_BASE = window.__W4P_API_BASE || 'http://127.0.0.1:4000/api';
   var API_KEY  = '03622c896cfbeacdfc537e9434f9ddc5';
 
   // ── Direct fetch (CORS enabled on Flask — works standalone and in extension) ──
   // Set via window.__W4P_SITE_BASE, defaults to API_BASE root
   var SITE_BASE = window.__W4P_SITE_BASE || (function() {
     var m = API_BASE.match(/^(https?:\/\/[^/]+)/);
-    return m ? m[1] : 'http://127.0.0.1:1080';
+    return m ? m[1] : 'http://127.0.0.1:4000';
   })();
   function bridgeFetch(path, method, body, callback) {
     var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
@@ -181,8 +256,11 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       .catch(function(e) {
         var status = 0;
         if (e.message.indexOf('HTTP_') === 0) status = parseInt(e.message.substring(5), 10);
-        if (status) console.warn('[W4P] fetch error:', path, 'status=' + status);
-        else console.warn('[W4P] fetch error:', path, e.message);
+        if (status) {
+          // fetch status captured for callback below
+        } else {
+          // network error captured for callback below
+        }
         if (callback) callback({ ok: false, error: e.message, status: status });
       });
   }
@@ -219,6 +297,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var _cashoutPre = false;   // when true, hyper-poll for cashout DOM element
   var _cashoutTimer = null;
   var _lastBoardLen = 0;     // track board cards for new hand detection
+  var _wasHeroTurn = false;  // state-change gate: prevent repeated HERO_TURN activation
   var _snapshotInFlight = false;    // guard: prevent overlapping snapshot POSTs
   var _nextSnapshotAllowedAt = 0;   // throttle: timestamp when next snapshot is allowed
   var _lastSnapshotHash = '';       // dedup: hash of last sent snapshot state
@@ -727,6 +806,8 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 
   // ── Build full snapshot — ALL seats ──────────────────────────
   function buildSnapshot() {
+    if (stopNonPokerScrapeContext('buildSnapshot')) return null;
+
     var tableId = getTableId();
     if (!tableId) {
       if (_n <= 5 || _n % 30 === 0)
@@ -810,7 +891,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 
     for (var i = 0; i < containers.length; i++) {
       var ct = containers[i];
-      var isHero = ct.classList.contains('self-player') || String(ct.className || '').indexOf('self-player') !== -1 || !!ct.querySelector('.self-player, [class*="self-player"]');
+      var isHero = ct.classList.contains('self-player');  // canonical: ONLY reliable hero signal (see line 913 comment)
 
       var posMatch = ct.className.match(/position-(\d+)/);
       var seatIdx = posMatch ? parseInt(posMatch[1]) : i;
@@ -1008,7 +1089,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         } else {
           _nextSnapshotAllowedAt = Date.now() + SNAPSHOT_INTERVAL_MS;
         }
-        console.log('[W4P] bridge error:', resp ? (resp.error || 'no response') : 'no response');
+        //console.log('[W4P] bridge error:', resp ? (resp.error || 'no response') : 'no response');
       }
     });
   }
@@ -1513,6 +1594,8 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   function tick() {
     if (_n === 0) console.log('[W4P][TICK_ENTER] first tick — frame validated, starting loop');
     _n++;
+    if (stopNonPokerScrapeContext('tick')) return;
+
     var snap = buildSnapshot();
 
     if (!snap) {
@@ -1544,6 +1627,24 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 
     // Try cashout BEFORE mode calculation (cashout button may appear at any time)
     tryCashout();
+
+    // ── State-change gate: prevent repeated HERO_TURN reactivation ──
+    // self-player is a STATE SOURCE, not an event trigger.
+    // Only change mode on a genuine state transition, not on every DOM tick.
+    var _isHeroTurnNow = avail.length > 0;
+    var _modeChanged = false;
+
+    if (_isHeroTurnNow && !_wasHeroTurn) {
+      _modeChanged = true;
+      if (_n <= 10 || _n % 20 === 0)
+        console.log('[W4P][STATE] IDLE/HAND_ACTIVE → HERO_TURN (avail=' + avail.join(',') + ')');
+    }
+    if (!_isHeroTurnNow && _wasHeroTurn) {
+      _modeChanged = true;
+      if (_n <= 10 || _n % 20 === 0)
+        console.log('[W4P][STATE] HERO_TURN → IDLE/HAND_ACTIVE');
+    }
+    _wasHeroTurn = _isHeroTurnNow;
 
     if (avail.length > 0) _mode = 'HERO_TURN';
     else if (snap.street !== 'PREFLOP') _mode = 'HAND_ACTIVE';
