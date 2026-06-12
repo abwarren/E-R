@@ -1,0 +1,2834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>N4P Remote Table Control</title>
+  <style>
+    :root {
+      /* Color Palette */
+      --color-primary: #4caf50;
+      --color-warning: #ffc107;
+      --color-danger: #f44336;
+      --color-info: #2196f3;
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 12px;
+      --spacing-lg: 20px;
+
+      /* Border Radius */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-xl: 10px;
+
+      /* Transitions */
+      --transition-fast: 0.15s;
+      --transition-normal: 0.2s;
+      --transition-slow: 0.3s;
+
+      /* Shadows */
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .header {
+      background: rgba(0, 0, 0, 0.3);
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-xl);
+      margin-bottom: var(--spacing-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: 0.85em;
+      background: rgba(0, 0, 0, 0.3);
+      margin-left: var(--spacing-lg);
+    }
+    .status-indicator {
+      width: var(--spacing-md);
+      height: var(--spacing-md);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    .status-indicator.connected { background: var(--color-primary); animation: none; }
+    .status-indicator.connecting { background: var(--color-warning); }
+    .status-indicator.disconnected { background: var(--color-danger); animation: none; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .status-text { font-weight: 500; }
+    .status-details { font-size: 0.8em; opacity: 0.8; margin-left: 8px; }
+
+    .header h1 {
+      font-size: 2em;
+      letter-spacing: 2px;
+    }
+
+    .btn-get-seated {
+      background: var(--color-primary);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border-radius: var(--radius-md);
+      font-weight: bold;
+      font-size: 0.9em;
+      border: none;
+      color: white;
+      cursor: pointer;
+      margin-left: var(--spacing-sm);
+      transition: all var(--transition-normal);
+    }
+    .btn-get-seated:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .btn-get-seated:focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    /* Deployment Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      animation: fadeInModal 0.2s ease-out;
+    }
+
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      margin: 5% auto;
+      padding: var(--spacing-lg) 30px;
+      border: 2px solid var(--color-primary);
+      border-radius: var(--radius-xl);
+      width: 90%;
+      max-width: 500px;
+      box-shadow: var(--shadow-lg);
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-50px) scale(0.95);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .modal-close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 20px;
+      transition: all var(--transition-normal);
+      padding: var(--spacing-xs);
+      border-radius: var(--radius-sm);
+    }
+
+    .modal-close:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      transform: rotate(90deg);
+    }
+
+    .modal-title {
+      font-size: 1.5em;
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-primary);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 5px;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      font-size: 0.9em;
+    }
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    .form-group-inline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .form-group-inline input[type="checkbox"] {
+      width: auto;
+    }
+
+    /* ═══ BOT SELECTION ═══ */
+    .selected-bots-container {
+      min-height: 50px;
+      padding: var(--spacing-sm);
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-sm);
+      align-items: center;
+    }
+
+    .no-bots-text {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85em;
+      font-style: italic;
+    }
+
+    .bot-tag {
+      background: linear-gradient(135deg, var(--color-primary) 0%, #388e3c 100%);
+      color: white;
+      padding: 4px 8px 4px 12px;
+      border-radius: var(--radius-md);
+      font-size: 0.85em;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-fast);
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .bot-tag:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .bot-tag-remove {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      line-height: 1;
+      transition: all var(--transition-fast);
+      padding: 0;
+    }
+
+    .bot-tag-remove:hover {
+      background: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+    }
+
+    .bot-search-container {
+      position: relative;
+    }
+
+    #bot-search {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: var(--radius-md);
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      font-size: 0.9em;
+      transition: all var(--transition-normal);
+    }
+
+    #bot-search:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+    }
+
+    .bot-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: rgba(30, 60, 114, 0.98);
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius-md);
+      margin-top: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(8px);
+    }
+
+    .bot-suggestion-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .bot-suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .bot-suggestion-item:hover {
+      background: rgba(76, 175, 80, 0.2);
+    }
+
+    .bot-suggestion-item.selected {
+      background: rgba(76, 175, 80, 0.3);
+    }
+
+    .bot-status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-primary);
+    }
+
+    .bot-status-indicator.deployed {
+      background: var(--color-warning);
+    }
+
+    .bot-quick-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-sm);
+    }
+
+    .btn-quick-action {
+      flex: 1;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: var(--radius-sm);
+      color: white;
+      font-size: 0.8em;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-quick-action:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .btn-deploy {
+      background: #4caf50;
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 1em;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: all 0.2s;
+    }
+    .btn-deploy:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+    }
+    .btn-deploy:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .deploy-status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+      font-size: 0.9em;
+    }
+    .deploy-status.success {
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid #4caf50;
+      color: #4caf50;
+    }
+    .deploy-status.error {
+      background: rgba(244, 67, 54, 0.2);
+      border: 1px solid #f44336;
+      color: #f44336;
+    }
+    .deploy-status.loading {
+      background: rgba(255, 193, 7, 0.2);
+      border: 1px solid #ffc107;
+      color: #ffc107;
+    }
+
+
+    .table-container {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .table-info {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .board-display {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-lg);
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-xl);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .card {
+      color: #ffffff;
+      padding: 15px 10px;
+      border-radius: var(--radius-lg);
+      font-weight: bold;
+      font-size: 1.2em;
+      min-width: 50px;
+      text-align: center;
+      box-shadow: var(--shadow-md),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transition: transform var(--transition-fast);
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .card.red { background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%); }
+    .card.blue { background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%); }
+    .card.green { background: linear-gradient(135deg, #00aa00 0%, #008800 100%); }
+    .card.black { background: linear-gradient(135deg, #333 0%, #000 100%); }
+
+    .seats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 1200px) {
+      .seats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .seats-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Duplicate seat-card removed - see line 557 for consolidated definition */
+
+    .seat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .seat-title { font-size: 0.95em; font-weight: bold; }
+
+    .status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-left: 6px;
+    }
+    .status-dot.live { background: #4caf50; box-shadow: 0 0 8px #4caf50; }
+    .status-dot.offline { background: #666; }
+
+    .dealer-marker {
+      background: #ffc107; color: #000;
+      padding: 2px 6px; border-radius: 3px;
+      font-size: 0.7em; font-weight: bold;
+    }
+
+    .bot-badge {
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid #4caf50; color: #4caf50;
+      padding: 4px 8px; border-radius: 4px;
+      font-size: 0.7em; font-weight: bold;
+      margin: 6px 0; display: inline-block;
+      font-family: 'Courier New', monospace;
+    }
+
+    .seat-info { margin-bottom: 8px; font-size: 0.85em; }
+    .seat-info div { margin: 3px 0; }
+
+
+    .hole-cards { display: flex; gap: 4px; margin-top: 6px; }
+
+    .hole-card {
+      color: #ffffff; padding: 6px 4px; border-radius: 4px;
+      font-weight: bold; font-size: 0.75em; min-width: 28px; text-align: center;
+    }
+    .hole-card.red { background: #ff0000; }
+    .hole-card.blue { background: #0066ff; }
+    .hole-card.green { background: #00aa00; }
+    .hole-card.black { background: #000000; }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .action-btn {
+      padding: 6px 4px; border: none; border-radius: 4px;
+      font-weight: bold; cursor: pointer;
+      transition: all 0.2s; font-size: 0.7em;
+    }
+    .action-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); }
+    .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-fold { background: #f44336; color: white; }
+    .btn-check { background: #4caf50; color: white; }
+    .btn-call { background: #2196f3; color: white; }
+    .btn-raise { background: #ff5722; color: white; }
+    .btn-cashout { background: #ffc107; color: #000; }
+
+    /* ── New control button styles (permanent) ── */
+    .btn-max { background: #e91e63; color: white; }
+    .btn-bet { background: #00bcd4; color: white; }
+    .btn-add-chips { background: #8bc34a; color: #000; }
+    .btn-buyin-min { background: #ff9800; color: white; }
+    .btn-auto-buyin { background: #673ab7; color: white; }
+    .btn-custom-buyin-submit { background: #009688; color: white; }
+
+    /* ── Hero controls section ── */
+    .hero-controls {
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 6px;
+    }
+
+    .hero-controls-label {
+      font-size: 0.65em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #ffc107;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    .hero-controls-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+
+    .hero-controls-grid .action-btn {
+      font-size: 0.65em;
+      padding: 5px 3px;
+    }
+
+    /* ── Buy-in controls section ── */
+    .buyin-controls {
+      margin-top: 6px;
+      padding: 6px;
+      background: rgba(156, 39, 176, 0.1);
+      border: 1px dashed rgba(156, 39, 176, 0.4);
+      border-radius: 6px;
+    }
+
+    .buyin-controls-label {
+      font-size: 0.6em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #ce93d8;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+
+    .buyin-controls-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+    }
+
+    .buyin-controls-grid .action-btn {
+      font-size: 0.6em;
+      padding: 4px 3px;
+    }
+
+    .custom-buyin-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+      grid-column: span 2;
+    }
+
+    .custom-buyin-input {
+      flex: 1;
+      padding: 4px 6px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      font-size: 0.7em;
+      min-width: 0;
+    }
+    .custom-buyin-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+    .balance-display {
+      font-size: 0.65em;
+      color: #ce93d8;
+      margin-top: 3px;
+      grid-column: span 2;
+    }
+
+    .pending-badge {
+      background: #ff6b35; color: white;
+      padding: 4px 8px; border-radius: 3px;
+      font-size: 0.8em; display: inline-block; margin-top: 10px;
+    }
+
+    .command-log {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 20px; border-radius: 10px;
+      max-height: 300px; overflow-y: auto;
+    }
+    .command-log h3 { margin-bottom: 15px; }
+
+    .log-entry {
+      padding: 8px; margin: 5px 0;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px; font-size: 0.9em;
+      display: flex; justify-content: space-between;
+    }
+
+    .pot-display {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: var(--color-warning);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .street-display {
+      background: rgba(255, 255, 255, 0.2);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      display: inline-block;
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-normal);
+    }
+
+    .street-display:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.05);
+    }
+
+    .hand-log-container {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .hand-log-container h3 {
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hand-log-container .log-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .hand-log-container .log-controls button {
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75em;
+    }
+
+    .hand-log-container .log-controls button:hover {
+      background: #666;
+    }
+
+    #hand-log {
+      width: 100%;
+      height: 150px;
+      background: #050805;
+      color: #d6e8d6;
+      border: 1px solid #1a3a1a;
+      border-radius: 6px;
+      padding: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      line-height: 1.2;
+      resize: vertical;
+      white-space: pre;
+      overflow-y: auto;
+    }
+
+    /* ═══ COMPACT GRID LAYOUT ═══ */
+    .seats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+      max-width: 1800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @media (max-width: 1200px) {
+      .seats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .seats-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ═══ SEAT CARD COMPACT ═══ */
+    .seat-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-sm);
+      border: 3px solid transparent;
+      transition: all var(--transition-slow);
+      min-height: 280px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .seat-card.connected {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+    }
+    .seat-card.empty {
+      opacity: 0.5;
+      filter: grayscale(30%);
+    }
+    .seat-card.stale {
+      border-color: #ff5722;
+      opacity: 0.7;
+      background: rgba(255, 87, 34, 0.1);
+    }
+    .seat-card.action-on {
+      border-color: var(--color-warning);
+      animation: blink-border 1s infinite;
+    }
+
+    @keyframes blink-border {
+      0%, 100% {
+        border-color: var(--color-warning);
+        box-shadow: 0 0 20px var(--color-warning);
+      }
+      50% {
+        border-color: #ff5722;
+        box-shadow: 0 0 40px #ff5722;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .seat-card {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .seat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .seat-title { font-size: 0.85em; font-weight: bold; }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-left: 4px;
+    }
+    .status-dot.live { background: #4caf50; box-shadow: 0 0 6px #4caf50; }
+    .status-dot.offline { background: #666; }
+
+    .dealer-marker {
+      background: #ffc107; color: #000;
+      padding: 2px 6px; border-radius: 3px;
+      font-size: 0.65em; font-weight: bold;
+    }
+
+    .seat-info {
+      margin-bottom: 6px;
+      font-size: 0.75em;
+      line-height: 1.3;
+    }
+
+    .hole-cards {
+      display: flex;
+      gap: 3px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .hole-card {
+      color: #ffffff;
+      padding: var(--spacing-xs) 3px;
+      border-radius: var(--radius-sm);
+      font-weight: bold;
+      font-size: 0.65em;
+      min-width: 24px;
+      text-align: center;
+      box-shadow: var(--shadow-sm),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      transition: transform var(--transition-fast);
+    }
+
+    .hole-card:hover {
+      transform: translateY(-1px);
+    }
+
+    .hole-card.red { background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%); }
+    .hole-card.blue { background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%); }
+    .hole-card.green { background: linear-gradient(135deg, #00aa00 0%, #008800 100%); }
+    .hole-card.black { background: linear-gradient(135deg, #333 0%, #000 100%); }
+
+    /* ═══ POKERBET-STYLE BUTTON GRID (3x3) ═══ */
+    .f-right-column-p-remote {
+      margin-top: 8px;
+    }
+
+    .f-right-column-p-remote ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+    }
+
+    .f-right-column-p-remote li {
+      position: relative;
+    }
+
+
+    /* Button box - collapsed by default */
+    .f-right-column-p-remote.collapsed {
+      max-height: 0;
+      opacity: 0;
+      margin: 0;
+      padding: 0;
+      transition: all 0.2s ease-out;
+    }
+
+    /* Button box - expanded when player's turn */
+    .f-right-column-p-remote.expanded {
+      max-height: 500px;
+      opacity: 1;
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(76, 175, 80, 0.15);
+      border: 2px solid rgba(76, 175, 80, 0.5);
+      border-radius: 8px;
+      transition: all 0.3s ease-in;
+      animation: pulse-border 1.5s infinite;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { border-color: rgba(76, 175, 80, 0.5); }
+      50% { border-color: rgba(76, 175, 80, 0.9); }
+    }
+
+    .f-right-column-p-remote.expanded .action-btn-poker {
+      padding: 12px 8px;
+      font-size: 0.8em;
+    }
+    .action-btn-poker {
+      width: 100%;
+      padding: 10px 6px;
+      border: 2px solid transparent;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 0.7em;
+      text-align: center;
+      position: relative;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: var(--shadow-md),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                  inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .action-btn-poker:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    .action-btn-poker:focus:not(:disabled) {
+      outline: 2px solid rgba(255, 255, 255, 0.6);
+      outline-offset: 2px;
+    }
+
+    .action-btn-poker:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow: var(--shadow-sm),
+                  inset 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .action-btn-poker:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      filter: grayscale(50%);
+    }
+
+    /* ═══ BUTTON COLORS (3D Style) ═══ */
+    .action-btn-poker.fold {
+      background: linear-gradient(180deg, #e53935 0%, #c62828 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .action-btn-poker.fold:hover:not(:disabled) {
+      background: linear-gradient(180deg, #ef5350 0%, #d32f2f 100%);
+    }
+
+    .action-btn-poker.check-call {
+      background: linear-gradient(180deg, #43a047 0%, #2e7d32 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .action-btn-poker.check-call:hover:not(:disabled) {
+      background: linear-gradient(180deg, #66bb6a 0%, #388e3c 100%);
+    }
+
+    .action-btn-poker.raise {
+      background: linear-gradient(180deg, #ff8a65 0%, #ff5722 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .action-btn-poker.raise:hover:not(:disabled) {
+      background: linear-gradient(180deg, #ffab91 0%, #ff6f00 100%);
+    }
+
+    .action-btn-poker.min {
+      background: linear-gradient(180deg, #607d8b 0%, #455a64 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .action-btn-poker.min:hover:not(:disabled) {
+      background: linear-gradient(180deg, #78909c 0%, #546e7a 100%);
+    }
+
+    .action-btn-poker.max {
+      background: linear-gradient(180deg, #ffd54f 0%, #fbc02d 100%);
+      color: #000;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+      font-weight: 900;
+    }
+    .action-btn-poker.max:hover:not(:disabled) {
+      background: linear-gradient(180deg, #ffeb3b 0%, #fdd835 100%);
+    }
+
+    .action-btn-poker.bet {
+      background: linear-gradient(180deg, #ff8a50 0%, #e65100 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .action-btn-poker.bet:hover:not(:disabled) {
+      background: linear-gradient(180deg, #ff9e80 0%, #f4511e 100%);
+    }
+
+    .action-btn-poker.allin {
+      background: linear-gradient(180deg, #d32f2f 0%, #b71c1c 100%);
+      color: white;
+      font-weight: 900;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+      animation: pulse-allin 2s infinite;
+    }
+    @keyframes pulse-allin {
+      0%, 100% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(211, 47, 47, 0.5); }
+      50% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 25px rgba(211, 47, 47, 0.8); }
+    }
+    .action-btn-poker.allin:hover:not(:disabled) {
+      background: linear-gradient(180deg, #e53935 0%, #c62828 100%);
+    }
+
+    .action-btn-poker.buyin {
+      background: linear-gradient(180deg, #42a5f5 0%, #1976d2 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .action-btn-poker.buyin:hover:not(:disabled) {
+      background: linear-gradient(180deg, #64b5f6 0%, #1e88e5 100%);
+    }
+
+    .action-btn-poker.cashout {
+      background: linear-gradient(180deg, #c62828 0%, #b71c1c 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    .action-btn-poker.cashout:hover:not(:disabled) {
+      background: linear-gradient(180deg, #d32f2f 0%, #c62828 100%);
+    }
+
+    /* ═══ PRESELECTED STATE (Orange Border) ═══ */
+    .action-btn-poker.preselected {
+      border-color: #ff6f00;
+      animation: pulse-preselect 2s infinite;
+      position: relative;
+    }
+
+    .action-btn-poker.preselected::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(45deg, #ff6f00, #ff9800);
+      opacity: 0.3;
+      z-index: -1;
+      animation: pulse-glow 2s infinite;
+    }
+
+    @keyframes pulse-preselect {
+      0%, 100% { box-shadow: 0 0 12px rgba(255, 111, 0, 0.6); }
+      50% { box-shadow: 0 0 20px rgba(255, 111, 0, 0.9); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.05); }
+    }
+
+    /* ═══ AVAILABLE STATE (Green Glow - button ready on PokerBet) ═══ */
+    .action-btn-poker.available {
+      border-color: #00e676;
+      animation: pulse-available 1.5s infinite;
+    }
+
+    @keyframes pulse-available {
+      0%, 100% { box-shadow: 0 0 16px rgba(0, 230, 118, 0.8); }
+      50% { box-shadow: 0 0 24px rgba(0, 230, 118, 1); }
+    }
+
+    /* ═══ BOTH PRESELECTED + AVAILABLE ═══ */
+    .action-btn-poker.preselected.available {
+      border-color: #00e676;
+      box-shadow: 0 0 20px rgba(0, 230, 118, 1), 0 0 12px rgba(255, 111, 0, 0.6);
+      animation: pulse-combo 1.5s infinite;
+    }
+
+    @keyframes pulse-combo {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+
+    /* ═══ HOVER EFFECTS ═══ */
+    .action-btn-poker:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.2);
+    }
+
+    /* ═══ SELECTOR HINT ═══ */
+    .selector-hint { display: none;
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 0.5em;
+      opacity: 0.5;
+      font-family: 'Courier New', monospace;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* ═══ PRE-ACTION CHECKBOXES (always visible, compact row) ═══ */
+    /* Pre-action checkboxes - always visible in seat block */
+    .pre-actions {
+      margin: 6px 0;
+      padding: 8px;
+      background: linear-gradient(135deg, rgba(33, 150, 243, 0.2) 0%, rgba(76, 175, 80, 0.2) 100%);
+      border-radius: 6px;
+      border: 2px solid rgba(76, 175, 80, 0.5);
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: nowrap;
+      justify-content: center;
+    }
+
+    .pre-action-item {
+      display: flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .pre-action-item:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    .pre-action-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-right: 6px;
+      cursor: pointer;
+      accent-color: #4caf50;
+    }
+
+    .pre-action-item label {
+      cursor: pointer;
+      font-size: 0.75em;
+      user-select: none;
+      font-weight: 700;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    .pre-action-item.active-preaction {
+      background: rgba(255, 152, 0, 0.4);
+      border: 2px solid #ffc107;
+      box-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
+    }
+
+    .pre-action-item.active-preaction label {
+      color: #ffd54f;
+    }
+
+
+    /* ═══ BET DISPLAY (chip above seat) ═══ */
+    .seat-bet-display {
+      position: absolute;
+      top: -35px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0, 100, 0, 0.9);
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 2px solid #ffd700;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .seat-bet-display.visible {
+      opacity: 1;
+    }
+    .bet-chip {
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 50%, #e74c3c 100%);
+      border-radius: 50%;
+      border: 2px dashed #fff;
+      box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+    }
+    .bet-amount {
+      color: #ffd700;
+      font-weight: bold;
+      font-size: 0.9em;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    /* ═══ BET SLIDER SECTION ═══ */
+    .bet-slider-section {
+      margin: var(--spacing-sm) 0;
+      padding: var(--spacing-sm);
+      background: rgba(255, 152, 0, 0.1);
+      border: 1px solid rgba(255, 152, 0, 0.3);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-normal);
+    }
+
+    .bet-slider-section:hover {
+      background: rgba(255, 152, 0, 0.15);
+      border-color: rgba(255, 152, 0, 0.5);
+    }
+
+    .bet-slider-label {
+      font-size: 0.65em;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #ffb74d;
+      margin-bottom: var(--spacing-sm);
+      font-weight: bold;
+      display: block;
+    }
+
+    .bet-slider-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .bet-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(90deg, #ff5722 0%, #ff9800 50%, #ffc107 100%);
+      outline: none;
+      cursor: pointer;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+      transition: all var(--transition-normal);
+    }
+
+    .bet-slider:hover {
+      height: 10px;
+    }
+
+    .bet-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+      border: 3px solid #ff5722;
+      transition: all var(--transition-fast);
+    }
+
+    .bet-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(255, 87, 34, 0.6);
+    }
+
+    .bet-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+      border: 3px solid #ff5722;
+      transition: all var(--transition-fast);
+    }
+
+    .bet-slider::-moz-range-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(255, 87, 34, 0.6);
+    }
+
+    .bet-input {
+      width: 80px;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 152, 0, 0.5);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-size: 0.75em;
+      text-align: center;
+      font-weight: bold;
+      transition: all var(--transition-fast);
+    }
+
+    .bet-input:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.5);
+      border-color: rgba(255, 152, 0, 0.7);
+    }
+
+    .bet-input:focus {
+      outline: none;
+      border-color: #ff9800;
+      box-shadow: 0 0 8px rgba(255, 152, 0, 0.6);
+      background: rgba(0, 0, 0, 0.6);
+    }
+    /* ═══ EMERGENCY BOTTOM BAR ═══ */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 900;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+    .bottom-bar.collapsed {
+      transform: translateY(100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .bottom-bar.active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .bottom-bar-inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(8px);
+      border-top: 2px solid #4caf50;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.4);
+    }
+    .bottom-bar-label {
+      font-weight: 700;
+      font-size: 0.8em;
+      color: #4caf50;
+      white-space: nowrap;
+      min-width: 80px;
+    }
+    .bottom-bar-actions {
+      display: flex;
+      gap: 6px;
+      flex: 1;
+      overflow-x: auto;
+    }
+    .bottom-bar-actions button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.75em;
+      cursor: pointer;
+      white-space: nowrap;
+      text-transform: uppercase;
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: transform 0.1s, filter 0.1s;
+    }
+    .bottom-bar-actions button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.15);
+    }
+    .bottom-bar-actions button:active {
+      transform: translateY(1px);
+    }
+
+    /* ═══ KH (KEEP HAND) SYSTEM ═══ */
+    .kh-global-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 10px 16px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(156, 39, 176, 0.5);
+      border-radius: var(--radius-lg);
+    }
+
+    .kh-global-bar .kh-label {
+      font-size: 0.85em;
+      font-weight: 700;
+      color: #ce93d8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .kh-global-bar .kh-status {
+      font-size: 0.75em;
+      color: rgba(255,255,255,0.6);
+      flex: 1;
+    }
+
+    .btn-execute-kh {
+      padding: 10px 24px;
+      background: linear-gradient(180deg, #9c27b0 0%, #7b1fa2 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 0.9em;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: var(--shadow-md);
+      transition: all var(--transition-fast);
+    }
+
+    .btn-execute-kh:hover {
+      background: linear-gradient(180deg, #ab47bc 0%, #8e24aa 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(156, 39, 176, 0.5);
+    }
+
+    .btn-execute-kh:active {
+      transform: translateY(1px);
+    }
+
+    .btn-execute-kh.executed {
+      background: linear-gradient(180deg, #388e3c 0%, #2e7d32 100%);
+      pointer-events: none;
+    }
+
+    /* Per-seat KH toggle */
+    .kh-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      margin: 4px 0;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      background: rgba(156, 39, 176, 0.1);
+      border: 1px solid rgba(156, 39, 176, 0.3);
+    }
+
+    .kh-toggle:hover {
+      background: rgba(156, 39, 176, 0.2);
+      border-color: rgba(156, 39, 176, 0.5);
+    }
+
+    .kh-toggle input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #9c27b0;
+    }
+
+    .kh-toggle label {
+      font-size: 0.7em;
+      font-weight: 700;
+      color: #ce93d8;
+      text-transform: uppercase;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .kh-toggle.kh-active {
+      background: rgba(156, 39, 176, 0.4);
+      border: 2px solid #ab47bc;
+      box-shadow: 0 0 8px rgba(156, 39, 176, 0.5);
+    }
+
+    .kh-toggle.kh-active label {
+      color: #e1bee7;
+    }
+
+    /* Post-execute states */
+    .seat-card.kh-kept {
+      border-color: #4caf50 !important;
+      box-shadow: 0 0 16px rgba(76, 175, 80, 0.6) !important;
+    }
+
+    .seat-card.kh-folded {
+      border-color: #f44336 !important;
+      opacity: 0.5;
+      filter: grayscale(40%);
+    }
+
+    .kh-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.6em;
+      font-weight: 800;
+      text-transform: uppercase;
+      z-index: 5;
+    }
+
+    .kh-badge.kept {
+      background: #4caf50;
+      color: white;
+    }
+
+    .kh-badge.auto-cf {
+      background: #f44336;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div>
+      <h1>N4P // REMOTE TABLE CONTROL</h1>
+      <div class="connection-status">
+        <div class="status-indicator connecting" id="status-dot"></div>
+        <div>
+          <span class="status-text" id="status-text">Connecting...</span>
+          <span class="status-details" id="status-details"></span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <button class="btn-get-seated" onclick="openDeployModal()">GET SEATED</button>
+    </div>
+  </div>
+
+  <!-- Deployment Modal -->
+  <div id="deployModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeDeployModal()">&times;</span>
+      <h2 class="modal-title">Deploy Bots (Auto-Credentials)</h2>
+
+      <div class="form-group" style="background: rgba(76, 175, 80, 0.1); border: 1px solid #4caf50; border-radius: 5px; padding: 10px;">
+        <strong>🔐 Auto-Credentials</strong><br>
+        <span style="font-size: 0.85em; opacity: 0.9;">
+          Credentials are automatically assigned based on bot count.<br>
+          Bot 1=pile, Bot 2=kele1, ..., Bot 9=DanielleKorevaar
+        </span>
+      </div>
+
+      <form id="deployForm" onsubmit="submitDeploy(event)">
+        <div class="form-group">
+          <label for="platform">Platform:</label>
+          <select id="platform" name="platform" required onchange="updateVariantDropdown()">
+            <option value="">Select Platform</option>
+            <option value="PokerBet">PokerBet</option>
+            <option value="GoldRush">GoldRush</option>
+            <option value="HollywoodBets">Hollywood Bets</option>
+            <option value="Sunbet">Sunbet</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="variant">Variant:</label>
+          <select id="variant" name="variant" required onchange="updateStakesDropdown()" disabled>
+            <option value="">Select Platform First</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="stakes">Stakes:</label>
+          <select id="stakes" name="stakes" required onchange="updateSeatsDropdown()" disabled>
+            <option value="">Select Stakes First</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="seats">Seats:</label>
+          <select id="seats" name="seats" required onchange="updateTableDropdown()" disabled>
+            <option value="">Select Seats</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="table_name">Table Name:</label>
+          <select id="table_name" name="table_name" required disabled>
+            <option value="">Select Table</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="buy_in_mode">Buy-In Mode:</label>
+          <select id="buy_in_mode" name="buy_in_mode" required onchange="toggleCustomAmount()">
+            <option value="MIN" selected>MIN</option>
+            <option value="MAX">MAX</option>
+            <option value="CUSTOM">CUSTOM</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="custom_amount_group" style="display: none;">
+          <label for="buy_in_amount">Custom Amount (ZAR):</label>
+          <input type="number" id="buy_in_amount" name="buy_in_amount" step="0.01" min="0" placeholder="0.00">
+        </div>
+
+        <div class="form-group">
+          <label>Selected Bots (<span id="bot-count">0</span>):</label>
+          <div id="selected-bots" class="selected-bots-container">
+            <span class="no-bots-text">No bots selected</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bot-search">Add Bot:</label>
+          <div class="bot-search-container">
+            <input type="text" id="bot-search" placeholder="Type to search bots..." autocomplete="off" oninput="filterBots()" onfocus="showBotSuggestions()" onblur="hideBotSuggestions()">
+            <div id="bot-suggestions" class="bot-suggestions" style="display: none;"></div>
+          </div>
+          <div class="bot-quick-actions">
+            <button type="button" onclick="selectAllBots()" class="btn-quick-action">Select All</button>
+            <button type="button" onclick="clearAllBots()" class="btn-quick-action">Clear All</button>
+          </div>
+        </div>
+
+        <div class="form-group form-group-inline">
+          <input type="checkbox" id="auto_buyin_enabled" name="auto_buyin_enabled">
+          <label for="auto_buyin_enabled">Enable Auto Buy-In</label>
+        </div>
+
+        <div class="form-group form-group-inline">
+          <input type="checkbox" id="first_action_policy" name="first_action_policy" value="CHECK_OR_CALL_ONCE">
+          <label for="first_action_policy">First Action Assist (Check/Call Once)</label>
+        </div>
+
+        <button type="submit" class="btn-deploy" id="deployBtn">START DEPLOYMENT</button>
+      </form>
+
+      <div id="deployStatus" class="deploy-status"></div>
+    </div>
+  </div>
+
+  <!-- KH Global Control Bar -->
+  <div class="kh-global-bar" id="kh-bar">
+    <span class="kh-label">KH</span>
+    <span class="kh-status" id="kh-status">Select hands to keep, then execute</span>
+    <button class="btn-execute-kh" id="btn-execute-kh" onclick="executeKH()">EXECUTE KH</button>
+  </div>
+
+  <div class="hand-log-container" style="display: none;">
+    <h3>
+      <span>RAW HAND LOG</span>
+      <div class="log-controls">
+        <button onclick="clearHandLog()">CLEAR</button>
+      </div>
+    </h3>
+    <textarea id="hand-log" readonly></textarea>
+  </div>
+
+  <div id="app"></div>
+
+  <!-- Emergency Bottom Action Bar -->
+  <div id="bottom-bar" class="bottom-bar collapsed">
+    <div class="bottom-bar-inner">
+      <span class="bottom-bar-label" id="bottom-bar-label">--</span>
+      <div class="bottom-bar-actions" id="bottom-bar-actions"></div>
+    </div>
+  </div>
+
+  <div class="command-log" style="display: none;">
+    <h3>Command Log</h3>
+    <div id="log-container"></div>
+  </div>
+
+  <script>
+    const LOCAL_BRIDGE = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname) || window.location.port === '4000';
+    const API_BASE = LOCAL_BRIDGE ? '/api' : 'https://haaats.xyz/api';
+    let commandLog = []; // Disabled - not logging
+    let connectionState = 'disconnected'; // Not connecting to backend
+    let lastSuccessfulPoll = null;
+    let consecutiveErrors = 0;
+    let backoffDelay = 1000;
+    let maxBackoff = 30000;
+
+    // Bot database
+    const BOTS = [
+      {username: "pile", password: "PokerPass123", platform: "PokerBet"},
+      {username: "kele1", password: "PokerPass123", platform: "PokerBet"},
+      {username: "lont", password: "PokerPass123", platform: "PokerBet"},
+      {username: "kana", password: "PokerPass123", platform: "PokerBet"},
+      {username: "hele", password: "PokerPass123", platform: "PokerBet"},
+      {username: "shax", password: "PokerPass123", platform: "PokerBet"},
+      {username: "pretty88", password: "PokerPass123", platform: "PokerBet"},
+      {username: "DanielleKorevaar", password: "Ashleyjancouys@1", platform: "PokerBet"}
+    ];
+
+    let selectedBots = [];
+    let suggestedBotIndex = -1;
+
+    // Table database (nested by platform)
+    const TABLES = {
+      PokerBet: {
+        PLO4: [
+        {name: "Multan", seats: 9, stakes: "0.1/0.2"},
+        {name: "Qiqihar", seats: 8, stakes: "0.1/0.2"},
+        {name: "Davao", seats: 9, stakes: "0.25/0.5"},
+        {name: "Montevideo", seats: 8, stakes: "0.25/0.5"},
+        {name: "Algiers", seats: 6, stakes: "0.25/0.5"},
+        {name: "Hiroshima", seats: 9, stakes: "0.5/1"},
+        {name: "South Tangerang", seats: 8, stakes: "0.5/1"},
+        {name: "Phoenix", seats: 6, stakes: "0.5/1"},
+        {name: "Belgrade", seats: 9, stakes: "1/2"},
+        {name: "Lubumbashi", seats: 8, stakes: "1/2"},
+        {name: "Kyoto", seats: 6, stakes: "1/2"},
+        {name: "Ulan Bator", seats: 9, stakes: "2/4"},
+        {name: "Milan", seats: 8, stakes: "2/4"},
+        {name: "Almaty", seats: 6, stakes: "2/4"},
+        {name: "Konya", seats: 9, stakes: "3/6"},
+        {name: "Dallas", seats: 8, stakes: "3/6"},
+        {name: "Palembang", seats: 6, stakes: "3/6"},
+        {name: "Gujranwala", seats: 9, stakes: "4/8"},
+        {name: "Huainan", seats: 8, stakes: "4/8"},
+        {name: "Benares", seats: 6, stakes: "4/8"},
+        {name: "Wuhu", seats: 9, stakes: "5/10"},
+        {name: "Copenhagen", seats: 8, stakes: "5/10"},
+        {name: "Meerut", seats: 6, stakes: "5/10"},
+        {name: "Mbuji-Mayi", seats: 8, stakes: "10/20"},
+        {name: "Khartoum", seats: 6, stakes: "10/20"},
+        {name: "Challenge Me", seats: 2, stakes: "10/20"},
+        {name: "San Antonio", seats: 6, stakes: "15/30"},
+        {name: "Sofia", seats: 8, stakes: "20/40"},
+        {name: "Stockholm", seats: 6, stakes: "20/40"},
+        {name: "Allahabad", seats: 8, stakes: "25/50"},
+        {name: "Munich", seats: 6, stakes: "50/100"},
+        {name: "San Diego", seats: 6, stakes: "100/200"}
+      ],
+      PLO6: [
+        {name: "Fuyang", seats: 6, stakes: "0.5/1"},
+        {name: "Charlotte", seats: 6, stakes: "1/2"},
+        {name: "Dushanbe", seats: 6, stakes: "1/2"},
+        {name: "Salé", seats: 6, stakes: "2/4"},
+        {name: "Langfang", seats: 6, stakes: "2/4"},
+        {name: "Leeds", seats: 6, stakes: "4/8"},
+        {name: "Mysore", seats: 6, stakes: "5/10"},
+        {name: "Anfield", seats: 2, stakes: "5/10"},
+        {name: "Astana", seats: 6, stakes: "10/20"},
+        {name: "Kop End", seats: 2, stakes: "10/20"},
+        {name: "Pretoria", seats: 6, stakes: "15/30"},
+        {name: "Kezzy", seats: 2, stakes: "15/30"},
+        {name: "Fort Worth", seats: 6, stakes: "20/40"},
+        {name: "Kumamoto", seats: 6, stakes: "25/50"},
+        {name: "Can Tho", seats: 6, stakes: "50/100"},
+        {name: "Saj Playground 1", seats: 6, stakes: "50/100"}
+      ]
+    },
+    GoldRush: {
+      // To be populated
+    },
+    HollywoodBets: {
+      // To be populated
+    },
+    Sunbet: {
+      // To be populated
+    }
+  };
+
+    // Dropdown filtering functions
+    function updateVariantDropdown() {
+      const platform = document.getElementById('platform').value;
+      const variantSelect = document.getElementById('variant');
+      const stakesSelect = document.getElementById('stakes');
+      const seatsSelect = document.getElementById('seats');
+      const tableSelect = document.getElementById('table_name');
+
+      // Reset all dependent dropdowns
+      variantSelect.innerHTML = '<option value="">Select Variant</option>';
+      stakesSelect.innerHTML = '<option value="">Select Stakes</option>';
+      seatsSelect.innerHTML = '<option value="">Select Seats</option>';
+      tableSelect.innerHTML = '<option value="">Select Table</option>';
+      stakesSelect.disabled = true;
+      seatsSelect.disabled = true;
+      tableSelect.disabled = true;
+
+      if (!platform) {
+        variantSelect.disabled = true;
+        return;
+      }
+
+      const platformTables = TABLES[platform];
+      if (!platformTables || Object.keys(platformTables).length === 0) {
+        variantSelect.disabled = true;
+        variantSelect.innerHTML = '<option value="">No variants available</option>';
+        return;
+      }
+
+      // Populate variants for selected platform
+      Object.keys(platformTables).forEach(variant => {
+        const option = document.createElement('option');
+        option.value = variant;
+        option.textContent = variant === 'PLO4' ? 'PLO4 (4-card)' : 'PLO6 (6-card)';
+        variantSelect.appendChild(option);
+      });
+
+      variantSelect.disabled = false;
+    }
+
+    function updateStakesDropdown() {
+      const platform = document.getElementById('platform').value;
+      const variant = document.getElementById('variant').value;
+      const stakesSelect = document.getElementById('stakes');
+      const seatsSelect = document.getElementById('seats');
+      const tableSelect = document.getElementById('table_name');
+
+      // Reset dependent dropdowns
+      stakesSelect.innerHTML = '<option value="">Select Stakes</option>';
+      seatsSelect.innerHTML = '<option value="">Select Seats</option>';
+      tableSelect.innerHTML = '<option value="">Select Table</option>';
+      seatsSelect.disabled = true;
+      tableSelect.disabled = true;
+
+      if (!platform || !variant) {
+        stakesSelect.disabled = true;
+        return;
+      }
+
+      // Get unique stakes for selected platform + variant
+      const tables = TABLES[platform][variant];
+      if (!tables) {
+        stakesSelect.disabled = true;
+        return;
+      }
+
+      const uniqueStakes = [...new Set(tables.map(t => t.stakes))].sort((a, b) => {
+        const aVal = parseFloat(a.split('/')[0]);
+        const bVal = parseFloat(b.split('/')[0]);
+        return aVal - bVal;
+      });
+
+      uniqueStakes.forEach(stake => {
+        const option = document.createElement('option');
+        option.value = stake;
+        option.textContent = `ZAR ${stake}`;
+        stakesSelect.appendChild(option);
+      });
+
+      stakesSelect.disabled = false;
+    }
+
+    function updateSeatsDropdown() {
+      const platform = document.getElementById('platform').value;
+      const variant = document.getElementById('variant').value;
+      const stakes = document.getElementById('stakes').value;
+      const seatsSelect = document.getElementById('seats');
+      const tableSelect = document.getElementById('table_name');
+
+      // Reset table dropdown
+      tableSelect.innerHTML = '<option value="">Select Table</option>';
+      tableSelect.disabled = true;
+      seatsSelect.innerHTML = '<option value="">Select Seats</option>';
+
+      if (!platform || !variant || !stakes) {
+        seatsSelect.disabled = true;
+        return;
+      }
+
+      // Get unique seat counts for selected platform + variant + stakes
+      const tables = TABLES[platform][variant].filter(t => t.stakes === stakes);
+      const uniqueSeats = [...new Set(tables.map(t => t.seats))].sort((a, b) => b - a);
+
+      uniqueSeats.forEach(seatCount => {
+        const option = document.createElement('option');
+        option.value = seatCount;
+        option.textContent = `${seatCount}-max`;
+        seatsSelect.appendChild(option);
+      });
+
+      seatsSelect.disabled = false;
+    }
+
+    function updateTableDropdown() {
+      const platform = document.getElementById('platform').value;
+      const variant = document.getElementById('variant').value;
+      const stakes = document.getElementById('stakes').value;
+      const seats = document.getElementById('seats').value;
+      const tableSelect = document.getElementById('table_name');
+
+      tableSelect.innerHTML = '<option value="">Select Table</option>';
+
+      if (!platform || !variant || !stakes) {
+        // Update seats dropdown if stakes changed
+        if (!stakes) {
+          updateSeatsDropdown();
+          return;
+        }
+      }
+
+      // Filter tables by platform, variant, stakes, and seats
+      let filteredTables = TABLES[platform][variant].filter(t => t.stakes === stakes);
+
+      if (seats) {
+        filteredTables = filteredTables.filter(t => t.seats === parseInt(seats));
+      } else {
+        // If no seats selected yet, update seats dropdown
+        updateSeatsDropdown();
+        return;
+      }
+
+      // Populate table dropdown
+      filteredTables.sort((a, b) => a.name.localeCompare(b.name)).forEach(table => {
+        const option = document.createElement('option');
+        option.value = table.name;
+        option.textContent = `${table.name} (${table.seats}-max)`;
+        tableSelect.appendChild(option);
+      });
+
+      tableSelect.disabled = filteredTables.length === 0;
+    }
+
+    // Button states (preselected, available)
+    let buttonStates = {}; // key: "tableId:seatIndex:buttonType", value: {preselected: bool, available: bool}
+
+    function updateConnectionStatus(state, details) {
+      connectionState = state;
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      const detailsEl = document.getElementById('status-details');
+
+      if (!dot || !text || !detailsEl) return;
+
+      dot.className = 'status-indicator ' + state;
+
+      if (state === 'connected') {
+        text.textContent = 'Connected';
+        lastSuccessfulPoll = new Date();
+        consecutiveErrors = 0;
+        backoffDelay = 1000;
+        detailsEl.textContent = details || 'Live';
+      } else if (state === 'connecting') {
+        text.textContent = 'Connecting...';
+        detailsEl.textContent = details || '';
+      } else if (state === 'disconnected') {
+        text.textContent = 'Disconnected';
+        detailsEl.textContent = details || 'Reconnecting...';
+      }
+    }
+
+    setInterval(function() {
+      if (connectionState === 'connected' && lastSuccessfulPoll) {
+        const sec = Math.floor((new Date() - lastSuccessfulPoll) / 1000);
+        const el = document.getElementById('status-details');
+        if (sec < 120 && el) {
+          el.textContent = sec + 's ago';
+        }
+      }
+    }, 5000);
+
+    function formatCard(card) {
+      if (!card) return '';
+      const suit = card.slice(-1);
+      const rank = card.slice(0, -1).toUpperCase();
+      const suitColor = { 'h': 'red', 'd': 'blue', 'c': 'green', 's': 'black' }[suit] || '';
+      const suitSymbol = { 'h': '♥', 'd': '♦', 'c': '♣', 's': '♠' }[suit] || suit;
+      return `<span class="card ${suitColor}">${rank}${suitSymbol}</span>`;
+    }
+
+    function formatHoleCard(card) {
+      if (!card) return '';
+      const suit = card.slice(-1);
+      const rank = card.slice(0, -1).toUpperCase();
+      const suitColor = { 'h': 'red', 'd': 'blue', 'c': 'green', 's': 'black' }[suit] || '';
+      const suitSymbol = { 'h': '♥', 'd': '♦', 'c': '♣', 's': '♠' }[suit] || suit;
+      return `<span class="hole-card ${suitColor}">${rank}${suitSymbol}</span>`;
+    }
+
+    // Bet slider sync functions
+    function updateBetInput(seatNo, value) {
+      const input = document.getElementById(`betinput-${seatNo}`);
+      if (input) {
+        input.value = Math.round(value);
+      }
+    }
+
+    function updateBetSlider(seatNo, value) {
+      const slider = document.getElementById(`slider-${seatNo}`);
+      if (slider) {
+        slider.value = value;
+      }
+    }
+
+    function getBetAmount(seatIndex) {
+      const input = document.getElementById(`betinput-${seatIndex}`);
+      return input ? parseFloat(input.value) : undefined;
+    }
+
+    // Track if MAX was selected per seat (BET will send 'allin' instead of 'raise')
+    let maxSelected = {};
+    let seatBets = {};
+
+    function setMaxBet(tableId, seatNo, maxStack) {
+      const input = document.getElementById(`betinput-${seatNo}`);
+      const slider = document.getElementById(`slider-${seatNo}`);
+      if (input) input.value = Math.round(maxStack);
+      if (slider) slider.value = maxStack;
+      maxSelected[seatNo] = true;
+      // Also tell w4p.js to set PokerBet slider to max (no confirm yet)
+      sendCommand(tableId, seatNo, 'max');
+    }
+
+    function setMinBet(tableId, seatNo) {
+      const input = document.getElementById(`betinput-${seatNo}`);
+      const slider = document.getElementById(`slider-${seatNo}`);
+      const minVal = slider ? parseFloat(slider.min) || 1 : 1;
+      if (input) input.value = minVal;
+      if (slider) slider.value = minVal;
+      maxSelected[seatNo] = false;
+      // Also tell w4p.js to set PokerBet slider to min (no confirm yet)
+      sendCommand(tableId, seatNo, 'min');
+    }
+
+    function showBetDisplay(seatIndex, amount) {
+      const display = document.getElementById(`bet-display-${seatIndex}`);
+      const amountEl = document.getElementById(`bet-amount-${seatIndex}`);
+      if (display && amountEl) {
+        amountEl.textContent = amount.toFixed(0);
+        display.classList.add('visible');
+        seatBets[seatIndex] = amount;
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+          display.classList.remove('visible');
+          seatBets[seatIndex] = null;
+        }, 10000);
+      }
+    }
+
+    function executeBet(tableId, seatIndex) {
+      let betAmount;
+      if (maxSelected[seatIndex]) {
+        // Slider already set to max on PokerBet — just confirm
+        sendCommand(tableId, seatIndex, 'bet');
+        betAmount = parseFloat(document.getElementById(`betinput-${seatIndex}`)?.value) || 0;
+        maxSelected[seatIndex] = false;
+      } else {
+        // Custom amount — send 'bet' with amount (w4p.js sets slider then confirms)
+        betAmount = getBetAmount(seatIndex);
+        sendCommand(tableId, seatIndex, 'bet', betAmount);
+      }
+      // Show bet on table with chip
+      if (betAmount > 0) {
+        showBetDisplay(seatIndex, betAmount);
+      }
+    }
+
+
+    // Pre-action checkboxes — mutually exclusive, send to w4p.js
+    let activePreAction = {}; // per seat: 'fold' | 'check_fold' | 'check_call' | null
+
+    function togglePreAction(tableId, seatIndex, action, checkbox) {
+      const allIds = ['pf-' + seatIndex, 'cf-' + seatIndex, 'cc-' + seatIndex];
+      const allWrappers = ['pa-fold-' + seatIndex, 'pa-cf-' + seatIndex, 'pa-cc-' + seatIndex];
+
+      if (checkbox.checked) {
+        // Uncheck others (mutually exclusive)
+        allIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el && el !== checkbox) el.checked = false;
+        });
+        allWrappers.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove('active-preaction');
+        });
+        // Highlight this one
+        checkbox.closest('.pre-action-item').classList.add('active-preaction');
+        activePreAction[seatIndex] = action;
+        sendCommand(tableId, seatIndex, action);
+      } else {
+        // Unchecked — clear pre-action
+        checkbox.closest('.pre-action-item').classList.remove('active-preaction');
+        activePreAction[seatIndex] = null;
+        sendCommand(tableId, seatIndex, 'clear');
+      }
+    }
+
+    // Toggle button preselect
+    function togglePreselect(tableId, seatIndex, buttonType) {
+      const key = `${tableId}:${seatIndex}:${buttonType}`;
+      if (!buttonStates[key]) buttonStates[key] = {preselected: false, available: false};
+
+      buttonStates[key].preselected = !buttonStates[key].preselected;
+
+      // Send command to backend
+      if (buttonStates[key].preselected) {
+        // For BET and RAISE, include the bet amount from slider
+        const amount = (buttonType === 'bet' || buttonType === 'raise')
+          ? getBetAmount(seatIndex)
+          : undefined;
+        sendCommand(tableId, seatIndex, buttonType, amount);
+      }
+
+      renderTable(currentTableData); // Re-render to update UI
+    }
+
+    // Send command
+    function sendCommand(tableId, seatIndex, commandType, amount) {
+      const body = {
+        table_id: tableId,
+        seat_index: seatIndex,
+        command_type: commandType
+      };
+      if (amount !== undefined) body.amount = amount;
+
+      fetch(API_BASE + '/commands/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          const label = amount ? `${commandType}(${amount})` : commandType;
+          addToLog(seatIndex, label, 'PENDING');
+        } else {
+          console.error('Command failed:', data.error);
+        }
+      })
+      .catch(err => console.error('Network error:', err));
+    }
+
+    function addToLog(seatIndex, command, status) {
+      const timestamp = new Date().toLocaleTimeString();
+      commandLog.unshift({ timestamp, seat: seatIndex, command, status });
+      commandLog = commandLog.slice(0, 20);
+      updateLog();
+    }
+
+    function updateLog() {
+      const container = document.getElementById('log-container');
+      if (!container) return;
+      container.innerHTML = commandLog.map(entry => `
+        <div class="log-entry">
+          <span>${entry.timestamp} | Seat ${entry.seat} | ${entry.command}</span>
+          <span>${entry.status}</span>
+        </div>
+      `).join('');
+    }
+
+    function getSeatState(seat) {
+      const occupied = !!seat.name;
+      const active = seat.status === 'playing';
+      const pending = !!seat.pending_cmd;
+      const stale = seat.last_seen_ago !== null && seat.last_seen_ago > 30;
+
+      return {
+        seatNo: seat.seat_no,
+        name: seat.name,
+        stack: seat.stack_zar || 0,
+        occupied: occupied,
+        active: active,
+        pending: pending,
+        error: null,
+        stale: stale
+      };
+    }
+
+    let currentTableData = null;
+    let lastTableJson = '';
+
+    function renderTable(table) {
+      currentTableData = table;
+      checkKHHandReset(table);
+      const app = document.getElementById('app');
+
+      const board = table.board;
+      const boardCards = [
+        ...board.flop,
+        board.turn,
+        board.river
+      ].filter(c => c);
+
+      const boardHtml = boardCards.length > 0
+        ? boardCards.map(formatCard).join('')
+        : '<span style="opacity: 0.5;">Waiting for flop...</span>';
+
+      // HERO-ONLY: render only self-player/hero seats (skip villains, empty, face-down)
+      const heroSeats = table.seats.filter(seat => seat.is_self_player || seat.is_hero);
+
+      if (heroSeats.length === 0) {
+        app.innerHTML = `
+          <div class="table-container">
+            <div class="table-info">
+              <div class="street-display">${table.street}</div>
+              <div class="pot-display">POT: ZAR ${table.pot_zar ? table.pot_zar.toFixed(2) : '0.00'}</div>
+            </div>
+            <div class="board-display">${boardHtml}</div>
+            <div style="padding: 40px; text-align: center; color: #888; font-size: 1.1em;">No players connected</div>
+          </div>`;
+        updateBottomBar(null, table);
+        return;
+      }
+
+      const seatsHtml = heroSeats.map(seat => {
+        const state = getSeatState(seat);
+        const isActingSeat = table.acting_bot_id && seat.bot_id && table.acting_bot_id === seat.bot_id;
+        const canAct = state.occupied && state.active && !state.stale && isActingSeat;
+
+        const holeCardsHtml = seat.hole_cards && seat.hole_cards.length > 0
+          ? `<div class="hole-cards">${seat.hole_cards.map(formatHoleCard).join('')}</div>`
+          : '';
+
+        const liveClass = state.occupied ? 'live' : 'offline';
+
+        let cardClass = '';
+        if (!state.occupied) {
+          cardClass = 'empty';
+        } else if (state.stale) {
+          cardClass = 'stale';
+        } else if (state.active && isActingSeat) {
+          cardClass = 'connected action-on';
+        } else {
+          cardClass = 'connected';
+        }
+
+        const pendingHtml = state.pending
+          ? `<div style="color: #ff9800; font-size: 0.7em; margin-top: 4px;">⏳ ${seat.pending_cmd}</div>`
+          : '';
+
+        let statusText = 'EMPTY';
+        if (state.occupied) {
+          if (state.stale) {
+            statusText = 'DISCONNECTED';
+          } else if (state.pending) {
+            statusText = 'PENDING';
+          } else if (state.active && isActingSeat) {
+            statusText = 'ACTION';
+          } else if (state.active) {
+            statusText = 'PLAYING';
+          } else {
+            statusText = 'SEATED';
+          }
+        }
+
+        // PokerBet-style button grid (3x3)
+        const buttons = [
+          {type: 'fold', label: 'FOLD', selector: 'li:nth-child(1)', available: canAct},
+          {type: 'check_call', label: 'CHECK/CALL', selector: 'li:nth-child(2)', available: canAct},
+          {type: 'raise', label: 'RAISE', selector: 'li:nth-child(3)', available: canAct},
+          {type: 'min', label: 'MIN', selector: 'li:nth-child(4)', available: canAct},
+          {type: 'max', label: 'MAX', selector: 'li:nth-child(5)', available: canAct},
+          {type: 'bet', label: 'BET', selector: 'li:nth-child(6)', available: canAct},
+          {type: 'allin', label: 'ALL-IN', selector: '.all_in-c', available: canAct},
+          {type: 'buyin', label: 'BUY-IN', selector: 'buy-in-modal', available: state.occupied},
+          {type: 'cashout', label: 'CASHOUT', selector: 'special', available: true},
+        ];
+
+        const buttonsHtml = buttons.map(btn => {
+          const key = `${table.table_id}:${state.seatNo}:${btn.type}`;
+          const btnState = buttonStates[key] || {preselected: false, available: false};
+
+          // Update available state from backend
+          btnState.available = btn.available;
+          buttonStates[key] = btnState;
+
+          let classes = `action-btn-poker ${btn.type}`;
+          if (btnState.preselected) classes += ' preselected';
+          if (btnState.available) classes += ' available';
+
+          const disabled = !state.occupied ? 'disabled' : '';
+
+          // MAX/MIN = UI-only (set bet input), BET = execute raise with input amount
+          let onclick;
+          if (btn.type === 'max') {
+            onclick = `setMaxBet('${table.table_id}', ${state.seatNo}, ${state.stack})`;
+          } else if (btn.type === 'min') {
+            onclick = `setMinBet('${table.table_id}', ${state.seatNo})`;
+          } else if (btn.type === 'bet') {
+            onclick = `executeBet('${table.table_id}', ${state.seatNo})`;
+          } else {
+            onclick = `togglePreselect('${table.table_id}', ${state.seatNo}, '${btn.type}')`;
+          }
+
+          return `
+            <li>
+              <button class="${classes}" ${disabled}
+                onclick="${onclick}">
+                ${btn.label}
+                <span class="selector-hint">${btn.selector}</span>
+              </button>
+            </li>
+          `;
+        }).join('');
+
+        // KH state for this seat
+        const khChecked = khState[state.seatNo] || false;
+        const khActiveClass = khChecked ? 'kh-active' : '';
+        let khBadgeHtml = '';
+        let khCardClass = '';
+        if (khExecuted && state.occupied) {
+          if (khState[state.seatNo]) {
+            khBadgeHtml = '<span class="kh-badge kept">KEEP</span>';
+            khCardClass = 'kh-kept';
+          } else {
+            khBadgeHtml = '<span class="kh-badge auto-cf">AUTO C/F</span>';
+            khCardClass = 'kh-folded';
+          }
+        }
+
+        // Initialize KH state for new seats
+        if (state.occupied && !(state.seatNo in khState)) {
+          khState[state.seatNo] = false;
+        }
+
+        return `
+          <div class="seat-card ${cardClass} ${khCardClass}">
+            ${khBadgeHtml}
+            <div class="seat-bet-display" id="bet-display-${state.seatNo}">
+              <div class="bet-chip"></div>
+              <span class="bet-amount" id="bet-amount-${state.seatNo}">0</span>
+            </div>
+            <div class="seat-header">
+              <div>
+                <span class="seat-title">SEAT ${state.seatNo}</span>
+                <span class="status-dot ${liveClass}"></span>
+              </div>
+              ${seat.is_dealer ? '<span class="dealer-marker">DEALER</span>' : ''}
+            </div>
+            <div class="seat-info">
+              <div><strong>${state.name || 'Empty'}</strong></div>
+              <div>ZAR ${state.stack.toFixed(2)}</div>
+              <div>Status: ${statusText}</div>
+              ${holeCardsHtml}
+              ${pendingHtml}
+            </div>
+            ${state.occupied ? `
+            <div class="kh-toggle ${khActiveClass}" id="kh-wrap-${state.seatNo}">
+              <input type="checkbox" id="kh-${state.seatNo}" ${khChecked ? 'checked' : ''}
+                onchange="toggleKH(${state.seatNo}, this)" ${khExecuted ? 'disabled' : ''}>
+              <label for="kh-${state.seatNo}">KEEP HAND</label>
+            </div>` : ''}
+            <div class="pre-actions">
+              <div class="pre-action-item" id="pa-fold-${state.seatNo}">
+                <input type="checkbox" id="pf-${state.seatNo}"
+                  onchange="togglePreAction('${table.table_id}', ${state.seatNo}, 'fold', this)">
+                <label for="pf-${state.seatNo}">Fold</label>
+              </div>
+              <div class="pre-action-item" id="pa-cf-${state.seatNo}">
+                <input type="checkbox" id="cf-${state.seatNo}"
+                  onchange="togglePreAction('${table.table_id}', ${state.seatNo}, 'check_fold', this)">
+                <label for="cf-${state.seatNo}">Check/Fold</label>
+              </div>
+              <div class="pre-action-item" id="pa-cc-${state.seatNo}">
+                <input type="checkbox" id="cc-${state.seatNo}"
+                  onchange="togglePreAction('${table.table_id}', ${state.seatNo}, 'check_call', this)">
+                <label for="cc-${state.seatNo}">Check/Call</label>
+              </div>
+            </div>
+            <div class="bet-slider-section">
+              <label class="bet-slider-label">BET SIZE</label>
+              <div class="bet-slider-controls">
+                <input type="range"
+                  class="bet-slider"
+                  id="slider-${state.seatNo}"
+                  min="0"
+                  max="${Math.max(state.stack, 100)}"
+                  value="${Math.min(state.stack * 0.5, state.stack) || 50}"
+                  ${!state.occupied ? 'disabled' : ''}
+                  oninput="maxSelected[${state.seatNo}]=false; updateBetInput(${state.seatNo}, this.value)">
+                <input type="number"
+                  class="bet-input"
+                  id="betinput-${state.seatNo}"
+                  min="0"
+                  max="${Math.max(state.stack, 100)}"
+                  value="${Math.min(state.stack * 0.5, state.stack).toFixed(0) || 50}"
+                  ${!state.occupied ? 'disabled' : ''}
+                  oninput="maxSelected[${state.seatNo}]=false; updateBetSlider(${state.seatNo}, this.value)">
+              </div>
+            </div>
+            <div class="f-right-column-p-remote ${canAct ? 'expanded' : 'collapsed'}">
+              <ul>
+                ${buttonsHtml}
+              </ul>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      app.innerHTML = `
+        <div class="table-container">
+          <div class="table-info">
+            <div class="street-display">${table.street}</div>
+            <div class="pot-display">POT: ZAR ${table.pot_zar ? table.pot_zar.toFixed(2) : '0.00'}</div>
+          </div>
+          <div class="board-display">
+            ${boardHtml}
+          </div>
+          <div class="seats-grid">
+            ${seatsHtml}
+          </div>
+        </div>
+      `;
+
+      // Update bottom emergency bar with the active hero
+      const activeHero = heroSeats.find(seat => {
+        const isAct = table.acting_bot_id && seat.bot_id && table.acting_bot_id === seat.bot_id;
+        return seat.name && (seat.status === 'playing') && isAct;
+      });
+      updateBottomBar(activeHero, table);
+      updateKHStatus();
+    }
+
+    // ========== EMERGENCY BOTTOM BAR ==========
+    function updateBottomBar(activeHero, table) {
+      const bar = document.getElementById('bottom-bar');
+      const label = document.getElementById('bottom-bar-label');
+      const actions = document.getElementById('bottom-bar-actions');
+
+      if (!activeHero || !table) {
+        bar.className = 'bottom-bar collapsed';
+        actions.innerHTML = '';
+        label.textContent = '--';
+        return;
+      }
+
+      bar.className = 'bottom-bar active';
+      const state = getSeatState(activeHero);
+      label.textContent = (state.name || 'SEAT ' + state.seatNo).toUpperCase();
+
+      const colorMap = {
+        fold:'#e53935', check_call:'#43a047', raise:'#ff5722',
+        min:'#607d8b', max:'#fbc02d', bet:'#e65100',
+        allin:'#b71c1c', buyin:'#1976d2', cashout:'#c62828'
+      };
+      const labelMap = {
+        fold:'FOLD', check_call:'CHECK/CALL', raise:'RAISE',
+        min:'MIN', max:'MAX', bet:'BET',
+        allin:'ALL-IN', buyin:'BUY-IN', cashout:'CASHOUT'
+      };
+
+      const btns = ['fold','check_call','raise','min','max','bet','allin','cashout'];
+      actions.innerHTML = btns.map(type => {
+        let onclick;
+        if (type === 'max') {
+          onclick = `setMaxBet('${table.table_id}', ${state.seatNo}, ${state.stack})`;
+        } else if (type === 'min') {
+          onclick = `setMinBet('${table.table_id}', ${state.seatNo})`;
+        } else if (type === 'bet') {
+          onclick = `executeBet('${table.table_id}', ${state.seatNo})`;
+        } else {
+          onclick = `togglePreselect('${table.table_id}', ${state.seatNo}, '${type}')`;
+        }
+        const bg = colorMap[type] || '#555';
+        const color = type === 'max' ? '#000' : '#fff';
+        return `<button style="background:${bg};color:${color};" onclick="${onclick}">${labelMap[type]}</button>`;
+      }).join('');
+    }
+
+    function showWaiting() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="table-container">
+          <div class="table-info">
+            <div class="street-display">WAITING</div>
+          </div>
+          <div style="padding: 40px; text-align: center; color: #888; font-size: 1.1em;">No players connected</div>
+        </div>`;
+      updateBottomBar(null, null);
+    }
+
+    function poll() {
+      fetch(API_BASE + '/table/latest')
+        .then(r => r.json())
+        .then(data => {
+          updateConnectionStatus('connected', 'Live');
+          if (data.ok && data.table) {
+            var cmp = Object.assign({}, data.table);
+            delete cmp.last_updated;
+            (cmp.seats || []).forEach(function(s) { delete s.last_seen; delete s.last_seen_ago; });
+            var j = JSON.stringify(cmp);
+            if (j !== lastTableJson) {
+              lastTableJson = j;
+              renderTable(data.table);
+            }
+          }
+        })
+        .catch(err => {
+          consecutiveErrors++;
+          updateConnectionStatus('disconnected', 'Errors: ' + consecutiveErrors);
+
+          const retryDelay = Math.min(backoffDelay, maxBackoff);
+          backoffDelay = Math.min(backoffDelay * 2, maxBackoff);
+
+          setTimeout(poll, retryDelay);
+        });
+    }
+
+    // Hand log functions
+    function updateHandLog() {
+      fetch(API_BASE + '/hands/recent?limit=20')
+        .then(r => r.json())
+        .then(data => {
+          if (data.ok && data.hands) {
+            const textarea = document.getElementById('hand-log');
+            const newContent = data.hands.join('\n');
+            if (textarea.value !== newContent) {
+              textarea.value = newContent;
+              textarea.scrollTop = textarea.scrollHeight;
+            }
+          }
+        })
+        .catch(err => console.error('Hand log fetch error:', err));
+    }
+
+    function clearHandLog() {
+      if (!confirm('Clear all hand history?')) return;
+
+      fetch(API_BASE + '/hands/clear-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          document.getElementById('hand-log').value = '';
+        }
+      })
+      .catch(err => console.error('Clear hand log error:', err));
+    }
+
+    // Deployment modal functions
+    function openDeployModal() {
+      document.getElementById('deployModal').style.display = 'block';
+      document.getElementById('deployStatus').style.display = 'none';
+    }
+
+    function closeDeployModal() {
+      document.getElementById('deployModal').style.display = 'none';
+      document.getElementById('deployForm').reset();
+      document.getElementById('deployStatus').style.display = 'none';
+    }
+
+    function toggleCustomAmount() {
+      const mode = document.getElementById('buy_in_mode').value;
+      const customGroup = document.getElementById('custom_amount_group');
+      const customInput = document.getElementById('buy_in_amount');
+
+      if (mode === 'CUSTOM') {
+        customGroup.style.display = 'block';
+        customInput.required = true;
+      } else {
+        customGroup.style.display = 'none';
+        customInput.required = false;
+      }
+    }
+
+    function showDeployStatus(message, type) {
+      const statusEl = document.getElementById('deployStatus');
+      statusEl.textContent = message;
+      statusEl.className = 'deploy-status ' + type;
+      statusEl.style.display = 'block';
+    }
+
+    // Bot selection functions
+    function filterBots() {
+      const platform = document.getElementById('platform').value;
+      const searchInput = document.getElementById('bot-search');
+      const query = searchInput.value.toLowerCase();
+      const suggestionsDiv = document.getElementById('bot-suggestions');
+
+      if (!platform) {
+        suggestionsDiv.innerHTML = '<div class="bot-suggestion-item disabled">Select platform first</div>';
+        suggestionsDiv.style.display = 'block';
+        return;
+      }
+
+      // Filter bots by platform and search query
+      const availableBots = BOTS.filter(bot =>
+        bot.platform === platform &&
+        !selectedBots.includes(bot.username) &&
+        bot.username.toLowerCase().includes(query)
+      );
+
+      if (availableBots.length === 0) {
+        suggestionsDiv.innerHTML = '<div class="bot-suggestion-item disabled">No bots found</div>';
+      } else {
+        suggestionsDiv.innerHTML = availableBots.map(bot =>
+          `<div class="bot-suggestion-item" onmousedown="addBot('${bot.username}')">${bot.username}</div>`
+        ).join('');
+      }
+
+      suggestionsDiv.style.display = 'block';
+    }
+
+    function showBotSuggestions() {
+      filterBots();
+    }
+
+    let hideBotTimeout;
+    function hideBotSuggestions() {
+      // Delay hiding to allow click events to fire
+      hideBotTimeout = setTimeout(() => {
+        document.getElementById('bot-suggestions').style.display = 'none';
+      }, 200);
+    }
+
+    function addBot(username) {
+      if (hideBotTimeout) clearTimeout(hideBotTimeout);
+
+      if (selectedBots.includes(username)) return;
+
+      selectedBots.push(username);
+      updateBotDisplay();
+
+      // Clear search input
+      const searchInput = document.getElementById('bot-search');
+      searchInput.value = '';
+      searchInput.focus();
+      filterBots();
+    }
+
+    function removeBot(username) {
+      const index = selectedBots.indexOf(username);
+      if (index > -1) {
+        selectedBots.splice(index, 1);
+        updateBotDisplay();
+      }
+    }
+
+    function selectAllBots() {
+      const platform = document.getElementById('platform').value;
+      if (!platform) {
+        alert('Please select a platform first');
+        return;
+      }
+
+      // Add all bots for this platform
+      BOTS.filter(bot => bot.platform === platform).forEach(bot => {
+        if (!selectedBots.includes(bot.username)) {
+          selectedBots.push(bot.username);
+        }
+      });
+
+      updateBotDisplay();
+    }
+
+    function clearAllBots() {
+      selectedBots = [];
+      updateBotDisplay();
+    }
+
+    function updateBotDisplay() {
+      const container = document.getElementById('selected-bots');
+      const countEl = document.getElementById('bot-count');
+
+      countEl.textContent = selectedBots.length;
+
+      if (selectedBots.length === 0) {
+        container.innerHTML = '<span class="no-bots-text">No bots selected</span>';
+      } else {
+        container.innerHTML = selectedBots.map(username =>
+          `<span class="bot-tag">
+            ${username}
+            <button type="button" class="bot-remove" onclick="removeBot('${username}')"
+                    title="Remove">×</button>
+          </span>`
+        ).join('');
+      }
+    }
+
+    function submitDeploy(event) {
+      event.preventDefault();
+
+      const form = document.getElementById('deployForm');
+      const deployBtn = document.getElementById('deployBtn');
+
+      // Validate bot selection
+      if (selectedBots.length === 0) {
+        showDeployStatus('✗ Please select at least one bot', 'error');
+        return;
+      }
+
+      const formData = {
+        platform: form.platform.value,
+        table_name: form.table_name.value,
+        buy_in_mode: form.buy_in_mode.value,
+        selected_bots: selectedBots,
+        bot_count: selectedBots.length,
+        auto_buyin_enabled: form.auto_buyin_enabled.checked,
+        first_action_policy: form.first_action_policy.checked ? 'CHECK_OR_CALL_ONCE' : null,
+        mode: 'SEATING_ONLY'
+      };
+
+      if (formData.buy_in_mode === 'CUSTOM') {
+        formData.buy_in_amount = parseFloat(form.buy_in_amount.value);
+      }
+
+      deployBtn.disabled = true;
+      deployBtn.textContent = 'DEPLOYING...';
+      showDeployStatus('Starting deployment...', 'loading');
+
+      fetch(API_BASE + '/bot/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          showDeployStatus(
+            `✓ Deployment started! ID: ${data.deployment_id}\n` +
+            `Deploying ${data.accepted_bots} bot(s) in ${data.mode} mode.\n` +
+            `Status: ${data.status}`,
+            'success'
+          );
+
+          setTimeout(() => {
+            closeDeployModal();
+          }, 3000);
+        } else {
+          showDeployStatus('✗ Deployment failed: ' + (data.error || 'Unknown error'), 'error');
+        }
+      })
+      .catch(err => {
+        console.error('Deploy error:', err);
+        showDeployStatus('✗ Network error: ' + err.message, 'error');
+      })
+      .finally(() => {
+        deployBtn.disabled = false;
+        deployBtn.textContent = 'START DEPLOYMENT';
+      });
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('deployModal');
+      if (event.target === modal) {
+        closeDeployModal();
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ██  KH (KEEP HAND) SYSTEM
+    // ═══════════════════════════════════════════════════════════════════════
+
+    let khState = {};         // key: seatNo → true (keep) / false (fold)
+    let khExecuted = false;   // true after executeKH pressed for this hand
+    let khLastHandKey = null; // track hand changes to auto-reset
+
+    function toggleKH(seatNo, checkbox) {
+      khState[seatNo] = checkbox.checked;
+      const wrapper = document.getElementById(`kh-wrap-${seatNo}`);
+      if (wrapper) {
+        wrapper.classList.toggle('kh-active', checkbox.checked);
+      }
+      updateKHStatus();
+    }
+
+    function updateKHStatus() {
+      const statusEl = document.getElementById('kh-status');
+      const btn = document.getElementById('btn-execute-kh');
+      if (!statusEl || !btn) return;
+
+      if (khExecuted) {
+        statusEl.textContent = 'Executed — awaiting new hand';
+        btn.classList.add('executed');
+        btn.textContent = 'DONE';
+        return;
+      }
+
+      const kept = Object.values(khState).filter(v => v).length;
+      const total = Object.keys(khState).length;
+      const folding = total - kept;
+
+      if (total === 0) {
+        statusEl.textContent = 'No players connected';
+      } else {
+        statusEl.textContent = `${kept} keep, ${folding} will auto C/F`;
+      }
+
+      btn.classList.remove('executed');
+      btn.textContent = 'EXECUTE KH';
+    }
+
+    function executeKH() {
+      if (khExecuted) return;
+      if (!currentTableData) return;
+
+      const tableId = currentTableData.table_id;
+      let folded = 0;
+      let kept = 0;
+
+      // For each connected hero seat
+      const heroSeats = currentTableData.seats.filter(s => s.is_self_player || s.is_hero);
+
+      heroSeats.forEach(seat => {
+        const seatNo = seat.seat_no;
+        if (khState[seatNo]) {
+          // KH=ON — keep, await manual input
+          kept++;
+        } else {
+          // KH=OFF — auto check/fold
+          sendCommand(tableId, seatNo, 'check_fold');
+          folded++;
+        }
+      });
+
+      khExecuted = true;
+      updateKHStatus();
+
+      // Re-render to apply visual states
+      if (currentTableData) renderTable(currentTableData);
+
+      console.log(`[KH] Executed: ${kept} kept, ${folded} auto C/F`);
+    }
+
+    function resetKH() {
+      khState = {};
+      khExecuted = false;
+      // Also clear all cashout preselections on new hand
+      Object.keys(buttonStates).forEach(key => {
+        if (key.endsWith(':cashout')) {
+          buttonStates[key].preselected = false;
+        }
+      });
+      updateKHStatus();
+    }
+
+    function checkKHHandReset(table) {
+      // Detect hand change and reset KH
+      const simpleKey = `${table.table_id}:${table.dealer_seat}`;
+
+      if (khLastHandKey !== null && khLastHandKey !== simpleKey) {
+        resetKH();
+      }
+      khLastHandKey = simpleKey;
+    }
+
+    // Start polling
+    poll();
+    updateHandLog();
+    setInterval(poll, 2000);
+    setInterval(updateHandLog, 2000);
+  </script>
+</body>
+</html>

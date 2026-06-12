@@ -1,0 +1,41 @@
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:5002
+[HPM] Proxy created: /  -> http://127.0.0.1:1080
+[HPM] Proxy created: /  -> http://127.0.0.1:1080
+
+  🎯 W4P Remote Control — Local Clone
+  ─────────────────────────────────────
+  Local URL:    http://localhost:4000
+  Remote route: http://localhost:4000/remote
+  API proxy:    /api/* → http://127.0.0.1:1080/api/*
+  Static files: /home/wa/REMOTEREMOTE/source
+  CORS:         Enabled (PNA support for extension)
+
+  Press Ctrl+C to stop.
+
+[HPM] Error occurred while proxying request 192.168.0.106:4000/api/health to http://127.0.0.1:1080/ [ECONNREFUSED] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[HPM] Error occurred while proxying request 192.168.0.106:4000/api/snapshot to http://127.0.0.1:1080/ [ECONNREFUSED] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[HPM] Error occurred while proxying request 192.168.0.106:4000/api/table/latest to http://127.0.0.1:1080/ [ECONNREFUSED] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[HPM] Error occurred while proxying request 192.168.0.106:4000/api/snapshot to http://127.0.0.1:1080/ [ECONNREFUSED] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[HPM] Error occurred while proxying request 192.168.0.106:4000/api/health to http://127.0.0.1:1080/ [ECONNREFUSED] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+(node:1272200) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [Server]. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+[HPM] server close signal received: closing proxy server
+[HPM] server close signal received: closing proxy server
+[HPM] server close signal received: closing proxy server
+[HPM] server close signal received: closing proxy server
+[HPM] server close signal received: closing proxy server
+[HPM] server close signal received: closing proxy server
+[HPM] server close signal received: closing proxy server
+[HPM] server close signal received: closing proxy server
+[HPM] server close signal received: closing proxy server
+[HPM] server close signal received: closing proxy server

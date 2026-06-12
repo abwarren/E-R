@@ -1,0 +1,27 @@
+DOM_SURVEY
+{
+"href": "https://wcompetition.pokerbet.co.za/?integrationMode=1&leagueCenterCompetitionId=2969&outrightCompetitionId=20896",
+"title": "VBET Test",
+"readyState": "interactive",
+"elemCount": 30,
+"inIframe": true,
+"bodyTextSample": "",
+"allTags": {
+"html": 1,
+"head": 1,
+"meta": 16,
+"script": 4,
+"link": 4,
+"title": 1,
+"body": 1,
+"noscript": 1,
+"div": 1
+},
+"playerRelatedEls": [
+"tag": "title",
+"cls": "",
+"text": "VBET Test",
+"id": ""
+}
+],
+"customElements": []

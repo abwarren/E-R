@@ -1,0 +1,18 @@
+[Unit]
+Description=PLO W4P Remote Control Service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/plo-equity/backend
+EnvironmentFile=/opt/plo-equity/.env
+ExecStart=/opt/plo-equity/venv/bin/gunicorn -w 1 --timeout 60 --bind 0.0.0.0:5003 app:app
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

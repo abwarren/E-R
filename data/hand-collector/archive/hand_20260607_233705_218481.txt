@@ -1,0 +1,21 @@
+DOM_SURVEY
+{
+"href": "http://192.168.0.106:4000/engine",
+"title": "PLO Equity Engine — localhost:4002/engine",
+"readyState": "interactive",
+"elemCount": 13,
+"inIframe": false,
+"bodyTextSample": "",
+"allTags": {
+"html": 1,
+"head": 1,
+"meta": 2,
+"title": 1,
+"link": 4,
+"script": 2,
+"body": 1,
+"div": 1
+},
+"playerRelatedEls": [],
+"customElements": []
+}

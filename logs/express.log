@@ -1,0 +1,12 @@
+[HPM] Proxy created: /  -> https://potlimitomaha.xyz
+
+  🎯 W4P Remote Control — Local Clone
+  ─────────────────────────────────────
+  Local URL:    http://localhost:4000
+  Remote route: http://localhost:4000/remote
+  API proxy:    /api/* → https://potlimitomaha.xyz/api/*
+  Static files: /home/wa/REMOTEREMOTE/source
+
+  Press Ctrl+C to stop.
+
+[HPM] server close signal received: closing proxy server

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PLO Equity Engine — haaats.xyz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d1117; color: #c9d1d9; font-family: 'Chakra Petch', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+    .container { max-width: 900px; width: 100%; }
+    h1 { font-size: 1.8em; font-weight: 700; color: #58a6ff; text-align: center; margin: 20px 0 10px; letter-spacing: 1px; }
+    .subtitle { text-align: center; color: #8b949e; font-size: 0.9em; margin-bottom: 24px; font-family: 'JetBrains Mono', monospace; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+    .card h2 { font-size: 1.1em; color: #58a6ff; margin-bottom: 12px; }
+    label { display: block; font-size: 0.85em; color: #8b949e; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+    textarea { width: 100%; min-height: 180px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; resize: vertical; }
+    textarea:focus { outline: none; border-color: #58a6ff; }
+    .input-hint { font-size: 0.75em; color: #8b949e; margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+    .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
+    select { background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; font-family: 'Chakra Petch', sans-serif; font-size: 0.9em; cursor: pointer; }
+    select:focus { outline: none; border-color: #58a6ff; }
+    .btn { background: #238636; color: #ffffff; border: none; border-radius: 6px; padding: 10px 28px; font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1em; cursor: pointer; transition: background 0.15s; letter-spacing: 0.5px; }
+    .btn:hover { background: #2ea043; }
+    .btn:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
+    .btn-secondary { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 8px 16px; font-family: 'Chakra Petch', sans-serif; font-size: 0.85em; cursor: pointer; transition: background 0.15s; }
+    .btn-secondary:hover { background: #30363d; }
+    .status { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; padding: 8px 12px; border-radius: 6px; margin: 8px 0; }
+    .status.info { background: #0d1117; border: 1px solid #30363d; color: #8b949e; }
+    .status.running { background: #0d1117; border: 1px solid #d29922; color: #d29922; }
+    .status.done { background: #0d1117; border: 1px solid #3fb950; color: #3fb950; }
+    .status.error { background: #0d1117; border: 1px solid #f85149; color: #f85149; }
+    .results { margin-top: 12px; }
+    .matchup { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #21262d; font-family: 'JetBrains Mono', monospace; font-size: 0.82em; }
+    .matchup:last-child { border-bottom: none; }
+    .matchup .hand { color: #58a6ff; }
+    .matchup .equity { color: #7ee787; font-weight: 700; }
+    .matchup .vs { color: #484f58; margin: 0 8px; }
+    .matchup .underdog .equity { color: #f0883e; }
+    .summary { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; color: #8b949e; padding: 8px 0; }
+    .error-detail { font-family: 'JetBrains Mono', monospace; font-size: 0.8em; color: #f85149; white-space: pre-wrap; margin-top: 8px; padding: 8px; background: #0d1117; border: 1px solid #30363d; border-radius: 4px; }
+    a { color: #58a6ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .nav { text-align: center; margin-top: 24px; font-size: 0.85em; }
+    .nav a { margin: 0 12px; }
+    .progress-bar { width: 100%; height: 4px; background: #21262d; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #58a6ff; border-radius: 2px; transition: width 0.5s; width: 0%; }
+    pre { font-family: 'JetBrains Mono', monospace; font-size: 0.8em; color: #8b949e; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>⚡ PLO EQUITY ENGINE</h1>
+  <div class="subtitle">haaats.xyz — Monte Carlo Equity Calculator</div>
+
+  <div class="card">
+    <h2>Hands &amp; Board</h2>
+    <label for="hands">Enter hands (one per line, last line = board, leave blank for random board):</label>
+    <textarea id="hands" placeholder="AhKhQhJh&#10;AdKdQdJd&#10;AsKsQsJs&#10;AcKcQcJc&#10;2h3h4h5h&#10;2d3d4d5d&#10;&#10;Leave last line empty for random board">AhKhQhJh
+AdKdQdJd
+AsKsQsJs
+AcKcQcJc
+2h3h4h5h
+2d3d4d5d</textarea>
+    <div class="input-hint">One hand per line. Last line = board (leave blank for random). Supports PLO4, PLO5, PLO6.</div>
+  </div>
+
+  <div class="card">
+    <div class="controls">
+      <div>
+        <label for="variant">Variant</label>
+        <select id="variant">
+          <option value="plo4-6max" selected>PLO4 6-max</option>
+          <option value="plo5-6max">PLO5 6-max</option>
+          <option value="plo6-6max">PLO6 6-max</option>
+          <option value="plo4-9max">PLO4 9-max</option>
+          <option value="plo5-9max">PLO5 9-max</option>
+          <option value="plo6-9max">PLO6 9-max</option>
+          <option value="plo-hupot">PLO HU (Heads-Up)</option>
+        </select>
+      </div>
+      <div>
+        <label for="samples">Samples</label>
+        <select id="samples">
+          <option value="500">500</option>
+          <option value="1000">1,000</option>
+          <option value="2000" selected>2,000</option>
+          <option value="5000">5,000</option>
+          <option value="10000">10,000</option>
+        </select>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:flex-end;">
+        <button class="btn-secondary" id="load-example-btn" onclick="loadExample()">Load Example</button>
+        <button class="btn" id="run-btn" onclick="runEngine()">⚡ RUN ENGINE</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="status-area"></div>
+  <div id="results-area"></div>
+
+  <div class="card" style="margin-top:16px;">
+    <h2>API Access</h2>
+    <pre><code>curl -X POST http://localhost:4002/api/run \
+  -H "Content-Type: application/json" \
+  -d '{
+    "variant": "plo4-6max",
+    "hands": ["AhKhQhJh","AdKdQdJd"],
+    "board": "",
+    "samples": 2000
+  }'
+
+# Poll results:
+curl http://localhost:4002/api/results/&lt;run_id&gt;</code></pre>
+  </div>
+
+  <div class="nav">
+    <a href="/remote/">Remote Table</a>
+    <a href="/api/health">Health Check</a>
+  </div>
+</div>
+
+<script>
+let polling = false;
+let pollTimer = null;
+
+function getEl(id) { return document.getElementById(id); }
+
+function loadExample() {
+  getEl('hands').value = 'AhKhQhJh\nAdKdQdJd\nAsKsQsJs\nAcKcQcJc\n2h3h4h5h\n2d3d4d5d';
+  getEl('variant').value = 'plo4-6max';
+  getEl('samples').value = '2000';
+}
+
+function status(msg, type) {
+  var area = getEl('status-area');
+  area.innerHTML = '<div class="status ' + type + '">' + msg + '</div>';
+}
+
+function showProgress(visible) {
+  var area = getEl('status-area');
+  var existing = area.querySelector('.progress-bar');
+  if (visible) {
+    if (!existing) {
+      var pb = document.createElement('div');
+      pb.className = 'progress-bar';
+      pb.innerHTML = '<div class="progress-fill" id="progress-fill"></div>';
+      area.appendChild(pb);
+    }
+  } else {
+    if (existing) existing.remove();
+  }
+}
+
+function setProgress(pct) {
+  var fill = document.getElementById('progress-fill');
+  if (fill) fill.style.width = pct + '%';
+}
+
+function runEngine() {
+  if (polling) return;
+  var btn = getEl('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ RUNNING...';
+  polling = true;
+  getEl('results-area').innerHTML = '';
+  status('Submitted job...', 'info');
+  showProgress(true);
+  setProgress(10);
+
+  var handsText = getEl('hands').value;
+  var variant = getEl('variant').value;
+  var samples = parseInt(getEl('samples').value);
+
+  var lines = handsText.split('\n').filter(function(l) { return l.trim() !== ''; });
+  var board = lines.length > 0 ? lines[lines.length - 1] : '';
+  var hands = lines;
+
+  fetch('/api/run', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      variant: variant,
+      hands: hands,
+      board: board,
+      samples: samples
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    setProgress(30);
+    if (!data.ok) {
+      status('Error: ' + (data.error || JSON.stringify(data)), 'error');
+      btn.disabled = false; btn.textContent = '⚡ RUN ENGINE'; polling = false; showProgress(false);
+      return;
+    }
+    var runId = data.run_id;
+    status('Queued: ' + runId, 'info');
+    pollResults(runId);
+  })
+  .catch(function(err) {
+    status('Network error: ' + err.message, 'error');
+    btn.disabled = false; btn.textContent = '⚡ RUN ENGINE'; polling = false; showProgress(false);
+  });
+}
+
+function pollResults(runId) {
+  var maxAttempts = 60;
+  var attempt = 0;
+  var startTime = Date.now();
+
+  function poll() {
+    attempt++;
+    var elapsed = Math.round((Date.now() - startTime) / 1000);
+    setProgress(Math.min(30 + (attempt / maxAttempts) * 60, 90));
+    status('⏳ Computing... (' + elapsed + 's)', 'running');
+
+    fetch('/api/results/' + runId, { headers: { 'Accept': 'application/json' } })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'done') {
+        displayResults(data);
+        status('✅ Done in ' + elapsed + 's', 'done');
+        setProgress(100);
+        setTimeout(function() { showProgress(false); }, 1000);
+        getEl('run-btn').disabled = false;
+        getEl('run-btn').textContent = '⚡ RUN ENGINE';
+        polling = false;
+      } else if (data.status === 'error') {
+        status('❌ Error: ' + (data.error || 'unknown'), 'error');
+        getEl('run-btn').disabled = false;
+        getEl('run-btn').textContent = '⚡ RUN ENGINE';
+        polling = false;
+        showProgress(false);
+      } else if (attempt < maxAttempts) {
+        pollTimer = setTimeout(poll, 2000);
+      } else {
+        status('⏱ Timeout after ' + elapsed + 's', 'error');
+        getEl('run-btn').disabled = false;
+        getEl('run-btn').textContent = '⚡ RUN ENGINE';
+        polling = false;
+        showProgress(false);
+      }
+    })
+    .catch(function(err) {
+      if (attempt < maxAttempts) {
+        pollTimer = setTimeout(poll, 2000);
+      } else {
+        status('Poll error: ' + err.message, 'error');
+        getEl('run-btn').disabled = false;
+        getEl('run-btn').textContent = '⚡ RUN ENGINE';
+        polling = false;
+        showProgress(false);
+      }
+    });
+  }
+  pollTimer = setTimeout(poll, 1000);
+}
+
+function displayResults(data) {
+  var area = getEl('results-area');
+  var d = data.data;
+  if (!d || !d.matchups) {
+    area.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    return;
+  }
+  var html = '<div class="card results">';
+  html += '<div class="summary">' + d.matchups.length + ' matchups &middot; ' + d.cores + ' core(s)</div>';
+  d.matchups.forEach(function(m) {
+    var favClass = m.favourite_hand.indexOf('2') === 0 ? 'underdog' : '';
+    html += '<div class="matchup">';
+    html += '<span><span class="hand">' + m.favourite_hand + '</span> <span class="vs">vs</span> <span class="hand">' + m.underdog_hand + '</span></span>';
+    html += '<span><span class="equity">' + m.fav_real + '%</span> <span class="vs">/</span> <span class="equity ' + favClass + '">' + m.und_real + '%</span></span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  area.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  status('Ready — enter hands and click RUN ENGINE', 'info');
+});
+</script>
+</body>
+</html>

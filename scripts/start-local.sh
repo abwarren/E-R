@@ -1,0 +1,62 @@
+#!/bin/bash
+# W4P Remote Control - Local Startup Script
+# Starts both the backend (Flask on 1080) and frontend (Express on 4000)
+
+APP_ROOT="/home/wa/REMOTEREMOTE"
+LOG_DIR="$APP_ROOT/logs"
+BACKEND_DIR="$APP_ROOT/backend"
+SCRIPTS_DIR="$APP_ROOT/scripts"
+
+mkdir -p "$LOG_DIR"
+
+# Kill stale processes
+echo "Stopping any stale processes..."
+pkill -f "python app.py" 2>/dev/null || true
+pkill -f "node server.js" 2>/dev/null || true
+sleep 1
+
+# Start backend (Flask on port 1080)
+echo "Starting backend (Flask) on 127.0.0.1:1080..."
+cd "$BACKEND_DIR"
+export TRACKER_API_KEY=03622c896cfbeacdfc537e9434f9ddc5
+export ENGINE_URL=http://127.0.0.1:5002
+source venv/bin/activate
+python app.py > "$LOG_DIR/backend.log" 2>&1 &
+BACKEND_PID=$!
+echo "  Backend PID: $BACKEND_PID"
+sleep 2
+
+# Start frontend (Express on port 4000)
+echo "Starting frontend (Express) on 0.0.0.0:4000..."
+cd "$SCRIPTS_DIR"
+node server.js > "$LOG_DIR/frontend.log" 2>&1 &
+FRONTEND_PID=$!
+echo "  Frontend PID: $FRONTEND_PID"
+sleep 2
+
+echo ""
+echo "==========================================="
+echo "  W4P Remote Control - Local Stack"
+echo "==========================================="
+echo "  Frontend:    http://localhost:4000"
+echo "  Backend:     http://127.0.0.1:1080"
+echo "  API:         http://localhost:4000/api/health"
+echo "  Login:       admin / PokerPass12345"
+echo "==========================================="
+echo ""
+echo "Log files:"
+echo "  Backend:  $LOG_DIR/backend.log"
+echo "  Frontend: $LOG_DIR/frontend.log"
+
+# Health check
+sleep 1
+if curl -sf http://127.0.0.1:1080/api/health > /dev/null 2>&1; then
+    echo "✓ Backend health check PASSED"
+else
+    echo "✗ Backend health check FAILED - check $LOG_DIR/backend.log"
+fi
+if curl -sf http://localhost:4000/api/health > /dev/null 2>&1; then
+    echo "✓ Frontend→API health check PASSED"
+else
+    echo "✗ Frontend→API health check FAILED - check $LOG_DIR/frontend.log"
+fi

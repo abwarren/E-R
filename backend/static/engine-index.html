@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PLO Equity Engine — localhost:4002/engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script type="module" crossorigin src="/engine/assets/index-Ddit1nUd.js"></script>
+  <link rel="stylesheet" crossorigin href="/engine/assets/index-DgTzSuxS.css">
+</head>
+<body>
+  <div id="root"></div>
+  <script defer src="/engine/assets/engine_flow_controls.js?v=1779696136"></script>
+  <script>
+  // Manual RUN ENGINE validation guard —
+  // prevents /api/run call when textarea has fewer than 3 non-empty lines.
+  (function(){
+    'use strict';
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('button');
+      if (!btn) return;
+      if (!/run\s*engine/i.test(btn.innerText || btn.textContent || '')) return;
+
+      var ta = document.querySelector('textarea[rows="14"]');
+      if (!ta) return;
+
+      var lines = (ta.value || '').split('\n').map(function(l){return l.trim();}).filter(Boolean);
+      if (lines.length >= 3) return; // valid — let it through
+
+      // Block: fewer than 3 non-empty lines
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      e.preventDefault();
+
+      // Show error via existing React status area or body overlay
+      var statusEl = document.querySelector('[class*="status"]') || document.querySelector('[class*="error"]');
+      if (statusEl) {
+        statusEl.textContent = 'Manual run needs at least 2 hands plus a board line.';
+        statusEl.style.color = '#f85149';
+        statusEl.style.fontWeight = '700';
+        setTimeout(function(){ statusEl.textContent = ''; }, 4000);
+      } else {
+        // Fallback: brief overlay
+        var ov = document.createElement('div');
+        ov.textContent = 'Manual run needs at least 2 hands plus a board line.';
+        ov.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#da3633;color:#fff;padding:12px 24px;border-radius:8px;font-family:JetBrains Mono,monospace;font-size:13px;z-index:99999;font-weight:700;';
+        document.body.appendChild(ov);
+        setTimeout(function(){ ov.remove(); }, 3500);
+      }
+    }, true);
+  })();
+  </script>
+  <script>
+  // equity_result → colorful matchup cards — watches log pane for SSE events
+  // and renders styled results above the raw log.  No React bundle changes.
+  (function(){
+    'use strict';
+
+    var STYLES = {
+      card: 'background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:12px',
+      summary: 'font-family:JetBrains Mono,monospace;font-size:0.85em;color:#8b949e;margin-bottom:10px',
+      matchup: 'display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #21262d;font-family:JetBrains Mono,monospace;font-size:0.82em',
+      hand: 'color:#58a6ff',
+      vs: 'color:#484f58;margin:0 8px',
+      equity: 'color:#7ee787;font-weight:700',
+      equity2: 'color:#f0883e;font-weight:700',
+      meta: 'color:#8b949e;font-size:0.75em;margin-top:6px'
+    };
+
+    function ensureContainer() {
+      var c = document.getElementById('eq-color-results');
+      if (c) return c;
+      c = document.createElement('div');
+      c.id = 'eq-color-results';
+      // Insert before the log box
+      var lb = document.querySelector('.log-box');
+      if (lb && lb.parentNode) {
+        lb.parentNode.insertBefore(c, lb);
+      } else {
+        var rt = document.getElementById('root');
+        if (rt) rt.appendChild(c);
+      }
+      return c;
+    }
+
+    function render(results, meta) {
+      var m = (results && results.matchups) ? results.matchups : [];
+      if (!m.length) { var c0=document.getElementById('eq-color-results'); if(c0)c0.innerHTML=''; return; }
+
+      var h = '';
+      h += '<div style="' + STYLES.card + '">';
+      // Summary row
+      h += '<div style="' + STYLES.summary + '">';
+      h += '<b>' + m.length + '</b> matchup' + (m.length !== 1 ? 's' : '');
+      if (results.street) h += ' &middot; ' + results.street;
+      if (results.runtime) h += ' &middot; ' + results.runtime;
+      if (meta && meta.final_variant) h += ' &middot; <span style="color:#58a6ff;font-weight:600;">' + meta.final_variant + '</span>';
+      if (meta && meta.script_name) h += ' &middot; ' + meta.script_name;
+      h += '</div>';
+
+      // Matchup rows
+      for (var i = 0; i < m.length; i++) {
+        var p = m[i];
+        h += '<div style="' + STYLES.matchup + '">';
+        h += '<span><span style="' + STYLES.hand + '">' + esc(p.favourite_hand) + '</span>';
+        h += '<span style="' + STYLES.vs + '">vs</span>';
+        h += '<span style="' + STYLES.hand + '">' + esc(p.underdog_hand) + '</span></span>';
+        h += '<span>';
+        h += '<span style="' + STYLES.equity + '">' + fmt(p.fav_real) + '%</span>';
+        h += '<span style="' + STYLES.vs + '">/</span>';
+        h += '<span style="' + STYLES.equity2 + '">' + fmt(p.und_real) + '%</span>';
+        h += '</span></div>';
+      }
+
+      // Meta line
+      if (meta) {
+        h += '<div style="' + STYLES.meta + '">';
+        h += 'requested: ' + esc(meta.requested_variant || '—');
+        if (meta.variant_source) h += ' · source: ' + esc(meta.variant_source);
+        if (meta.hand_card_count) h += ' · ' + meta.hand_card_count + ' cards';
+        h += '</div>';
+      }
+
+      h += '</div>';
+      ensureContainer().innerHTML = h;
+    }
+
+    function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function fmt(v) { return typeof v === 'number' ? v.toFixed(2) : String(v || '0'); }
+
+    function tryParse(text) {
+      if (!text || typeof text !== 'string') return null;
+      var t = text.trim();
+      // Only attempt JSON lines that start with { and contain equity_result
+      if (t.charAt(0) !== '{' || t.indexOf('"type":"equity_result"') === -1) return null;
+      try { return JSON.parse(t); } catch(e) { return null; }
+    }
+
+    function watch() {
+      var lb = document.querySelector('.log-box');
+      if (!lb) { setTimeout(watch, 400); return; }
+
+      // Process any existing text nodes
+      lb.querySelectorAll('span').forEach(function(span) {
+        var p = tryParse(span.textContent);
+        if (p && p.type === 'equity_result') render(p.results, p.meta || p._meta);
+      });
+
+      // Watch for new nodes
+      var obs = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mut) {
+          mut.addedNodes.forEach(function(node) {
+            var p = tryParse(node.textContent || '');
+            if (p && p.type === 'equity_result') render(p.results, p.meta || p._meta);
+          });
+        });
+      });
+      obs.observe(lb, { childList: true, subtree: true });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() { setTimeout(watch, 1200); });
+    } else {
+      setTimeout(watch, 1200);
+    }
+  })();
+  </script>
+</body>
+</html>

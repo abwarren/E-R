@@ -1,0 +1,18 @@
+DOM_SURVEY
+{
+"href": "http://192.168.0.106:4000/engine/assets/engine_flow_controls.js",
+"title": "",
+"readyState": "interactive",
+"elemCount": 5,
+"inIframe": false,
+"bodyTextSample": "(() => {\n  'use strict';\n\n  // ══════════════════════════════════════════════════════════════════════════\n  // CONFIGURATION\n  // ══════════════════════════════════════════════════════════════════════════\n\n  const VERSION = '2.0.0-variant-aware';\n  const STORAGE_KEY = \"engineFlowToggles\";\n\n  const defaultState = {\n    autoFill: true,\n    autoRunFlop: true,\n    manualTurnOnly: true,\n    clearRiver: true\n  };\n\n  // Variant → cards per hand\n  const VARIANT_CARDS = {\n    'plo4': 4, 'plo5': 5, 'plo6'",
+"allTags": {
+"html": 1,
+"head": 1,
+"meta": 1,
+"body": 1,
+"pre": 1
+},
+"playerRelatedEls": [],
+"customElements": []
+}

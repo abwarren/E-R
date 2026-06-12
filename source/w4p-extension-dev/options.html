@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>W4P Extension Options</title>
+<style>
+  body { font-family: sans-serif; padding: 16px; min-width: 300px; background: #0d1117; color: #c9d1d9; }
+  h1 { font-size: 16px; margin: 0 0 12px; color: #58a6ff; }
+  label { display: block; margin: 8px 0 4px; font-size: 12px; color: #8b949e; }
+  select, input { width: 100%; padding: 8px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; margin-bottom: 8px; }
+  .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .btn-primary { background: #238636; color: #fff; }
+  .btn-primary:hover { background: #2ea043; }
+  .status { font-size: 12px; margin-top: 8px; color: #8b949e; }
+  .config-presets { display: flex; gap: 8px; margin-bottom: 8px; }
+  .preset-btn { flex: 1; padding: 6px; border: 1px solid #30363d; border-radius: 4px; background: #161b22; color: #c9d1d9; cursor: pointer; font-size: 11px; }
+  .preset-btn:hover { border-color: #58a6ff; }
+  .preset-btn.active { border-color: #238636; background: rgba(35,134,54,0.2); }
+</style>
+</head>
+<body>
+<h1>⚙ W4P Extension Config</h1>
+
+<div class="config-presets">
+  <button class="preset-btn" data-mode="dev">Local (127.0.0.1:4000)</button>
+  <button class="preset-btn" data-mode="custom">Custom</button>
+</div>
+<p style="font-size:11px;color:#555;margin:-4px 0 8px;">Local only — production endpoints removed.</p>
+
+<label for="api-base">API Base URL</label>
+<input type="text" id="api-base" placeholder="http://127.0.0.1:4000/api">
+
+<label for="site-base">Site Base URL</label>
+<input type="text" id="site-base" placeholder="http://127.0.0.1:4000">
+
+<button class="btn btn-primary" id="save-btn">Save</button>
+<div class="status" id="status"></div>
+
+<script>
+const PRESETS = {
+  dev:  { apiBase: 'http://127.0.0.1:4000/api',  siteBase: 'http://127.0.0.1:4000' },
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  chrome.storage.sync.get(['w4p_api_base', 'w4p_site_base'], function(result) {
+    document.getElementById('api-base').value = result.w4p_api_base || PRESETS.dev.apiBase;
+    document.getElementById('site-base').value = result.w4p_site_base || PRESETS.dev.siteBase;
+    highlightPreset();
+  });
+});
+
+document.querySelectorAll('.preset-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var mode = this.dataset.mode;
+    if (mode === 'custom') return;
+    var preset = PRESETS[mode];
+    if (preset) {
+      document.getElementById('api-base').value = preset.apiBase;
+      document.getElementById('site-base').value = preset.siteBase;
+      highlightPreset();
+    }
+  });
+});
+
+function highlightPreset() {
+  var apiBase = document.getElementById('api-base').value;
+  var siteBase = document.getElementById('site-base').value;
+  document.querySelectorAll('.preset-btn').forEach(function(b) {
+    var mode = b.dataset.mode;
+    if (mode === 'custom') { b.classList.toggle('active', false); return; }
+    var p = PRESETS[mode];
+    b.classList.toggle('active', p && p.apiBase === apiBase && p.siteBase === siteBase);
+  });
+}
+
+document.getElementById('api-base').addEventListener('input', highlightPreset);
+document.getElementById('site-base').addEventListener('input', highlightPreset);
+
+document.getElementById('save-btn').addEventListener('click', function() {
+  var apiBase = document.getElementById('api-base').value.trim();
+  var siteBase = document.getElementById('site-base').value.trim();
+
+  if (!apiBase) { setStatus('API Base URL is required', 'err'); return; }
+
+  chrome.storage.sync.set({ w4p_api_base: apiBase, w4p_site_base: siteBase }, function() {
+    // Notify background to update live
+    chrome.runtime.sendMessage({
+      type: 'W4P_SET_CONFIG',
+      apiBase: apiBase,
+      siteBase: siteBase
+    }, function() {
+      setStatus('✓ Saved! API_BASE=' + apiBase, 'ok');
+    });
+  });
+});
+
+function setStatus(msg, type) {
+  var el = document.getElementById('status');
+  el.textContent = msg;
+  el.style.color = type === 'err' ? '#f44336' : '#4caf50';
+  setTimeout(function() { el.textContent = ''; }, 3000);
+}
+</script>
+</body>
+</html>

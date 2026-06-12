@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PLO Equity Engine — haaats.xyz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script type="module" crossorigin src="/assets/index-Cq0zqSC6.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DgTzSuxS.css">
+</head>
+<body>
+  <div id="root"></div>
+
+
+<script>
+(function(){
+  const MARKER = "W4P_ENGINE_LATEST_TABLE_LOADER";
+
+  function cards(v){
+    if (!v) return [];
+    if (Array.isArray(v)) return v.map(String).map(x => x.trim()).filter(Boolean);
+    if (typeof v === "string") return v.replace(/,/g," ").split(/\s+/).map(x => x.trim()).filter(Boolean);
+    return [];
+  }
+
+  function boardFrom(data){
+    const b = data && data.board;
+    if (!b) return [];
+    if (Array.isArray(b) || typeof b === "string") return cards(b);
+    if (typeof b === "object") {
+      return [
+        ...cards(b.flop),
+        ...cards(b.turn),
+        ...cards(b.river)
+      ];
+    }
+    return [];
+  }
+
+  function playersFrom(data){
+    const seats = Array.isArray(data && data.seats) ? data.seats : [];
+    return seats.map(s => {
+      const hand = cards(s.hole_cards || s.holeCards || s.cards || s.hand);
+      return {
+        name: s.player_name || s.name || s.player || ("Seat " + (s.seat || s.seat_number || "?")),
+        hand
+      };
+    }).filter(p => p.hand.length >= 2);
+  }
+
+  function findInput(){
+    return document.querySelector("textarea");
+  }
+
+  function setInput(el, text){
+    if (!el) throw new Error("Engine textarea not found");
+    el.value = text;
+    el.dispatchEvent(new Event("input", {bubbles:true}));
+    el.dispatchEvent(new Event("change", {bubbles:true}));
+  }
+
+  async function loadLatestTable(){
+    const res = await fetch("/api/table/latest", {cache:"no-store"});
+    if (!res.ok) throw new Error("/api/table/latest HTTP " + res.status);
+
+    const data = await res.json();
+    const players = playersFrom(data);
+    const board = boardFrom(data);
+
+    const lines = [];
+
+    players.forEach(p => lines.push(p.hand.join("")));
+
+    if (board.length) lines.push(board.join(""));
+
+    const text = lines.join("\n");
+    setInput(findInput(), text);
+
+    console.log("[ENGINE][LATEST_TABLE_LOADED]", {players: players.length, board, text});
+  }
+
+  function install(){
+    if (document.getElementById("w4p-load-latest-table")) return;
+
+    const btn = document.createElement("button");
+    btn.id = "w4p-load-latest-table";
+    btn.textContent = "Load latest table";
+    btn.type = "button";
+    btn.style.cssText = "position:fixed;right:18px;bottom:18px;z-index:999999;padding:12px 16px;border-radius:10px;border:1px solid #444;background:#111;color:#fff;font-size:14px;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.35);";
+
+    btn.onclick = async function(){
+      btn.textContent = "Loading...";
+      try {
+        await loadLatestTable();
+      } catch(e) {
+        console.error("[ENGINE][LATEST_TABLE_ERROR]", e);
+        alert("Load latest table failed: " + e.message);
+      } finally {
+        btn.textContent = "Load latest table";
+      }
+    };
+
+    document.body.appendChild(btn);
+    window.w4pLoadLatestTable = loadLatestTable;
+    console.log("[ENGINE] W4P latest table loader installed");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", install);
+  } else {
+    install();
+  }
+})();
+</script>
+
+</body>
+</html>

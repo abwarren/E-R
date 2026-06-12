@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W4P Remote Control</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0d1117;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* -- Header -- */
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 20px;
+    background: linear-gradient(180deg, #161b22, #0d1117);
+    border-bottom: 1px solid #30363d;
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  header h1 { font-size: 15px; letter-spacing: 2px; color: #58a6ff; font-weight: 700; }
+  .hdr-right { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #8b949e; }
+  .conn-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    display: inline-block; vertical-align: middle;
+    background: #555; transition: background 0.3s;
+  }
+  .conn-dot.ok  { background: #4caf50; box-shadow: 0 0 6px #4caf50; }
+  .conn-dot.err { background: #f44336; box-shadow: 0 0 6px #f44336; }
+  .emg-toggle {
+    font-size: 10px; padding: 3px 8px; border-radius: 4px;
+    border: 1px solid #555; background: none; color: #888;
+    cursor: pointer; letter-spacing: 0.5px;
+  }
+  .emg-toggle:hover { border-color: #f44336; color: #f44336; }
+  .emg-toggle.active { border-color: #f44336; color: #f44336; background: rgba(244,67,54,0.15); }
+
+  /* -- Main area -- */
+  .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  /* -- Board info bar (replaces felt center) -- */
+  .board-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 10px 16px;
+    background: linear-gradient(180deg, #111820, #0d1117);
+    border-bottom: 1px solid #1e2a38;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  /* -- Street label -- */
+  .street-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 16px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.5);
+    color: #b0b0c8;
+  }
+  .street-label.PREFLOP { background: rgba(58,58,80,0.7); color: #b0b0c8; }
+  .street-label.FLOP    { background: rgba(26,90,58,0.7); color: #c0ffd8; }
+  .street-label.TURN    { background: rgba(106,74,16,0.7); color: #ffd080; }
+  .street-label.RIVER   { background: rgba(90,26,26,0.7); color: #ffa0a0; }
+
+  /* -- Board cards -- */
+  .board-cards { display: flex; gap: 5px; }
+  .pot-label {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #ffd54f;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.4);
+    padding: 2px 14px;
+    border-radius: 10px;
+  }
+
+  /* -- Card rendering (4-colour) -- */
+  .card-mini {
+    width: 42px; height: 58px;
+    border-radius: 5px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-weight: 900; color: #fff; line-height: 1;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border: 1.5px solid rgba(255,255,255,0.15);
+  }
+  .card-mini .rank { font-size: 1.3em; letter-spacing: -1px; }
+  .card-mini .suit { font-size: 1.5em; line-height: 1; margin-top: -2px; }
+  .card-mini.hearts   { background: #dc143c; }
+  .card-mini.diamonds { background: #0066ff; }
+  .card-mini.clubs    { background: #228b22; }
+  .card-mini.spades   { background: #1a1a2e; }
+
+  /* Board cards -- larger */
+  .board-cards .card-mini { width: 52px; height: 72px; }
+  .board-cards .card-mini .rank { font-size: 1.6em; }
+  .board-cards .card-mini .suit { font-size: 1.8em; }
+
+  /* Hole cards -- smaller */
+  .hole-cards-row { display: flex; gap: 2px; justify-content: center; }
+  .hole-cards-row .card-mini { width: 26px; height: 34px; }
+  .hole-cards-row .card-mini .rank { font-size: 0.7em; }
+  .hole-cards-row .card-mini .suit { font-size: 0.8em; margin-top: -1px; }
+
+  /* Card placeholder (undealt) */
+  .card-placeholder {
+    width: 52px; height: 72px;
+    border-radius: 5px;
+    border: 2px dashed rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.15);
+  }
+
+  /* ================================================================
+     3x3 GRID LAYOUT (replaces felt-table positioning)
+     ================================================================ */
+  .remote-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    gap: 14px;
+    width: 100%;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 1100px) {
+    .remote-grid {
+      grid-template-columns: repeat(2, minmax(260px, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .remote-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .seat-slot {
+    position: relative;
+    width: 100%;
+    min-height: 120px;
+  }
+
+  /* -- Seat box -- */
+  .seat-box {
+    width: 100%;
+    background: rgba(13, 17, 23, 0.92);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+    transition: border-color 0.15s, opacity 0.15s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  .seat-box.empty {
+    opacity: 0.3;
+    border-style: dashed;
+    border-color: rgba(255,255,255,0.12);
+    background: rgba(13,17,23,0.4);
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .seat-box.hero {
+    border-color: #1976d2;
+    box-shadow: 0 0 12px rgba(25,118,210,0.4), 0 4px 12px rgba(0,0,0,0.5);
+  }
+  .seat-box.expanded {
+    border-color: #ffd54f;
+    box-shadow: 0 0 6px rgba(255,213,79,0.3), 0 2px 6px rgba(0,0,0,0.4);
+  }
+
+  /* Debug badge */
+  .dbg-badge {
+    display: inline-block;
+    font-size: 0.6em;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+  }
+  .dbg-badge.has-acts { background: rgba(76,175,80,0.3); color: #4caf50; }
+  .dbg-badge.no-acts  { background: rgba(244,67,54,0.3); color: #f44336; }
+
+  /* Force-test button in header */
+  .force-test-btn {
+    font-size: 10px; padding: 3px 8px; border-radius: 4px;
+    border: 1px solid #ffd54f; background: none; color: #ffd54f;
+    cursor: pointer; letter-spacing: 0.5px;
+  }
+  .force-test-btn:hover { background: rgba(255,213,79,0.15); }
+  .force-test-btn.active { background: rgba(255,213,79,0.3); }
+
+  .seat-label { font-size: 0.65em; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .seat-name { font-size: 0.95em; font-weight: 700; color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 auto; }
+  .seat-box.hero .seat-name { color: #64b5f6; }
+  .seat-box.expanded .seat-name { color: #ffd54f; }
+  .seat-stack { font-size: 0.8em; color: #aaa; margin-top: 2px; }
+  .seat-stack .amount { color: #4caf50; font-weight: 600; }
+  .seat-cards-area { display: flex; justify-content: center; margin-top: 4px; }
+
+  /* -- Dealer chip -- */
+  .dealer-chip {
+    position: absolute;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff9c4, #f9a825);
+    color: #333;
+    font-size: 0.55em;
+    font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border: 2px solid #f57f17;
+    z-index: 20;
+    top: -8px; right: -8px;
+  }
+
+  /* -- Bet chip near seat -- */
+  .seat-bet {
+    position: absolute;
+    top: -14px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; align-items: center; gap: 3px;
+    font-size: 0.65em; font-weight: 700; color: #ffd54f;
+    background: rgba(0,0,0,0.7);
+    padding: 2px 8px 2px 4px;
+    border-radius: 10px;
+    white-space: nowrap;
+    z-index: 15;
+  }
+  .seat-bet .chip-icon {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #ff6b6b, #c0392b);
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    flex-shrink: 0;
+  }
+
+  /* ================================================================
+     SEAT-LEVEL CONTROLS (PRIMARY UX)
+     ================================================================ */
+
+  /* Compact controls: C/F, C/C, CO -- always visible on hero seats */
+  .seat-compact {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .sc-toggle {
+    font-size: 0.65em;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: #888;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.12s;
+    letter-spacing: 0.3px;
+  }
+  .sc-toggle:hover { border-color: rgba(255,255,255,0.3); color: #ccc; }
+  .sc-toggle.active { background: rgba(76,175,80,0.25); border-color: #4caf50; color: #4caf50; }
+  .sc-toggle.co-toggle.active { background: rgba(244,67,54,0.25); border-color: #f44336; color: #f44336; }
+  .sc-toggle.autocc-toggle.active { background: rgba(255,193,7,0.25); border-color: #ffc107; color: #ffc107; }
+  .global-autocc-bar { display:flex; align-items:center; gap:8px; padding:4px 12px; background:#1a1a2e; border-bottom:1px solid #333; }
+  .global-autocc-btn { padding:3px 10px; border:1px solid #555; border-radius:4px; background:transparent; color:#888; font-size:11px; font-weight:700; cursor:pointer; }
+  .global-autocc-btn.active { background:rgba(255,193,7,0.25); border-color:#ffc107; color:#ffc107; }
+  .global-autocc-btn.active-cf { background:rgba(76,175,80,0.25); border-color:#4caf50; color:#4caf50; }
+  .global-autocc-btn.active-kh { background:rgba(233,30,99,0.25); border-color:#e91e63; color:#e91e63; }
+  .kh-toggle { border-color:#e91e63 !important; }
+  .kh-toggle.active { background:rgba(233,30,99,0.3) !important; border-color:#e91e63 !important; color:#e91e63 !important; }
+  .seat-box.kh-marked { border-color:#4caf50 !important; box-shadow: 0 0 12px rgba(76,175,80,0.5), 0 4px 12px rgba(0,0,0,0.5) !important; }
+  .seat-box.kh-auto { border-color:#ff9800 !important; box-shadow: 0 0 8px rgba(255,152,0,0.4), 0 4px 12px rgba(0,0,0,0.5) !important; }
+  .kh-badge { font-size:0.6em; font-weight:700; padding:1px 5px; border-radius:3px; margin-left:4px; background:rgba(233,30,99,0.3); color:#e91e63; }
+  .autocc-badge { display:inline-block; background:rgba(255,193,7,0.2); color:#ffc107; font-size:7px; font-weight:800; padding:1px 4px; border-radius:2px; margin-left:3px; vertical-align:middle; }
+
+  /* Expanded action area: full buttons + sizing */
+  .seat-actions {
+    margin-top: 3px;
+    padding-top: 3px;
+    border-top: 1px solid rgba(255,213,79,0.2);
+  }
+  .sa-turn-label {
+    font-size: 0.55em;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #ffd54f;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  /* Action buttons row */
+  .sa-row {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 2px;
+    flex-wrap: wrap;
+  }
+  .sa-btn {
+    flex: 1;
+    min-width: 0;
+    height: 22px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.7em;
+    font-weight: 800;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.3px;
+    padding: 0 4px;
+  }
+  .sa-btn:disabled { opacity: 0.2; cursor: default; }
+  .sa-btn:not(:disabled):hover { filter: brightness(1.2); }
+  .sa-btn:not(:disabled):active { transform: scale(0.95); }
+
+  .sa-btn.fold    { background: #b82030; }
+  .sa-btn.check   { background: #2d6a4f; }
+  .sa-btn.call    { background: #1e5eb8; }
+  .sa-btn.bet     { background: #1a9a6c; }
+  .sa-btn.raise   { background: #1a9a6c; }
+  .sa-btn.misc    { background: #4a5060; font-size: 0.6em; }
+
+  /* Presets row */
+  .sa-presets {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 4px;
+  }
+  .sa-preset {
+    flex: 1;
+    height: 18px;
+    border: 1px solid #444c5a;
+    border-radius: 3px;
+    font-size: 0.6em;
+    font-weight: 700;
+    cursor: pointer;
+    color: #c8cdd4;
+    background: #2c3040;
+    transition: all 0.1s;
+    padding: 0;
+  }
+  .sa-preset:hover { background: #1a9a6c; border-color: #1a9a6c; color: #fff; }
+  .sa-presets { margin-bottom: 2px; }
+
+  /* Slider + amount */
+  .sa-sizing {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .sa-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: #333a48;
+    outline: none;
+    cursor: pointer;
+  }
+  .sa-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #1a9a6c;
+    border: 2px solid #fff;
+    cursor: pointer;
+  }
+  .sa-amount {
+    width: 50px;
+    padding: 2px 3px;
+    background: #1a1e28;
+    border: 1px solid #444c5a;
+    border-radius: 3px;
+    color: #1a9a6c;
+    font-size: 0.65em;
+    font-weight: 700;
+    text-align: center;
+    height: 18px;
+  }
+  .sa-amount:focus { border-color: #1a9a6c; outline: none; }
+
+  .sa-raise-go {
+    height: 18px;
+    min-width: 36px;
+    padding: 0 4px;
+    border: none;
+    border-radius: 3px;
+    font-size: 0.65em;
+    font-weight: 800;
+    cursor: pointer;
+    color: #fff;
+    background: #1a9a6c;
+  }
+  .sa-raise-go:hover { filter: brightness(1.2); }
+
+  /* ================================================================
+     EMERGENCY FALLBACK PANEL (collapsed by default)
+     ================================================================ */
+  .emg-panel {
+    display: none;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #2a1015, #1a0a0e);
+    border-top: 2px solid #f44336;
+    padding: 6px 16px;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .emg-panel.visible { display: flex; }
+
+  .emg-banner {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; font-weight: 700; color: #f44336;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .emg-banner::before { content: '\26A0'; font-size: 14px; }
+
+  .emg-hero-info {
+    font-size: 11px; color: #888;
+  }
+  .emg-hero-info b { color: #58a6ff; }
+
+  .emg-actions-row { display: flex; gap: 4px; }
+  .emg-btn {
+    flex: 1; height: 32px; border: none; border-radius: 5px;
+    font-size: 11px; font-weight: 800; cursor: pointer; color: #fff;
+    transition: all 0.1s;
+  }
+  .emg-btn:disabled { opacity: 0.2; cursor: default; }
+  .emg-btn:not(:disabled):hover { filter: brightness(1.15); }
+  .emg-btn.fold  { background: #b82030; }
+  .emg-btn.check { background: #2d6a4f; }
+  .emg-btn.call  { background: #1e5eb8; }
+  .emg-btn.bet   { background: #1a9a6c; }
+  .emg-btn.raise { background: #1a9a6c; }
+  .emg-btn.misc  { background: #4a5060; font-size: 10px; }
+
+  .emg-sizing-row { display: flex; align-items: center; gap: 4px; }
+  .emg-preset {
+    height: 24px; min-width: 40px; padding: 0 6px;
+    border: 1px solid #444c5a; border-radius: 4px;
+    font-size: 10px; font-weight: 700; cursor: pointer;
+    color: #c8cdd4; background: #2c3040;
+  }
+  .emg-preset:hover { background: #1a9a6c; border-color: #1a9a6c; color: #fff; }
+  .emg-slider {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 5px; border-radius: 3px; background: #333a48; outline: none;
+  }
+  .emg-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: #1a9a6c; border: 2px solid #fff; cursor: pointer;
+  }
+  .emg-amount {
+    width: 64px; padding: 3px 4px; background: #1a1e28;
+    border: 1px solid #444c5a; border-radius: 4px;
+    color: #1a9a6c; font-size: 11px; font-weight: 700; text-align: center; height: 24px;
+  }
+  .emg-amount:focus { border-color: #1a9a6c; outline: none; }
+
+  .emg-preact-row {
+    display: flex; gap: 6px; align-items: center;
+    padding-top: 3px; border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .emg-preact-label { font-size: 9px; color: #555; font-weight: 600; letter-spacing: 0.5px; }
+  .emg-pa-toggle {
+    font-size: 10px; font-weight: 600; color: #888; cursor: pointer;
+    padding: 2px 8px; border-radius: 3px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    user-select: none;
+  }
+  .emg-pa-toggle:hover { border-color: rgba(255,255,255,0.2); }
+  .emg-pa-toggle.active { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+  .emg-pa-toggle.co.active { background: rgba(244,67,54,0.2); border-color: #f44336; color: #f44336; }
+  .emg-pa-toggle input { display: none; }
+
+  /* -- Command log -- */
+  #cmd-log {
+    background: #080e1c;
+    border-top: 1px solid #30363d;
+    max-height: 50px;
+    overflow-y: auto;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    flex-shrink: 0;
+  }
+  .log-entry { padding: 1px 0; border-bottom: 1px solid #101c2e; }
+  .log-ts  { color: #4a5a70; }
+  .log-ok  { color: #4caf50; }
+  .log-err { color: #f44336; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>W4P REMOTE <span style="font-size:9px;color:#555;font-weight:400;letter-spacing:0;">grid-v1</span></h1>
+  <div class="hdr-right">
+    <span id="conn-label">--</span>
+    <span id="conn-dot" class="conn-dot"></span>
+    <button class="force-test-btn" id="force-test" title="Inject fake actions to test UI expansion">FORCE TEST</button>
+    <button class="emg-toggle" id="emg-toggle" title="Toggle emergency fallback panel">EMG</button>
+  </div>
+</header>
+
+<div class="global-autocc-bar">
+  <button class="global-autocc-btn" id="global-autocc-btn" onclick="toggleGlobalAutoCC()">AUTO C/C PREFLOP — ALL</button>
+  <button class="global-autocc-btn" id="global-cf-btn" onclick="toggleGlobalAutoCF()" style="border-color:#4caf50;">SELECT ALL AUTO C/F</button>
+  <button class="global-autocc-btn" id="execute-kh-btn" onclick="executeKH()" style="border-color:#e91e63;">EXECUTE KH</button>
+</div>
+
+<div class="main-area">
+  <!-- Board info bar -->
+  <div class="board-bar">
+    <div class="street-label" id="street-label">WAITING</div>
+    <div class="board-cards" id="board-cards"></div>
+    <div class="pot-label" id="pot-label">POT R0.00</div>
+  </div>
+
+  <!-- 3x3 seat grid -->
+  <div class="remote-grid" id="seats-container"></div>
+</div>
+
+<!-- EMERGENCY FALLBACK PANEL (hidden by default) -->
+<div class="emg-panel" id="emg-panel">
+  <div class="emg-banner">EMERGENCY FALLBACK PANEL</div>
+  <div class="emg-hero-info" id="emg-hero-info">No hero</div>
+  <div id="emg-content"></div>
+</div>
+
+<div id="cmd-log"></div>
+
+<script>
+'use strict';
+
+var API = '/api';
+var VERSION = 'remote-ui-grid-v1';
+var POLL_ACTIVE_MS = 250;
+var POLL_IDLE_MS = 750;
+
+var SUIT_MAP = {
+  h: { sym: '\u2665', cls: 'hearts' },
+  d: { sym: '\u2666', cls: 'diamonds' },
+  s: { sym: '\u2660', cls: 'spades' },
+  c: { sym: '\u2663', cls: 'clubs' }
+};
+
+var lastTable = null;
+var preActionState = {};   // seatNo -> 'check_fold' | 'check_call' | null
+var cashoutState = {};     // seatNo -> true | false
+var autoCcPreflop = {};    // seatNo -> true (per-player AUTO C/C PREFLOP)
+var globalAutoCcPreflop = false; // global AUTO C/C PREFLOP — persists across hands
+var globalAutoCF = false;        // master SELECT ALL AUTO C/F — new players default to C/F when on
+var globalCFExcluded = {};       // seats manually unticked while globalAutoCF is on
+var khState = {};                // seatNo -> true (KH = Keep Hand, manual input required)
+var autoCcLastSent = {};         // seatNo -> timestamp (throttle re-sends to every 3s)
+var lastBoardKey = null;
+
+// Per-seat raise amounts
+var seatAmounts = {};      // seatNo -> current amount
+
+// Diff rendering state
+var renderedSeats = {};    // position (0-8) -> hash string
+var lastBoardHash = null;
+var slotsCreated = false;
+
+// Force test mode
+var forceTestActive = false;
+
+// Emergency panel
+var emgVisible = false;
+var emgAmount = null;
+var lastEmgHash = null;
+
+// Fast-patch: adaptive polling + rAF batching
+var heroIsActive = false;
+var renderPending = false;
+var fetchInFlight = false;
+var seatSlots = [];
+var pollTimer = null;
+var _lastTableJSON = '';
+
+// -- Utilities --
+
+function esc(s) {
+  var d = document.createElement('span');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function nowTs() {
+  return new Date().toLocaleTimeString('en-GB', { hour12: false });
+}
+
+function renderCardHtml(str) {
+  if (!str || str.length < 2) return '<div class="card-mini spades"><span class="rank">?</span><span class="suit">?</span></div>';
+  var rank = str.slice(0, -1).toUpperCase();
+  var suitKey = str.slice(-1).toLowerCase();
+  var s = SUIT_MAP[suitKey];
+  if (!s) return '<div class="card-mini spades"><span class="rank">' + esc(rank) + '</span><span class="suit">?</span></div>';
+  return '<div class="card-mini ' + s.cls + '"><span class="rank">' + esc(rank) + '</span><span class="suit">' + s.sym + '</span></div>';
+}
+
+function getSeatNo(seat) {
+  return seat.seat_no != null ? seat.seat_no : seat.seat_index;
+}
+
+// -- Command log --
+
+function logCmd(seatNo, cmd, amount, ok, detail) {
+  var log = document.getElementById('cmd-log');
+  var div = document.createElement('div');
+  div.className = 'log-entry';
+  var amtStr = amount != null ? ' R' + amount : '';
+  div.innerHTML =
+    '<span class="log-ts">[' + nowTs() + ']</span> S' + seatNo +
+    ' <b>' + esc(cmd) + '</b>' + amtStr +
+    ' <span class="' + (ok ? 'log-ok' : 'log-err') + '">' + (ok ? 'OK' : 'FAIL') + '</span>' +
+    (detail ? ' ' + esc(detail) : '');
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  while (log.children.length > 60) log.removeChild(log.firstChild);
+}
+
+// -- Adaptive poll scheduler (250ms active / 750ms idle) --
+
+function schedulePoll() {
+  if (pollTimer) clearTimeout(pollTimer);
+  pollTimer = setTimeout(fetchTable, heroIsActive ? POLL_ACTIVE_MS : POLL_IDLE_MS);
+}
+
+// -- rAF render batching (dedup multiple renders per frame) --
+
+function scheduleRender() {
+  if (renderPending) return;
+  renderPending = true;
+  requestAnimationFrame(function() {
+    renderPending = false;
+    render();
+  });
+}
+
+// -- API: Fetch table (guarded against pile-up) --
+
+function fetchTable() {
+  if (fetchInFlight) { schedulePoll(); return; }
+  fetchInFlight = true;
+  var dot = document.getElementById('conn-dot');
+  var label = document.getElementById('conn-label');
+  fetch(API + '/table/latest')
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(j) {
+      fetchInFlight = false;
+      if (j.ok && j.table) {
+        dot.className = 'conn-dot ok';
+        label.textContent = 'v' + (j.table.state_version || '?');
+        var json = JSON.stringify(j.table);
+        if (json === _lastTableJSON) { schedulePoll(); return; }
+        _lastTableJSON = json;
+        lastTable = j.table;
+      } else {
+        dot.className = 'conn-dot';
+        label.textContent = 'no table';
+        if (!lastTable) { schedulePoll(); return; }
+        _lastTableJSON = '';
+        lastTable = null;
+      }
+      scheduleRender();
+      schedulePoll();
+    })
+    .catch(function() {
+      fetchInFlight = false;
+      dot.className = 'conn-dot err';
+      label.textContent = 'error';
+      lastTable = null;
+      scheduleRender();
+      schedulePoll();
+    });
+}
+
+// -- API: Send command --
+
+function sendCmd(seatNo, cmdType, amount) {
+  var tableId = lastTable ? lastTable.table_id : null;
+  var body = { table_id: tableId, seat_no: seatNo, command_type: cmdType, remote_click_ts: Date.now() };
+  if (amount != null) body.amount = amount;
+  fetch(API + '/commands/queue', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+    .then(function(r) { logCmd(seatNo, cmdType, amount, r.ok, r.ok ? '' : 'HTTP ' + r.status); })
+    .catch(function(e) { logCmd(seatNo, cmdType, amount, false, e.message); });
+}
+
+// -- Render: street label + pot --
+
+function renderBar() {
+  var streetEl = document.getElementById('street-label');
+  var potEl = document.getElementById('pot-label');
+  if (!lastTable) {
+    streetEl.textContent = 'WAITING';
+    streetEl.className = 'street-label';
+    potEl.textContent = 'POT R0.00';
+    return;
+  }
+  var street = lastTable.street || '--';
+  streetEl.textContent = street;
+  streetEl.className = 'street-label ' + street;
+  var pot = lastTable.pot_zar != null ? lastTable.pot_zar.toFixed(2) : '0.00';
+  potEl.textContent = 'POT R' + pot;
+}
+
+// -- Render: board cards (diff) --
+
+function renderBoard() {
+  var container = document.getElementById('board-cards');
+  if (!lastTable) {
+    if (lastBoardHash !== null) { container.innerHTML = ''; lastBoardHash = null; }
+    return;
+  }
+  var b = lastTable.board || {};
+  var bh = (b.flop || []).join(',') + '|' + (b.turn || '') + '|' + (b.river || '');
+  if (bh === lastBoardHash) return;
+  lastBoardHash = bh;
+
+  var cards = [];
+  if (Array.isArray(b.flop)) b.flop.forEach(function(c) { cards.push(c); });
+  while (cards.length < 3) cards.push(null);
+  cards.push(b.turn || null);
+  cards.push(b.river || null);
+
+  var html = '';
+  cards.forEach(function(c) {
+    html += c ? renderCardHtml(c) : '<div class="card-placeholder"></div>';
+  });
+  container.innerHTML = html;
+}
+
+// -- Seat hash for diff rendering --
+
+function seatHash(seat) {
+  var sn = getSeatNo(seat);
+  var hc = (seat.hole_cards || []).join(',');
+  var acts = (seat.available_actions || []).join(',');
+  return seat.name + '|' + seat.stack_zar + '|' + hc + '|' +
+    seat.bet + '|' + seat.is_dealer + '|' + acts + '|' +
+    (preActionState[sn] || '') + '|' + (cashoutState[sn] || false) +
+    '|' + (autoCcPreflop[sn] || false) + '|' + globalAutoCcPreflop;
+}
+
+// -- Action validation helpers --
+
+function isActionValidated(seat, actionName) {
+  if (!seat || !seat.buttons || !Array.isArray(seat.buttons.actions)) return false;
+  for (var i = 0; i < seat.buttons.actions.length; i++) {
+    if (seat.buttons.actions[i].action === actionName) return true;
+  }
+  return false;
+}
+
+function getActionData(seat, actionName) {
+  if (!seat || !seat.buttons || !Array.isArray(seat.buttons.actions)) return null;
+  for (var i = 0; i < seat.buttons.actions.length; i++) {
+    if (seat.buttons.actions[i].action === actionName) return seat.buttons.actions[i];
+  }
+  return null;
+}
+
+// -- Build seat box HTML with inline controls --
+
+function buildSeatBoxHtml(seat) {
+  var isHero = seat.is_self_player === true;
+  var acts = seat.available_actions || [];
+  var sn = getSeatNo(seat);
+
+  // FORCE TEST: inject fake actions for UI layer testing
+  if (forceTestActive && isHero) {
+    acts = ['fold', 'check', 'call', 'raise'];
+    seat = Object.assign({}, seat, {
+      available_actions: acts,
+      buttons: {
+        actions: [{action:'fold'},{action:'check'},{action:'call'},{action:'raise',amount:2}],
+        presets: [],
+        slider: { min: 1, max: seat.stack_zar || 20, step: 0.5, current: 2 }
+      }
+    });
+  }
+
+  var isActive = isHero && acts.length > 0;
+
+  var cls = 'seat-box';
+  if (isHero) cls += ' hero';
+  if (isActive) cls += ' expanded';
+  if (khState[sn]) cls += ' kh-marked';
+  else if (isHero && preActionState[sn] === 'check_fold') cls += ' kh-auto';
+
+  var html = '<div class="' + cls + '">';
+
+  if (seat.is_dealer) html += '<div class="dealer-chip">D</div>';
+
+  if (seat.bet && seat.bet > 0) {
+    html += '<div class="seat-bet"><div class="chip-icon"></div><span>R ' + seat.bet + '</span></div>';
+  }
+
+  // Debug badge: show actions count
+  var actCount = acts.length;
+  var dbgCls = actCount > 0 ? 'dbg-badge has-acts' : 'dbg-badge no-acts';
+  html += '<div class="seat-label">Seat ' + sn + ' <span class="' + dbgCls + '">acts:' + actCount + '</span></div>';
+  html += '<div class="seat-name">' + esc(seat.name || 'Unknown') + '</div>';
+  html += '<div class="seat-stack"><span class="amount">R ' +
+    (seat.stack_zar != null ? seat.stack_zar.toFixed(2) : '0.00') + '</span></div>';
+
+  if (Array.isArray(seat.hole_cards) && seat.hole_cards.length > 0) {
+    html += '<div class="seat-cards-area"><div class="hole-cards-row">';
+    seat.hole_cards.forEach(function(c) { html += renderCardHtml(c); });
+    html += '</div></div>';
+  }
+
+  // ========== HERO SEAT CONTROLS ==========
+  if (isHero) {
+    // Compact controls: always visible (C/F, C/C, CO)
+    var curPa = preActionState[sn] || null;
+    var curCo = cashoutState[sn] || false;
+
+    html += '<div class="seat-compact">';
+    html += '<span class="sc-toggle' + (curPa === 'check_fold' ? ' active' : '') +
+      '" data-sc-preact="check_fold" data-sc-seat="' + sn + '">C/F</span>';
+    html += '<span class="sc-toggle' + (curPa === 'check_call' ? ' active' : '') +
+      '" data-sc-preact="check_call" data-sc-seat="' + sn + '">C/C</span>';
+    html += '<span class="sc-toggle co-toggle' + (curCo ? ' active' : '') +
+      '" data-sc-preact="cashout" data-sc-seat="' + sn + '">CO</span>';
+    var autoCcActive = globalAutoCcPreflop || autoCcPreflop[sn];
+    html += '<span class="sc-toggle autocc-toggle' + (autoCcPreflop[sn] ? ' active' : '') +
+      '" data-sc-preact="auto_cc_preflop" data-sc-seat="' + sn + '">AC</span>';
+    if (autoCcActive) html += '<span class="autocc-badge">AUTO C/C</span>';
+    html += '<span class="sc-toggle kh-toggle' + (khState[sn] ? ' active' : '') +
+      '" data-sc-preact="kh" data-sc-seat="' + sn + '">KH</span>';
+    if (khState[sn]) html += '<span class="kh-badge">KEEP</span>';
+    html += '</div>';
+
+    // Expanded: full action set when hero is current actor
+    if (isActive) {
+      var btns = seat.buttons || null;
+      var slider = btns && btns.slider ? btns.slider : null;
+      var hasRaise = acts.indexOf('raise') >= 0;
+      var hasBet = acts.indexOf('bet') >= 0;
+      var raiseWord = hasBet ? 'bet' : 'raise';
+
+      var sMin = slider ? slider.min : 1;
+      var sMax = slider ? slider.max : (seat.stack_zar || 9999);
+      var sStep = slider ? (slider.step || 1) : 1;
+      var sCur = seatAmounts[sn] != null ? seatAmounts[sn] : (slider ? (slider.current || sMin) : sMin);
+      if (sCur < sMin) sCur = sMin;
+      if (sCur > sMax) sCur = sMax;
+
+      html += '<div class="seat-actions">';
+      html += '<div class="sa-turn-label">YOUR TURN</div>';
+
+      // Row 1: FOLD, CHECK, CALL, BET/RAISE
+      html += '<div class="sa-row">';
+      var foldAvail = acts.indexOf('fold') >= 0;
+      html += '<button class="sa-btn fold" data-sa-cmd="fold" data-sa-seat="' + sn + '"' + (foldAvail ? '' : ' disabled') + '>FOLD</button>';
+      var checkAvail = acts.indexOf('check') >= 0;
+      html += '<button class="sa-btn check" data-sa-cmd="check" data-sa-seat="' + sn + '"' + (checkAvail ? '' : ' disabled') + '>CHECK</button>';
+      var callAvail = acts.indexOf('call') >= 0;
+      var callData = getActionData(seat, 'call');
+      var callLabel = callData && callData.amount != null ? 'CALL R' + callData.amount : 'CALL';
+      html += '<button class="sa-btn call" data-sa-cmd="call" data-sa-seat="' + sn + '"' + (callAvail ? '' : ' disabled') + '>' + callLabel + '</button>';
+      var brAvail = hasRaise || hasBet;
+      html += '<button class="sa-btn ' + raiseWord + '" data-sa-cmd="' + raiseWord + '" data-sa-seat="' + sn + '" data-sa-use-amount="1"' + (brAvail ? '' : ' disabled') + '>' + raiseWord.toUpperCase() + '</button>';
+      html += '</div>';
+
+      // Misc actions (cashout, show, run_it_twice, resume_hand, back_to_game)
+      var miscActions = ['cashout', 'show', 'run_it_twice', 'resume_hand', 'back_to_game'];
+      var hasMisc = false;
+      for (var mi = 0; mi < miscActions.length; mi++) {
+        if (acts.indexOf(miscActions[mi]) >= 0) { hasMisc = true; break; }
+      }
+      if (hasMisc) {
+        html += '<div class="sa-row">';
+        miscActions.forEach(function(a) {
+          if (acts.indexOf(a) >= 0) {
+            var label = a.replace(/_/g, ' ').toUpperCase();
+            html += '<button class="sa-btn misc" data-sa-cmd="' + a + '" data-sa-seat="' + sn + '">' + label + '</button>';
+          }
+        });
+        html += '</div>';
+      }
+
+      // Presets
+      html += '<div class="sa-presets">';
+      html += '<button class="sa-preset" data-sa-preset="min" data-sa-seat="' + sn + '">MIN</button>';
+      html += '<button class="sa-preset" data-sa-preset="half" data-sa-seat="' + sn + '">1/2</button>';
+      html += '<button class="sa-preset" data-sa-preset="pot" data-sa-seat="' + sn + '">POT</button>';
+      html += '<button class="sa-preset" data-sa-preset="max" data-sa-seat="' + sn + '">MAX</button>';
+      html += '</div>';
+
+      // Slider + amount + raise-go
+      html += '<div class="sa-sizing">';
+      html += '<input type="range" class="sa-slider" data-sa-slider="' + sn + '" min="' + sMin + '" max="' + sMax + '" step="' + sStep + '" value="' + sCur + '">';
+      html += '<input type="number" class="sa-amount" data-sa-amount="' + sn + '" min="' + sMin + '" max="' + sMax + '" value="' + sCur + '">';
+      html += '<button class="sa-raise-go" data-sa-cmd="' + raiseWord + '" data-sa-seat="' + sn + '" data-sa-use-amount="1">' + raiseWord.toUpperCase() + '</button>';
+      html += '</div>';
+
+      html += '</div>'; // .seat-actions
+    }
+  }
+
+  html += '</div>'; // .seat-box
+  return html;
+}
+
+// -- Render seats --
+
+function renderSeats() {
+  var container = document.getElementById('seats-container');
+
+  if (!slotsCreated) {
+    if (!container) return;  // DOM not ready yet
+    for (var i = 0; i < 9; i++) {
+      var slot = document.createElement('div');
+      slot.className = 'seat-slot';
+      slot.dataset.pos = i;
+      container.appendChild(slot);
+      seatSlots[i] = slot;  // cache DOM ref
+    }
+    slotsCreated = true;
+  }
+
+  var posSeatMap = {};
+  heroIsActive = false;  // recalculate each render
+  if (lastTable && Array.isArray(lastTable.seats)) {
+    lastTable.seats.forEach(function(seat) {
+      if (seat.name != null && seat.status !== "sitting_out") {
+        var rawPos = seat.seat_index != null ? seat.seat_index : seat.seat_no;
+        var pos = rawPos >= 1 ? rawPos - 1 : rawPos;  // map 1-9 → 0-8
+        if (pos != null && pos >= 0 && pos < 9) posSeatMap[pos] = seat;
+      }
+      // detect if any hero has pending actions (drives adaptive poll rate)
+      if (seat.is_self_player && seat.available_actions && seat.available_actions.length > 0) {
+        heroIsActive = true;
+      }
+    });
+  }
+
+  for (var pos = 0; pos < 9; pos++) {
+    var seat = posSeatMap[pos];
+    var hash = seat ? seatHash(seat) : 'empty';
+    if (renderedSeats[pos] === hash) continue;
+
+    var slot = seatSlots[pos];  // use cached ref
+    if (!slot) continue;  // guard: skip if DOM not ready
+    if (seat) {
+      slot.style.display = '';
+      slot.innerHTML = buildSeatBoxHtml(seat);
+    } else {
+      slot.style.display = 'none';
+      slot.innerHTML = '';
+    }
+    renderedSeats[pos] = hash;
+  }
+}
+
+// -- Find hero seat --
+
+function findHero() {
+  if (!lastTable || !Array.isArray(lastTable.seats)) return null;
+  var fallback = null;
+  for (var i = 0; i < lastTable.seats.length; i++) {
+    var s = lastTable.seats[i];
+    if (s.is_self_player === true && s.name != null) {
+      if (Array.isArray(s.available_actions) && s.available_actions.length > 0) return s;
+      if (!fallback) fallback = s;
+    }
+  }
+  return fallback;
+}
+
+// ================================================================
+//  EMERGENCY FALLBACK PANEL (renders when emgVisible=true)
+// ================================================================
+
+function renderEmergencyPanel() {
+  var panel = document.getElementById('emg-panel');
+  var content = document.getElementById('emg-content');
+  var info = document.getElementById('emg-hero-info');
+
+  if (!emgVisible) {
+    panel.classList.remove('visible');
+    return;
+  }
+  panel.classList.add('visible');
+
+  var hero = findHero();
+  if (!hero) {
+    info.innerHTML = 'No hero seated';
+    if (lastEmgHash !== 'none') { content.innerHTML = ''; lastEmgHash = 'none'; }
+    return;
+  }
+
+  var sn = getSeatNo(hero);
+  var acts = hero.available_actions || [];
+  var btns = hero.buttons || null;
+  var slider = btns && btns.slider ? btns.slider : null;
+  var hasRaise = acts.indexOf('raise') >= 0;
+  var hasBet = acts.indexOf('bet') >= 0;
+  var raiseWord = hasBet ? 'bet' : 'raise';
+
+  var sMin = slider ? slider.min : 1;
+  var sMax = slider ? slider.max : (hero.stack_zar || 9999);
+  var sStep = slider ? (slider.step || 1) : 1;
+  var sCur = emgAmount != null ? emgAmount : (slider ? (slider.current || sMin) : sMin);
+  if (sCur < sMin) sCur = sMin;
+  if (sCur > sMax) sCur = sMax;
+
+  var emgHash = hero.name + '|' + sn + '|' + acts.join(',') + '|' +
+    (preActionState[sn] || '') + '|' + (cashoutState[sn] || false);
+  if (emgHash === lastEmgHash) return;
+  lastEmgHash = emgHash;
+
+  info.innerHTML = 'Hero: <b>' + esc(hero.name) + '</b> Seat ' + sn +
+    (acts.length > 0 ? ' <span style="color:#ffd54f;">ACTION</span>' : '');
+
+  var html = '';
+
+  // Action buttons
+  html += '<div class="emg-actions-row">';
+  var foldA = acts.indexOf('fold') >= 0;
+  html += '<button class="emg-btn fold" data-emg-cmd="fold" data-emg-seat="' + sn + '"' + (foldA ? '' : ' disabled') + '>FOLD</button>';
+  var checkA = acts.indexOf('check') >= 0;
+  html += '<button class="emg-btn check" data-emg-cmd="check" data-emg-seat="' + sn + '"' + (checkA ? '' : ' disabled') + '>CHECK</button>';
+  var callA = acts.indexOf('call') >= 0;
+  html += '<button class="emg-btn call" data-emg-cmd="call" data-emg-seat="' + sn + '"' + (callA ? '' : ' disabled') + '>CALL</button>';
+  var brA = hasRaise || hasBet;
+  html += '<button class="emg-btn ' + raiseWord + '" data-emg-cmd="' + raiseWord + '" data-emg-seat="' + sn + '" data-emg-use-amount="1"' + (brA ? '' : ' disabled') + '>' + raiseWord.toUpperCase() + '</button>';
+  html += '</div>';
+
+  // Misc
+  var miscActions = ['cashout', 'show', 'run_it_twice', 'resume_hand', 'back_to_game'];
+  var hasMisc = false;
+  for (var mi = 0; mi < miscActions.length; mi++) { if (acts.indexOf(miscActions[mi]) >= 0) { hasMisc = true; break; } }
+  if (hasMisc) {
+    html += '<div class="emg-actions-row">';
+    miscActions.forEach(function(a) {
+      if (acts.indexOf(a) >= 0) {
+        html += '<button class="emg-btn misc" data-emg-cmd="' + a + '" data-emg-seat="' + sn + '">' + a.replace(/_/g, ' ').toUpperCase() + '</button>';
+      }
+    });
+    html += '</div>';
+  }
+
+  // Sizing
+  html += '<div class="emg-sizing-row">';
+  html += '<button class="emg-preset" data-emg-preset="min" data-emg-seat="' + sn + '">MIN</button>';
+  html += '<button class="emg-preset" data-emg-preset="half" data-emg-seat="' + sn + '">1/2</button>';
+  html += '<button class="emg-preset" data-emg-preset="pot" data-emg-seat="' + sn + '">POT</button>';
+  html += '<button class="emg-preset" data-emg-preset="max" data-emg-seat="' + sn + '">MAX</button>';
+  html += '<input type="range" class="emg-slider" id="emg-slider" min="' + sMin + '" max="' + sMax + '" step="' + sStep + '" value="' + sCur + '">';
+  html += '<input type="number" class="emg-amount" id="emg-amount" min="' + sMin + '" max="' + sMax + '" value="' + sCur + '">';
+  html += '</div>';
+
+  // Pre-actions
+  var curPa = preActionState[sn] || null;
+  var curCo = cashoutState[sn] || false;
+  html += '<div class="emg-preact-row">';
+  html += '<span class="emg-preact-label">PRE:</span>';
+  html += '<label class="emg-pa-toggle' + (curPa === 'check_fold' ? ' active' : '') + '"><input type="checkbox" data-emg-preact="check_fold" data-emg-seat="' + sn + '"' + (curPa === 'check_fold' ? ' checked' : '') + '> C/F</label>';
+  html += '<label class="emg-pa-toggle' + (curPa === 'check_call' ? ' active' : '') + '"><input type="checkbox" data-emg-preact="check_call" data-emg-seat="' + sn + '"' + (curPa === 'check_call' ? ' checked' : '') + '> C/C</label>';
+  html += '<label class="emg-pa-toggle co' + (curCo ? ' active' : '') + '"><input type="checkbox" data-emg-preact="cashout" data-emg-seat="' + sn + '"' + (curCo ? ' checked' : '') + '> CO</label>';
+  html += '</div>';
+
+  content.innerHTML = html;
+
+  // Slider/amount sync
+  var sl = document.getElementById('emg-slider');
+  var am = document.getElementById('emg-amount');
+  if (sl && am) {
+    sl.addEventListener('input', function() { am.value = sl.value; emgAmount = Number(sl.value); });
+    am.addEventListener('input', function() { sl.value = am.value; emgAmount = Number(am.value); });
+  }
+}
+
+// ================================================================
+//  EVENT DELEGATION
+// ================================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+
+  // FORCE TEST button: inject fake actions to prove UI expansion works
+  document.getElementById('force-test').addEventListener('click', function() {
+    forceTestActive = !forceTestActive;
+    this.classList.toggle('active', forceTestActive);
+    this.textContent = forceTestActive ? 'TESTING...' : 'FORCE TEST';
+    renderedSeats = {};
+    render();
+    console.log('[REMOTE] Force test ' + (forceTestActive ? 'ON' : 'OFF'));
+  });
+
+  // EMG toggle button
+  document.getElementById('emg-toggle').addEventListener('click', function() {
+    emgVisible = !emgVisible;
+    this.classList.toggle('active', emgVisible);
+    lastEmgHash = null;
+    renderEmergencyPanel();
+  });
+
+  document.addEventListener('click', function(e) {
+    // ---- Seat-level action buttons ----
+    var saBtn = e.target.closest('[data-sa-cmd]');
+    if (saBtn && !saBtn.disabled) {
+      var sn = Number(saBtn.dataset.saSeat);
+      var cmd = saBtn.dataset.saCmd;
+      if (saBtn.dataset.saUseAmount) {
+        var amEl = document.querySelector('[data-sa-amount="' + sn + '"]');
+        var amt = amEl ? Number(amEl.value) : null;
+        sendCmd(sn, cmd, amt);
+      } else {
+        sendCmd(sn, cmd);
+      }
+      return;
+    }
+
+    // ---- Seat-level presets ----
+    var saPreset = e.target.closest('[data-sa-preset]');
+    if (saPreset) {
+      var psn = Number(saPreset.dataset.saSeat);
+      applyPreset(psn, saPreset.dataset.saPreset, 'sa');
+      return;
+    }
+
+    // ---- Seat-level pre-action toggles (C/F, C/C, CO) ----
+    var scToggle = e.target.closest('[data-sc-preact]');
+    if (scToggle) {
+      var tsn = Number(scToggle.dataset.scSeat);
+      var ttype = scToggle.dataset.scPreact;
+      handlePreAction(tsn, ttype);
+      return;
+    }
+
+    // ---- Emergency panel action buttons ----
+    var emgBtn = e.target.closest('[data-emg-cmd]');
+    if (emgBtn && !emgBtn.disabled) {
+      var esn = Number(emgBtn.dataset.emgSeat);
+      var ecmd = emgBtn.dataset.emgCmd;
+      if (emgBtn.dataset.emgUseAmount) {
+        var eam = document.getElementById('emg-amount');
+        sendCmd(esn, ecmd, eam ? Number(eam.value) : null);
+      } else {
+        sendCmd(esn, ecmd);
+      }
+      return;
+    }
+
+    // ---- Emergency presets ----
+    var emgPreset = e.target.closest('[data-emg-preset]');
+    if (emgPreset) {
+      var epsn = Number(emgPreset.dataset.emgSeat);
+      applyPreset(epsn, emgPreset.dataset.emgPreset, 'emg');
+      return;
+    }
+  });
+
+  // ---- Emergency panel pre-action toggles ----
+  document.addEventListener('change', function(e) {
+    var toggle = e.target.closest('[data-emg-preact]');
+    if (!toggle) return;
+    var sn = Number(toggle.dataset.emgSeat);
+    var type = toggle.dataset.emgPreact;
+    handlePreAction(sn, type);
+  });
+
+  // ---- Seat-level slider/amount sync ----
+  document.addEventListener('input', function(e) {
+    if (e.target.dataset.saSlider) {
+      var sn = e.target.dataset.saSlider;
+      var amEl = document.querySelector('[data-sa-amount="' + sn + '"]');
+      if (amEl) amEl.value = e.target.value;
+      seatAmounts[sn] = Number(e.target.value);
+    }
+    if (e.target.dataset.saAmount) {
+      var sn2 = e.target.dataset.saAmount;
+      var slEl = document.querySelector('[data-sa-slider="' + sn2 + '"]');
+      if (slEl) slEl.value = e.target.value;
+      seatAmounts[sn2] = Number(e.target.value);
+    }
+  });
+});
+
+// -- Pre-action handler (shared by seat-level and emergency panel) --
+
+function handlePreAction(seatNo, type) {
+  if (type === 'kh') {
+    khState[seatNo] = !khState[seatNo];
+    console.log('[KH] ' + (khState[seatNo] ? 'marked' : 'unmarked') + ' seat=' + seatNo);
+    renderedSeats = {}; lastEmgHash = null; render(); return;
+  }
+  if (type === 'auto_cc_preflop') {
+    autoCcPreflop[seatNo] = !autoCcPreflop[seatNo];
+    console.log('[AUTO_CC_PREFLOP] ' + (autoCcPreflop[seatNo] ? 'armed' : 'disarmed') + ' seat=' + seatNo);
+    renderedSeats = {}; lastEmgHash = null; render(); return;
+  }
+  if (type === 'cashout') {
+    var newVal = !cashoutState[seatNo];
+    cashoutState[seatNo] = newVal;
+    if (newVal) sendCmd(seatNo, 'cashout_pre');
+    else sendCmd(seatNo, 'clear_cashout');
+  } else {
+    var curPa = preActionState[seatNo];
+    if (curPa === type) {
+      preActionState[seatNo] = null;
+      sendCmd(seatNo, 'clear');
+      // Track manual untick while global C/F is active
+      if (globalAutoCF && type === 'check_fold') {
+        globalCFExcluded[seatNo] = true;
+        console.log('[AUTO_CF_ALL] excluded seat=' + seatNo + ' (manual untick)');
+      }
+    } else {
+      preActionState[seatNo] = type;
+      sendCmd(seatNo, type);
+      // Re-ticking C/F removes exclusion
+      if (globalAutoCF && type === 'check_fold') {
+        delete globalCFExcluded[seatNo];
+      }
+    }
+  }
+  // Force re-render to update toggle states
+  renderedSeats = {};
+  lastEmgHash = null;
+  render();
+}
+
+// -- Preset handler --
+
+function applyPreset(seatNo, preset, prefix) {
+  if (!lastTable) return;
+  var hero = null;
+  if (lastTable.seats) {
+    for (var i = 0; i < lastTable.seats.length; i++) {
+      var sn = getSeatNo(lastTable.seats[i]);
+      if (sn === seatNo) { hero = lastTable.seats[i]; break; }
+    }
+  }
+  if (!hero) return;
+
+  var stack = hero.stack_zar || 0;
+  var pot = lastTable.pot_zar || 0;
+  var slider = hero.buttons && hero.buttons.slider ? hero.buttons.slider : null;
+  var sMin = slider ? slider.min : 1;
+  var sMax = slider ? slider.max : stack;
+  var val = sMin;
+
+  // POT and MAX: send as commands to w4p.js (click native PokerBet controls)
+  if (preset === 'pot') {
+    sendCmd(seatNo, 'pot');
+    return;
+  }
+  if (preset === 'max') {
+    sendCmd(seatNo, 'raise_max');
+    return;
+  }
+
+  if (preset === 'min') val = sMin;
+  else if (preset === 'half') val = Math.max(pot * 0.5, sMin);
+
+  val = Math.min(Math.max(val, sMin), sMax);
+  val = Math.round(val * 100) / 100;
+
+  if (prefix === 'sa') {
+    seatAmounts[seatNo] = val;
+    var sl = document.querySelector('[data-sa-slider="' + seatNo + '"]');
+    var am = document.querySelector('[data-sa-amount="' + seatNo + '"]');
+    if (sl) sl.value = val;
+    if (am) am.value = val;
+  } else {
+    emgAmount = val;
+    var esl = document.getElementById('emg-slider');
+    var eam = document.getElementById('emg-amount');
+    if (esl) esl.value = val;
+    if (eam) eam.value = val;
+  }
+}
+
+// -- Global AUTO C/C toggle --
+// -- Execute KH: auto C/F all non-KH seats, highlight KH seats --
+function executeKH() {
+  if (!lastTable || !Array.isArray(lastTable.seats)) return;
+  var khCount = 0, cfCount = 0;
+  lastTable.seats.forEach(function(seat) {
+    if (!seat.is_self_player && !seat.is_hero) return;
+    if (!seat.name || seat.name === 'Empty') return;
+    var sn = getSeatNo(seat);
+    if (khState[sn]) {
+      khCount++;
+      console.log('[KH] KEEP seat=' + sn + ' name=' + seat.name + ' — manual input required');
+    } else {
+      cfCount++;
+      preActionState[sn] = 'check_fold';
+      sendCmd(sn, 'check_fold');
+      console.log('[KH] AUTO_CF seat=' + sn + ' name=' + seat.name);
+    }
+  });
+  console.log('[KH] executeKH complete: ' + khCount + ' KH (manual), ' + cfCount + ' auto-C/F');
+  var btn = document.getElementById('execute-kh-btn');
+  if (btn) { btn.classList.add('active-kh'); setTimeout(function() { btn.classList.remove('active-kh'); }, 2000); }
+  renderedSeats = {}; lastEmgHash = null; render();
+}
+
+function toggleGlobalAutoCC() {
+  globalAutoCcPreflop = !globalAutoCcPreflop;
+  var btn = document.getElementById('global-autocc-btn');
+  if (btn) btn.classList.toggle('active', globalAutoCcPreflop);
+  console.log('[AUTO_CC_PREFLOP_ALL] ' + (globalAutoCcPreflop ? 'enabled' : 'disabled'));
+  renderedSeats = {}; lastEmgHash = null; render();
+}
+
+// -- Global SELECT ALL AUTO C/F --
+function toggleGlobalAutoCF() {
+  globalAutoCF = !globalAutoCF;
+  var btn = document.getElementById('global-cf-btn');
+  if (btn) btn.classList.toggle('active-cf', globalAutoCF);
+  console.log('[AUTO_CF_ALL] ' + (globalAutoCF ? 'enabled' : 'disabled'));
+  globalCFExcluded = {};  // clear exclusions on toggle
+  if (globalAutoCF && lastTable && Array.isArray(lastTable.seats)) {
+    // Tick C/F for every visible hero seat
+    lastTable.seats.forEach(function(seat) {
+      if (!seat.is_self_player && !seat.is_hero) return;
+      if (!seat.name || seat.name === 'Empty') return;
+      var sn = getSeatNo(seat);
+      preActionState[sn] = 'check_fold';
+      sendCmd(sn, 'check_fold');
+    });
+    console.log('[AUTO_CF_ALL] armed all visible seats');
+  }
+  renderedSeats = {}; lastEmgHash = null; render();
+}
+
+// -- Apply globalAutoCF to new players appearing mid-hand --
+function applyGlobalCFToNewSeats() {
+  if (!globalAutoCF || !lastTable || !Array.isArray(lastTable.seats)) return;
+  lastTable.seats.forEach(function(seat) {
+    if (!seat.is_self_player && !seat.is_hero) return;
+    if (!seat.name || seat.name === 'Empty') return;
+    var sn = getSeatNo(seat);
+    if (preActionState[sn] == null && !globalCFExcluded[sn]) {
+      preActionState[sn] = 'check_fold';
+      sendCmd(sn, 'check_fold');
+      console.log('[AUTO_CF_ALL] auto-armed new seat=' + sn);
+    }
+  });
+}
+
+// -- AUTO C/C PREFLOP auto-fire --
+function fireAutoCcPreflop() {
+  if (!lastTable || !Array.isArray(lastTable.seats)) return;
+  var street = (lastTable.street || '').toUpperCase();
+  var now = Date.now();
+  lastTable.seats.forEach(function(seat) {
+    if (!seat.is_self_player) return;
+    var sn = getSeatNo(seat);
+    var enabled = globalAutoCcPreflop === true || autoCcPreflop[sn] === true;
+    if (!enabled) return;
+    if (street !== 'PREFLOP') return;
+    // Re-send check_call every 3s to keep it armed through entire preflop
+    var lastSent = autoCcLastSent[sn] || 0;
+    if (now - lastSent < 3000) return;
+    autoCcLastSent[sn] = now;
+    preActionState[sn] = 'check_call';
+    sendCmd(sn, 'check_call');
+    console.log('[AUTO_CC_PREFLOP] armed seat=' + sn + ' src=' + (globalAutoCcPreflop ? 'global' : 'per-player'));
+    renderedSeats = {};
+  });
+}
+
+// -- New-hand detection --
+
+function checkNewHand() {
+  if (!lastTable || !lastTable.board) return;
+  var b = lastTable.board;
+  var flopStr = Array.isArray(b.flop) ? b.flop.join(',') : '';
+  var boardKey = lastTable.street + ':' + flopStr;
+  if (lastBoardKey !== null && lastBoardKey !== boardKey) {
+    var isPreflop = boardKey.indexOf('PREFLOP:') === 0;
+    if (isPreflop || flopStr !== lastBoardKey.split(':').slice(1).join(':')) {
+      preActionState = {};
+      cashoutState = {};
+      autoCcPreflop = {};
+      khState = {};
+      autoCcLastSent = {};
+      globalCFExcluded = {};
+      console.log('[AUTO_CC_PREFLOP] reset_new_hand');
+      seatAmounts = {};
+      emgAmount = null;
+      renderedSeats = {};
+      lastEmgHash = null;
+      console.log('[REMOTE] checkbox states reset after hand transition');
+    }
+  }
+  lastBoardKey = boardKey;
+}
+
+// -- Main render --
+
+function render() {
+  checkNewHand();
+  renderBar();
+  renderBoard();
+  renderSeats();
+  renderEmergencyPanel();
+  applyGlobalCFToNewSeats();
+  fireAutoCcPreflop();
+}
+
+// -- Init & poll --
+
+console.log('[REMOTE] ' + VERSION + ' loaded');
+fetchTable();
+// schedulePoll() is called inside fetchTable .then/.catch — no setInterval
+</script>
+</body>
+</html>

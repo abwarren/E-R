@@ -1,0 +1,21 @@
+DOM_SURVEY
+{
+"href": "https://games.goldrush.co.za/LaunchGame?partnerId=1875356&devicetypeid=1&gameId=11234&language=en&openType=real&isMobile=false&deposit_url=https%3A%2F%2Fwww.goldrush.co.za%2Faccount%2Fdeposit%23redire",
+"title": "",
+"readyState": "loading",
+"elemCount": 18,
+"inIframe": true,
+"bodyTextSample": "You need to enable JavaScript to run this app.",
+"allTags": {
+"html": 1,
+"head": 1,
+"meta": 5,
+"link": 6,
+"title": 1,
+"body": 1,
+"noscript": 1,
+"div": 2
+},
+"playerRelatedEls": [],
+"customElements": []
+}

@@ -1,0 +1,1040 @@
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+# configuration file /etc/nginx/nginx.conf:
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    server_tokens off;
+    server_names_hash_bucket_size 128;
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log /var/log/nginx/access.log main;
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    client_max_body_size 2m;
+    types_hash_max_size 2048;
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/json;
+
+    # Rate limiting zones
+    limit_req_zone $binary_remote_addr zone=api_limit:10m rate=50r/s;
+    limit_req_zone $binary_remote_addr zone=login_limit:10m rate=30r/m;
+
+    # Redirect HTTP to HTTPS for legacy subdomain
+    server {
+        listen 80;
+        server_name ec2-34-241-209-143.eu-west-1.compute.amazonaws.com;
+        return 301 https://$server_name:8080$request_uri;
+    }
+
+    # Redirect HTTP to HTTPS for main domain
+    server {
+        listen 80 default_server;
+        server_name haaats.xyz;
+
+        location /.well-known/acme-challenge/ {
+            root /opt/plo-engine/static;
+        }
+
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    
+
+
+
+}
+
+    # =========================================================================
+    # MAIN DOMAIN - haaats.xyz (mirrors nuts4poker.com)
+    # =========================================================================
+    server {
+        listen 443 ssl;
+        http2 on;
+        server_name haaats.xyz;
+    ssl_certificate /etc/letsencrypt/live/haaats.xyz/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/haaats.xyz/privkey.pem; # managed by Certbot
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers off;
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 10m;
+
+        # Security headers
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Permitted-Cross-Domain-Policies "none" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), screen-wake-lock=(self)" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+        # ---- ROOT -> ENGINE ----
+        location = / {
+            return 301 /engine;
+        }
+
+        # ---- PORTAL ----
+        location ~ ^/portal/?$ {
+            root /opt/plo-engine/static;
+            try_files /portal.html =404;
+            add_header Cache-Control no-cache always;
+        }
+
+        # ---- ENGINE UI (static files) ----
+        location = /engine {
+            return 301 /engine/;
+        }
+
+        location ^~ /engine/assets/ {
+            alias /opt/plo-engine/static/assets/;
+            try_files $uri $uri.html =404;
+            expires 1y;
+            add_header Cache-Control "public, immutable" always;
+        }
+
+        location = /engine/ {
+            alias /opt/plo-engine/static/;
+            index engine.html index.html;
+            add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+        }
+
+        location = /engine/index.html {
+            alias /opt/plo-engine/static/index.html;
+            add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+        }
+
+        location /engine/ {
+            alias /opt/plo-engine/static/;
+            try_files $uri $uri.html =404;
+        }
+
+        location ^~ /assets/ {
+            alias /opt/plo-engine/static/assets/;
+            try_files $uri $uri.html =404;
+            expires 1y;
+            add_header Cache-Control "public, immutable" always;
+        }
+
+        # ---- REMOTE CONTROL UI (W4P branding for haaats.xyz) ----
+        location ~ ^/remote/?$ {
+            root /opt/plo-engine/static;
+            try_files /remote-w4p.html =404;
+            add_header Cache-Control "no-cache" always;
+        }
+
+        # ---- BLM (Basketball League Manager) ----
+        location ~ ^/league-manager/?$ {
+            root /opt/plo-engine/static;
+            try_files /blm.html =404;
+            add_header Cache-Control "no-cache" always;
+        }
+
+        # ---- REMOTE BUTTON CONTROL (per-seat PokerBet style) ----
+        location ~ ^/remotebutton/?$ {
+            root /opt/plo-engine/static;
+            try_files /remotebutton.html =404;
+            add_header Cache-Control "no-cache" always;
+        }
+
+        # ---- S3 UPLOAD PAGE ----
+        location ~ ^/upload/?$ {
+            root /opt/plo-engine/static;
+            try_files /upload.html =404;
+            add_header Cache-Control "no-cache" always;
+        }
+
+        # ---- COLLECTOR API (proxied to Flask with CORS) ----
+        location /collector/ {
+            proxy_pass http://127.0.0.1:5000/collector/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_http_version 1.1;
+            proxy_read_timeout 30s;
+        }
+
+        # ---- N4P SCRIPTS (CORS) ----
+        location = /n4p.js {
+            root /opt/plo-engine/static;
+            try_files /n4p.js =404;
+            add_header Content-Type "application/javascript" always;
+            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+            add_header Cache-Control "no-cache" always;
+        }
+
+        location = /n4p-full.js {
+            root /opt/plo-engine/static;
+            try_files /n4p-full.js =404;
+            add_header Access-Control-Allow-Origin "*" always;
+            add_header Content-Type "application/javascript" always;
+            add_header Cache-Control "no-cache" always;
+        }
+
+        # ---- W4P SCRIPTS (CORS) ----
+        location = /w4p.js {
+            root /opt/plo-engine/static;
+            try_files /w4p.js =404;
+            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+            add_header Content-Type "application/javascript" always;
+            add_header Cache-Control "no-cache" always;
+        }
+
+        location = /w4p-full.js {
+            root /opt/plo-engine/static;
+            try_files /w4p-full.js =404;
+            add_header Access-Control-Allow-Origin "*" always;
+            add_header Content-Type "application/javascript" always;
+            add_header Cache-Control "no-cache" always;
+        }
+
+        # ---- PUBLIC DOWNLOADS ----
+        location /dl/ {
+            alias /opt/plo-engine/static/dl/;
+            autoindex off;
+            add_header Access-Control-Allow-Origin "*" always;
+        }
+
+        # ---- CHROME EXTENSION ----
+        location /ext/ {
+            alias /opt/plo-engine/static/ext/;
+            autoindex off;
+            add_header Access-Control-Allow-Origin "*" always;
+            add_header Cache-Control "no-cache" always;
+        }
+
+        # ---- SOCKET.IO STUB ----
+        location /socket.io/ {
+            return 200 '{"ok":false,"error":"socket.io not configured"}';
+            add_header Content-Type application/json;
+        }
+
+        # ---- STOP/START UI ----
+        location = /stopstart {
+            return 301 /stopstart/;
+        }
+        location = /stopstart/ {
+            alias /opt/plo-engine/static/;
+            try_files /stopstart.html =404;
+            add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+        }
+
+        # ---- EQUITY ENGINE API -> localhost:5050 ----
+        location /api/login {
+            limit_req zone=login_limit burst=5 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/login;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 120s;
+        }
+
+        location /api/run-batch {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/run-batch;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 300s;
+            proxy_buffering off;
+            proxy_set_header Connection "";
+            proxy_cache off;
+            proxy_set_header X-Accel-Buffering no;
+        }
+
+        location /api/run {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/run;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 120s;
+            proxy_connect_timeout 5s;
+        }
+
+        location /api/stream/ {
+            proxy_pass http://127.0.0.1:5003/api/stream/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 300s;
+            proxy_buffering off;
+            proxy_set_header Connection "";
+            proxy_cache off;
+            #chunked_transfer_encoding off;
+            proxy_set_header X-Accel-Buffering no;
+        }
+
+        location /api/results/ {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/results/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/validate {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/validate;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/fix {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/fix;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/auth/ {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/auth/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/logout {
+            proxy_pass http://127.0.0.1:5003/api/logout;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /api/download/ {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/download/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/rng/ {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/rng/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/create {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/create;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/launch/ {
+            proxy_pass http://127.0.0.1:5003/api/launch/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /api/dirk/ {
+            proxy_pass http://127.0.0.1:5003/api/dirk/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/current-hands {
+            proxy_pass http://127.0.0.1:5003/api/current-hands;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/analytics/ {
+            proxy_pass http://127.0.0.1:5003/api/analytics/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 60s;
+        }
+
+        location /api/ai {
+            proxy_pass http://127.0.0.1:5003/api/ai;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 60s;
+        }
+
+        location /api/scanner {
+            proxy_pass http://127.0.0.1:5003/api/scanner;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/batch/ {
+            proxy_pass http://127.0.0.1:5003/api/batch/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 120s;
+        }
+
+        location /api/tracker/ {
+            proxy_pass http://127.0.0.1:5003/api/tracker/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        # =====================================================================
+        # W4P REMOTE CONTROL API ROUTES -> localhost:5003 (plo-w4p Flask)
+        # =====================================================================
+        # WARNING: These routes MUST proxy to port 5003, NOT 5000!
+        #   - Port 5003 = plo-w4p.service (haaats.xyz remote control)
+        #   - Port 5000 = plo-equity (nuts4poker.com, completely separate)
+        #   - Port 5050 = equity engine
+        # WARNING: Do NOT add CORS headers (Access-Control-*) in these blocks!
+        #   Flask CORS(app) handles all CORS. Duplicate headers = browser rejection.
+        # WARNING: After sed -i on this file, run "docker restart nginx-proxy"
+        #   (not just reload) because sed -i changes the inode and breaks bind mount.
+        # =====================================================================
+        location /api/commands/ {
+            proxy_pass http://127.0.0.1:5003/api/commands/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        # ---- SNAPSHOT API -> localhost:5003 (plo-w4p) ----
+        location /api/snapshot {
+            proxy_pass http://127.0.0.1:5003/api/snapshot;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        location /api/table/ {
+            proxy_pass http://127.0.0.1:5003/api/table/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        location = /api/tables {
+            proxy_pass http://127.0.0.1:5003/api/tables;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location = /api/health {
+            proxy_pass http://127.0.0.1:5003/api/health;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+        }
+
+        # ---- COLLECTOR API -> localhost:5003 (plo-w4p) ----
+        location /api/collector/ {
+            proxy_pass http://127.0.0.1:5003/api/collector/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 60s;
+        }
+
+        # Catch-all /api/ -> Flask (port 5003 for engine/equity endpoints)
+        location /api/ {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 60s;
+
+        }
+
+        # ---- HUD API ----
+        location /api/hud/ {
+            proxy_pass http://127.0.0.1:5001/api/hud/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 60s;
+        }
+
+        location /api/v2/hud/ {
+            proxy_pass http://127.0.0.1:5001/api/v2/hud/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 60s;
+        }
+        # ---- HUD Web Dashboard ----
+        location /hud/ {
+            proxy_pass http://127.0.0.1:3001/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_read_timeout 300s;
+            proxy_buffering off;
+        }
+
+
+        # ---- TOURNAMENT STATS DASHBOARD (port 5002) ----
+        location /stats/ {
+            proxy_pass http://127.0.0.1:5002/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 60s;
+        }
+
+        # ---- BLM DASHBOARD (port 5002) ----
+        location /blm/ {
+            proxy_pass http://127.0.0.1:5002/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 60s;
+        }
+        location = /blm {
+            return 301 /blm/;
+        }
+        location = /stats {
+            return 301 /stats/;
+        }
+        # ---- TOURNAMENT DASHBOARD ----
+        location /tournaments/ {
+            proxy_pass http://127.0.0.1:3002/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 300s;
+            proxy_buffering off;
+        }
+
+        location = /tournaments {
+            return 301 /tournaments/;
+        }
+
+        # ---- POKERBET MIRROR ----
+        location /pokerbet/ {
+            proxy_pass http://127.0.0.1:3001/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 300s;
+            proxy_buffering off;
+        }
+
+        location = /pokerbet {
+            return 301 /pokerbet/pokerbet-mirror.html;
+        }
+
+        # ---- HEALTH CHECK ----
+        location /health {
+            proxy_pass http://127.0.0.1:5000/api/health;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            access_log off;
+        }
+
+        # ---- ENGINE COLLAB CREATE ----
+        location = /create {
+            proxy_pass http://127.0.0.1:5003/create;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # ---- SERVER DASHBOARD ----
+        location ~ ^/dashboard/?$ {
+            root /opt/plo-engine/static;
+            try_files /dashboard.html =404;
+            add_header Cache-Control no-cache always;
+        }
+
+        # ---- DENY DOTFILES ----
+        location ~ /\. {
+            deny all;
+        }
+    
+
+
+
+}
+    # =========================================================================
+    # LEGACY - ec2-34-241-209-143.eu-west-1.compute.amazonaws.com:8080
+    # =========================================================================
+    server {
+        listen 8080 ssl;
+        http2 on;
+        server_name ec2-34-241-209-143.eu-west-1.compute.amazonaws.com;
+
+        ssl_certificate /opt/nginx-config/certs/selfsigned.crt;
+        ssl_certificate_key /opt/nginx-config/certs/selfsigned.key;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers HIGH:!aNULL:!MD5;
+
+        # HUD Tournament Dashboard
+        location /tournaments/ {
+            proxy_pass http://127.0.0.1:3002/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 300s;
+            proxy_buffering off;
+        }
+
+        location = /tournaments {
+            return 301 /tournaments/;
+        }
+
+        # PokerBet Mirror Dashboard
+        location /pokerbet/ {
+            proxy_pass http://127.0.0.1:3001/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 300s;
+            proxy_buffering off;
+        }
+
+        location = /pokerbet {
+            return 301 /pokerbet/pokerbet-mirror.html;
+        }
+
+        # HUD API
+        location /api/hud/ {
+            proxy_pass http://127.0.0.1:5001/api/hud/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+
+        # ---- ENGINE API -> localhost:5050 ----
+        location /api/run-batch {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/run-batch;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 300s;
+            proxy_buffering off;
+            proxy_set_header Connection "";
+            proxy_cache off;
+            proxy_set_header X-Accel-Buffering no;
+        }
+
+        location /api/run {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/run;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 120s;
+        }
+
+        location /api/stream/ {
+            proxy_pass http://127.0.0.1:5003/api/stream/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_read_timeout 300s;
+            proxy_buffering off;
+            proxy_set_header Connection "";
+            proxy_cache off;
+            #chunked_transfer_encoding off;
+            proxy_set_header X-Accel-Buffering no;
+        }
+
+        location /api/results/ {
+            proxy_pass http://127.0.0.1:5003/api/results/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+        }
+
+        location /api/validate {
+            proxy_pass http://127.0.0.1:5003/api/validate;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+        }
+
+        location /api/fix {
+            proxy_pass http://127.0.0.1:5003/api/fix;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+        }
+
+        location /api/login {
+            limit_req zone=login_limit burst=5 nodelay;
+            proxy_pass http://127.0.0.1:5003/api/login;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+        }
+        # Remote Control API
+        location /api/ {
+
+            proxy_pass http://127.0.0.1:5000/api/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Hand Collector API
+        location /api/collector/ {
+
+            proxy_pass http://127.0.0.1:5000/api/collector/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 60s;
+            proxy_connect_timeout 60s;
+        }
+
+        location /collector {
+            proxy_pass http://127.0.0.1:5000/collector;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        location /shell {
+            proxy_pass http://127.0.0.1:5000/shell;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /login {
+            proxy_pass http://127.0.0.1:5000/login;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /hero {
+            proxy_pass http://127.0.0.1:5000/hero;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /static/ {
+            proxy_pass http://127.0.0.1:5000/static/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        location ~ ^/n4p-tampermonkey.user.js$ {
+            root /opt/plo-equity/static;
+            add_header Content-Type application/javascript;
+            add_header Access-Control-Allow-Origin * always;
+            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "*" always;
+        }
+
+        # Browser VNC endpoints
+        location /browser1/ {
+            proxy_pass http://172.31.41.21:6081/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_read_timeout 61s;
+            proxy_buffering off;
+        }
+
+        location /browser2/ {
+            proxy_pass http://172.31.41.21:6082/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_read_timeout 61s;
+            proxy_buffering off;
+        }
+
+        location /browser3/ {
+            proxy_pass http://172.31.41.21:6083/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_read_timeout 61s;
+            proxy_buffering off;
+        }
+
+        location /browser4/ {
+            proxy_pass http://172.31.41.21:6084/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_read_timeout 61s;
+            proxy_buffering off;
+        }
+
+        # Catch-all -> Flask
+        location / {
+            proxy_pass http://127.0.0.1:5000/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+
+    # Browser access info page
+    server {
+        listen 80;
+        server_name mid.haaats.xyz;
+
+        location / {
+            return 200 "Browser Access via ec2-34-241-209-143.eu-west-1.compute.amazonaws.com:8080\n\nBrowser 1: https://ec2-34-241-209-143.eu-west-1.compute.amazonaws.com:8080/browser1/\nBrowser 2: https://ec2-34-241-209-143.eu-west-1.compute.amazonaws.com:8080/browser2/\nBrowser 3: https://ec2-34-241-209-143.eu-west-1.compute.amazonaws.com:8080/browser3/\nBrowser 4: https://ec2-34-241-209-143.eu-west-1.compute.amazonaws.com:8080/browser4/\n";
+            add_header Content-Type text/plain;
+        }
+    }
+}
+
+# configuration file /etc/nginx/mime.types:
+types {
+    text/html                                        html htm shtml;
+    text/css                                         css;
+    text/xml                                         xml;
+    image/gif                                        gif;
+    image/jpeg                                       jpeg jpg;
+    application/javascript                           js;
+    application/atom+xml                             atom;
+    application/rss+xml                              rss;
+
+    text/mathml                                      mml;
+    text/plain                                       txt;
+    text/vnd.sun.j2me.app-descriptor                 jad;
+    text/vnd.wap.wml                                 wml;
+    text/x-component                                 htc;
+
+    image/avif                                       avif;
+    image/png                                        png;
+    image/svg+xml                                    svg svgz;
+    image/tiff                                       tif tiff;
+    image/vnd.wap.wbmp                               wbmp;
+    image/webp                                       webp;
+    image/x-icon                                     ico;
+    image/x-jng                                      jng;
+    image/x-ms-bmp                                   bmp;
+
+    font/woff                                        woff;
+    font/woff2                                       woff2;
+
+    application/java-archive                         jar war ear;
+    application/json                                 json;
+    application/mac-binhex40                         hqx;
+    application/msword                               doc;
+    application/pdf                                  pdf;
+    application/postscript                           ps eps ai;
+    application/rtf                                  rtf;
+    application/vnd.apple.mpegurl                    m3u8;
+    application/vnd.google-earth.kml+xml             kml;
+    application/vnd.google-earth.kmz                 kmz;
+    application/vnd.ms-excel                         xls;
+    application/vnd.ms-fontobject                    eot;
+    application/vnd.ms-powerpoint                    ppt;
+    application/vnd.oasis.opendocument.graphics      odg;
+    application/vnd.oasis.opendocument.presentation  odp;
+    application/vnd.oasis.opendocument.spreadsheet   ods;
+    application/vnd.oasis.opendocument.text          odt;
+    application/vnd.openxmlformats-officedocument.presentationml.presentation
+                                                     pptx;
+    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+                                                     xlsx;
+    application/vnd.openxmlformats-officedocument.wordprocessingml.document
+                                                     docx;
+    application/vnd.wap.wmlc                         wmlc;
+    application/wasm                                 wasm;
+    application/x-7z-compressed                      7z;
+    application/x-cocoa                              cco;
+    application/x-java-archive-diff                  jardiff;
+    application/x-java-jnlp-file                     jnlp;
+    application/x-makeself                           run;
+    application/x-perl                               pl pm;
+    application/x-pilot                              prc pdb;
+    application/x-rar-compressed                     rar;
+    application/x-redhat-package-manager             rpm;
+    application/x-sea                                sea;
+    application/x-shockwave-flash                    swf;
+    application/x-stuffit                            sit;
+    application/x-tcl                                tcl tk;
+    application/x-x509-ca-cert                       der pem crt;
+    application/x-xpinstall                          xpi;
+    application/xhtml+xml                            xhtml;
+    application/xslt+xml                             xsl xslt;
+    application/xspf+xml                             xspf;
+    application/zip                                  zip;
+
+    application/octet-stream                         bin exe dll;
+    application/octet-stream                         deb;
+    application/octet-stream                         dmg;
+    application/octet-stream                         iso img;
+    application/octet-stream                         msi msp msm;
+
+    audio/midi                                       mid midi kar;
+    audio/mpeg                                       mp3;
+    audio/ogg                                        ogg;
+    audio/x-m4a                                      m4a;
+    audio/x-realaudio                                ra;
+
+    video/3gpp                                       3gpp 3gp;
+    video/mp2t                                       ts;
+    video/mp4                                        mp4;
+    video/mpeg                                       mpeg mpg;
+    video/ogg                                        ogv;
+    video/quicktime                                  mov;
+    video/webm                                       webm;
+    video/x-flv                                      flv;
+    video/x-m4v                                      m4v;
+    video/x-matroska                                 mkv;
+    video/x-mng                                      mng;
+    video/x-ms-asf                                   asx asf;
+    video/x-ms-wmv                                   wmv;
+    video/x-msvideo                                  avi;
+}
+

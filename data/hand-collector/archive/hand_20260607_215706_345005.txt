@@ -1,0 +1,37 @@
+DOM_SURVEY
+{
+"href": "http://127.0.0.1:4000/remote",
+"title": "W4P Remote Control",
+"readyState": "interactive",
+"elemCount": 31,
+"inIframe": false,
+"bodyTextSample": "W4P REMOTE grid-v1\n--\nFORCE TEST\nEMG\nAUTO C/C PREFLOP — ALL\nSELECT ALL AUTO C/F\nEXECUTE KH\nWAITING\nPOT R0.00",
+"allTags": {
+"html": 1,
+"head": 1,
+"meta": 2,
+"title": 1,
+"style": 1,
+"body": 1,
+"header": 1,
+"h1": 1,
+"span": 3,
+"div": 13,
+"button": 5,
+"script": 1
+},
+"playerRelatedEls": [
+"tag": "div",
+"cls": "main-area",
+"text": " WAITING POT R0.00 ",
+"id": ""
+"cls": "board-bar",
+"cls": "board-cards",
+"text": "",
+"id": "board-cards"
+"cls": "pot-label",
+"text": "POT R0.00",
+"id": "pot-label"
+}
+],
+"customElements": []

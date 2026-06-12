@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLO Hand Export Renderer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0d1117;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  .container { max-width: 800px; width: 100%; }
+  h1 { font-size: 1.5em; font-weight: 700; color: #58a6ff; text-align: center; margin: 20px 0; }
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: #238636; color: #fff; }
+  .btn-primary:hover { background: #2ea043; }
+  .btn-secondary { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; }
+  .btn-secondary:hover { background: #30363d; }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85em;
+    margin-bottom: 8px;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    display: inline-block;
+  }
+  .dot.ok { background: #4caf50; }
+  .dot.err { background: #f44336; }
+  .dot.wait { background: #ffd54f; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+
+  label { display: block; font-size: 0.85em; color: #8b949e; margin-bottom: 4px; }
+  textarea {
+    width: 100%;
+    min-height: 200px;
+    background: #0d1117;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 12px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 1em;
+    resize: vertical;
+    white-space: pre;
+  }
+  textarea:focus { border-color: #58a6ff; outline: none; }
+
+  .meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 0.85em;
+    margin: 8px 0;
+  }
+  .meta-item { color: #8b949e; }
+  .meta-item b { color: #c9d1d9; }
+
+  .error-box {
+    background: rgba(244,67,54,0.1);
+    border: 1px solid #f44336;
+    border-radius: 6px;
+    padding: 12px;
+    color: #f44336;
+    font-size: 0.9em;
+    margin-top: 8px;
+  }
+
+  .config-info {
+    font-size: 0.8em;
+    color: #8b949e;
+    margin-top: 8px;
+  }
+  .config-info code {
+    background: rgba(88,166,255,0.1);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: #58a6ff;
+  }
+
+  .copied-msg {
+    color: #4caf50;
+    font-size: 0.85em;
+    margin-top: 4px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .copied-msg.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>♠ PLO Hand Export Renderer ♥</h1>
+
+  <div class="card">
+    <div class="controls">
+      <button class="btn btn-primary" id="load-btn">⟳ Load Latest Hand</button>
+      <button class="btn btn-secondary" id="copy-btn">📋 Copy</button>
+    </div>
+
+    <div class="status">
+      <span id="conn-dot" class="dot"></span>
+      <span id="status-text">Ready. Click "Load Latest Hand" to fetch from API.</span>
+    </div>
+
+    <div class="meta">
+      <div class="meta-item">API: <b id="api-info">--</b></div>
+      <div class="meta-item">Table: <b id="table-info">--</b></div>
+      <div class="meta-item">Street: <b id="street-info">--</b></div>
+      <div class="meta-item">Hands: <b id="hand-count">0</b></div>
+    </div>
+
+    <label for="export-area">Exported Hands (copy from here):</label>
+    <textarea id="export-area" readonly placeholder="Click 'Load Latest Hand' to get started..."></textarea>
+    <div id="copied-msg" class="copied-msg">✓ Copied to clipboard</div>
+
+    <div id="error-box" class="error-box" style="display:none;"></div>
+  </div>
+
+  <div class="card" style="font-size:0.85em;color:#8b949e;">
+    <h2 style="font-size:1em;color:#c9d1d9;margin-bottom:8px;">Format</h2>
+    <p>Output format: one hand per line — hole cards + board cards.</p>
+    <p>No names, no labels, no spaces. Board/flop are appended last.</p>
+    <p>Copy directly from the textarea for use in equity calculators.</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── Config ────────────────────────────────────────────────────────────────
+// Change API_BASE to switch between dev and production:
+//
+//   Local:      http://127.0.0.1:1080/api
+//   Production: https://haaats.xyz/api
+// ───────────────────────────────────────────────────────────────────────────
+var API_BASE = '/api';
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function $(id) { return document.getElementById(id); }
+
+function formatCards(cards) {
+  if (!cards || !Array.isArray(cards)) return '';
+  return cards.map(function(c) { return c; }).join('');
+}
+
+function buildHandLine(holeCards, board) {
+  var parts = [];
+  // Hole cards
+  if (holeCards && holeCards.length) {
+    parts.push(formatCards(holeCards));
+  }
+  // Board: flop, turn, river
+  if (board) {
+    if (board.flop && board.flop.length) {
+      parts.push(formatCards(board.flop));
+    }
+    if (board.turn) {
+      parts.push(board.turn);
+    }
+    if (board.river) {
+      parts.push(board.river);
+    }
+  }
+  return parts.join('');
+}
+
+function extractHands(table) {
+  if (!table || !table.seats) return [];
+
+  var board = table.board || {};
+  var hands = [];
+
+  // Collect hero seats (players with hole cards)
+  for (var i = 0; i < table.seats.length; i++) {
+    var seat = table.seats[i];
+    var holeCards = seat.hole_cards || [];
+    // Only include seats that have hole cards
+    if (holeCards.length > 0 && seat.name) {
+      var line = buildHandLine(holeCards, board);
+      if (line) hands.push(line);
+    }
+  }
+
+  // If no hero seats but we have a board, output the board alone
+  if (hands.length === 0) {
+    var boardLine = buildHandLine(null, board);
+    if (boardLine) hands.push(boardLine);
+  }
+
+  return hands;
+}
+
+function logStatus(msg, type) {
+  var dot = $('conn-dot');
+  var text = $('status-text');
+  dot.className = 'dot ' + (type || 'wait');
+  text.textContent = msg;
+}
+
+function showError(msg) {
+  var el = $('error-box');
+  el.textContent = msg;
+  el.style.display = 'block';
+  logStatus('Error: ' + msg, 'err');
+}
+
+function hideError() {
+  $('error-box').style.display = 'none';
+}
+
+// ── Load hand ─────────────────────────────────────────────────────────────
+
+function loadHand() {
+  var loadBtn = $('load-btn');
+  loadBtn.disabled = true;
+  loadBtn.textContent = '⟳ Loading...';
+  hideError();
+
+  logStatus('Fetching table state from ' + API_BASE + '/table/latest...', 'wait');
+  $('export-area').value = '';
+  $('api-info').textContent = API_BASE;
+  $('table-info').textContent = 'loading...';
+  $('street-info').textContent = '--';
+  $('hand-count').textContent = '0';
+
+  fetch(API_BASE + '/table/latest')
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + r.statusText);
+      return r.json();
+    })
+    .then(function(j) {
+      if (!j.ok) {
+        // Backend returned ok:false
+        showError('Backend returned: ' + JSON.stringify(j));
+        loadBtn.disabled = false;
+        loadBtn.textContent = '⟳ Load Latest Hand';
+        return;
+      }
+
+      var table = j.table;
+      if (!table) {
+        showError('No table data in response');
+        loadBtn.disabled = false;
+        loadBtn.textContent = '⟳ Load Latest Hand';
+        return;
+      }
+
+      // Update meta
+      $('api-info').textContent = API_BASE;
+      $('table-info').textContent = table.table_id || 'unknown';
+      $('street-info').textContent = table.street || '--';
+
+      // Extract hands
+      var hands = extractHands(table);
+      var output = hands.join('\n');
+      $('export-area').value = output;
+      $('hand-count').textContent = hands.length;
+
+      if (hands.length === 0) {
+        logStatus('No hands with hole cards found. Board state shown.', 'ok');
+      } else {
+        logStatus('Loaded ' + hands.length + ' hand(s) from table.', 'ok');
+      }
+    })
+    .catch(function(e) {
+      showError('Cannot connect to ' + API_BASE + ': ' + e.message);
+    })
+    .finally(function() {
+      loadBtn.disabled = false;
+      loadBtn.textContent = '⟳ Load Latest Hand';
+    });
+}
+
+// ── Copy ──────────────────────────────────────────────────────────────────
+
+function copyOutput() {
+  var ta = $('export-area');
+  if (!ta.value.trim()) {
+    logStatus('Nothing to copy — load a hand first.', 'err');
+    return;
+  }
+
+  // Select and copy using modern clipboard API
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ta.value).then(function() {
+      var msg = $('copied-msg');
+      msg.classList.add('show');
+      setTimeout(function() { msg.classList.remove('show'); }, 2000);
+      logStatus('✓ Copied ' + ta.value.split('\n').filter(Boolean).length + ' hands to clipboard', 'ok');
+    }).catch(function() {
+      // Fallback to old method
+      ta.select();
+      document.execCommand('copy');
+      var msg = $('copied-msg');
+      msg.classList.add('show');
+      setTimeout(function() { msg.classList.remove('show'); }, 2000);
+    });
+  } else {
+    ta.select();
+    document.execCommand('copy');
+    var msg = $('copied-msg');
+    msg.classList.add('show');
+    setTimeout(function() { msg.classList.remove('show'); }, 2000);
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Log which API we're using
+  console.log('[HandExport] API_BASE=' + API_BASE);
+
+  $('load-btn').addEventListener('click', loadHand);
+  $('copy-btn').addEventListener('click', copyOutput);
+
+  // Auto-load on page load
+  loadHand();
+});
+
+console.log('[HandExport] v1.0 loaded. API_BASE=' + API_BASE);
+</script>
+</body>
+</html>

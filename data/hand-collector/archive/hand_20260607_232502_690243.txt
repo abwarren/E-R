@@ -1,0 +1,30 @@
+DOM_SURVEY
+{
+"href": "https://www.pokerbet.co.za/",
+"title": "Online Poker | Online Casino | Sports Betting | Pokerbet South Africa",
+"readyState": "interactive",
+"elemCount": 42,
+"inIframe": false,
+"bodyTextSample": "",
+"allTags": {
+"html": 1,
+"head": 1,
+"meta": 18,
+"script": 9,
+"link": 5,
+"title": 1,
+"body": 1,
+"noscript": 3,
+"div": 1,
+"img": 2
+},
+"playerRelatedEls": [
+"tag": "script",
+"cls": "",
+"text": "!function(f,b,e,v,n,t,s) {if(f.fbq)return;n=f.fbq=function()",
+"id": ""
+"tag": "title",
+"text": "Online Poker | Online Casino | Sports Betting | Pokerbet Sou",
+}
+],
+"customElements": []

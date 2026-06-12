@@ -1,0 +1,103 @@
+{
+  "manifest_version": 3,
+  "name": "PokerScope W4P",
+  "version": "7.1",
+  "description": "W4P Extension — scrapes PokerBet DOM, sends snapshots, executes commands",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.pokerbet.co.za/*",
+    "*://*.goldrush.co.za/*",
+    "*://games.goldrush.co.za/*",
+    "*://poker-web.goldrush.co.za/*",
+    "*://*.goldrushnation.com/*",
+    "*://*.skillgames-bc.com/*",
+    "*://*.skillgames.com/*",
+    "*://*.skillgames.co.za/*",
+    "*://*.betconstruct.com/*",
+    "https://haaats.xyz/*",
+    "http://127.0.0.1:1080/*",
+    "http://localhost:1080/*"
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "action": {
+    "default_title": "W4P Config",
+    "default_popup": "options.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.pokerbet.co.za/*",
+        "*://*.goldrush.co.za/*",
+        "*://*.skillgames.co.za/*"
+      ],
+      "js": [
+        "autologin.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false,
+      "world": "ISOLATED"
+    },
+    {
+      "matches": [
+        "*://*.pokerbet.co.za/*",
+        "*://*.goldrush.co.za/*",
+        "*://*.goldrushnation.com/*",
+        "*://*.skillgames-bc.com/*",
+        "*://*.skillgames.com/*",
+        "*://*.skillgames.co.za/*",
+        "*://*.betconstruct.com/*"
+      ],
+      "js": [
+        "bridge.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true,
+      "world": "ISOLATED"
+    },
+    {
+      "matches": [
+        "*://*.pokerbet.co.za/*",
+        "*://*.goldrush.co.za/*",
+        "*://*.goldrushnation.com/*",
+        "*://*.skillgames-bc.com/*",
+        "*://*.skillgames.com/*",
+        "*://*.skillgames.co.za/*",
+        "*://*.betconstruct.com/*"
+      ],
+      "js": [
+        "w4p.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true,
+      "match_about_blank": true,
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "*://*.pokerbet.co.za/*",
+        "*://*.goldrush.co.za/*",
+        "*://*.goldrushnation.com/*",
+        "*://*.skillgames-bc.com/*",
+        "*://*.skillgames.com/*",
+        "*://*.skillgames.co.za/*",
+        "*://*.betconstruct.com/*"
+      ],
+      "js": [
+        "strip_images.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true,
+      "match_about_blank": true,
+      "world": "MAIN"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

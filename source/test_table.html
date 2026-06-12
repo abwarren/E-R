@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Poker Table Test</title></head>
+<body>
+<!-- Simulated PokerBet desktop table DOM -->
+<sg-app>
+  <sg-poker-app>
+    <sg-poker-table>
+      <sg-poker-board>
+        <div class="single-cart-view-p icon-layer2_As_p-c-d"></div>
+        <div class="single-cart-view-p icon-layer2_Ks_p-c-d"></div>
+        <div class="single-cart-view-p icon-layer2_Qs_p-c-d"></div>
+        <div class="single-cart-view-p icon-layer2_Js_p-c-d"></div>
+        <div class="single-cart-view-p icon-layer2_Ts_p-c-d"></div>
+      </sg-poker-board>
+
+      <sg-poker-table-seat class="self-player position-0">
+        <div class="player-mini-container-p">
+          <span class="player-name">realTenEight</span>
+          <div class="carts-container-p">
+            <div class="single-cart-view-p icon-layer2_Ac_p-c-d"></div>
+            <div class="single-cart-view-p icon-layer2_Kc_p-c-d"></div>
+            <div class="single-cart-view-p icon-layer2_Qc_p-c-d"></div>
+            <div class="single-cart-view-p icon-layer2_Jc_p-c-d"></div>
+          </div>
+          <div class="player-text-info-p"><span><b>ZAR 250.00</b></span></div>
+        </div>
+      </sg-poker-table-seat>
+
+      <sg-poker-table-seat class="position-1">
+        <div class="player-mini-container-p">
+          <span class="player-name">Atros</span>
+          <div class="player-text-info-p"><span><b>ZAR 420.00</b></span></div>
+        </div>
+      </sg-poker-table-seat>
+
+      <sg-poker-table-seat class="position-2">
+        <div class="player-mini-container-p">
+          <span class="player-name">Player3</span>
+          <div class="player-text-info-p"><span><b>ZAR 180.00</b></span></div>
+        </div>
+      </sg-poker-table-seat>
+
+      <sg-poker-table-seat class="position-3">
+        <div class="player-mini-container-p">
+          <span class="player-name">Player4</span>
+          <div class="carts-container-p">
+            <div class="single-cart-view-p icon-layer2_Td_p-c-d"></div>
+            <div class="single-cart-view-p icon-layer2_9d_p-c-d"></div>
+          </div>
+          <div class="player-text-info-p"><span><b>ZAR 310.00</b></span></div>
+        </div>
+      </sg-poker-table-seat>
+
+      <sg-poker-table-seat class="position-4">
+        <div class="player-mini-container-p">
+          <span class="player-name">Player5</span>
+          <div class="player-text-info-p"><span><b>ZAR 95.00</b></span></div>
+        </div>
+      </sg-poker-table-seat>
+
+      <div class="dealer-icon-view position-1"></div>
+
+      <div class="pot-w-view-p"><span>POT: ZAR 45.00</span></div>
+    </sg-poker-table>
+
+    <!-- Action buttons for hero -->
+    <div class="control-b-view-p fold-c">Fold</div>
+    <div class="control-b-view-p check-c">Check</div>
+    <div class="control-b-view-p call-c">Call 10</div>
+    <div class="control-b-view-p raise-c">Raise</div>
+    <div class="control-b-view-p bet-c">Bet</div>
+  </sg-poker-app>
+</sg-app>
+</body>
+</html>

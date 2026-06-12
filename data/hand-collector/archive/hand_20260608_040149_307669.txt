@@ -1,0 +1,16 @@
+DOM_SURVEY
+{
+"href": "about:blank",
+"title": "",
+"readyState": "interactive",
+"elemCount": 3,
+"inIframe": true,
+"bodyTextSample": "",
+"allTags": {
+"html": 1,
+"head": 1,
+"body": 1
+},
+"playerRelatedEls": [],
+"customElements": []
+}

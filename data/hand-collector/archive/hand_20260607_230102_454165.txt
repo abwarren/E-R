@@ -1,0 +1,33 @@
+DOM_SURVEY
+{
+"href": "https://games.pokerbet.co.za/LaunchGame",
+"title": "",
+"readyState": "interactive",
+"elemCount": 53,
+"inIframe": true,
+"bodyTextSample": "",
+"allTags": {
+"html": 1,
+"head": 1,
+"style": 33,
+"meta": 5,
+"link": 5,
+"title": 1,
+"script": 2,
+"body": 1,
+"noscript": 1,
+"div": 2,
+"section": 1
+},
+"playerRelatedEls": [
+"tag": "style",
+"cls": "",
+"text": ".current-player-stats-container{display:flex;flex-direction:",
+"id": ""
+"text": "@font-face { font-family: 'icomoon'; src: url(https://games.",
+"text": ".jackpotWinPopupHolder{position:fixed;display:flex;flex-dire",
+"text": ".achievementBonusPlayerPopup{padding-top:0}.achievementBonus",
+"text": ".sessionTaxPopup .sessionTaxCards{display:flex;flex-directio",
+}
+],
+"customElements": []

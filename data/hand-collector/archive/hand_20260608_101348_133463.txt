@@ -1,0 +1,27 @@
+DOM_SURVEY
+{
+"href": "https://poker-web.goldrush.co.za/1875356/#?language=en&userName=&gameID=Poker&currency=ZAR&lan=en&openType=real&partnerid=1875356&additionalparams=&token=f251d37f54deea2f976af0d832f7e&mode=real&userid",
+"title": "SkillGames",
+"readyState": "loading",
+"elemCount": 22,
+"inIframe": true,
+"bodyTextSample": "",
+"allTags": {
+"html": 1,
+"head": 1,
+"meta": 2,
+"title": 1,
+"base": 1,
+"link": 8,
+"script": 2,
+"style": 2,
+"noscript": 1,
+"body": 1,
+"sg-app": 1,
+"div": 1
+},
+"playerRelatedEls": [],
+"customElements": [
+"sg-app"
+]
+}

@@ -1,0 +1,35 @@
+DOM_SURVEY
+{
+"href": "http://127.0.0.1:4000/engine",
+"title": "PLO Equity Engine — localhost:4002/engine",
+"readyState": "interactive",
+"elemCount": 29,
+"inIframe": false,
+"bodyTextSample": "PLO EQUITY ENGINE\nNUTS4POKER.COM\nSIGN IN\nUSERNAME\nPASSWORD\n👁\n→ SIGN IN\nAuthorised users only",
+"allTags": {
+"html": 1,
+"head": 1,
+"meta": 2,
+"title": 1,
+"link": 4,
+"script": 2,
+"body": 1,
+"div": 10,
+"form": 1,
+"label": 2,
+"input": 2,
+"button": 2
+},
+"playerRelatedEls": [
+"tag": "body",
+"cls": "",
+"text": " PLO Equity Enginenuts4poker.comSign InUSERNAMEPASSWORD👁→ S",
+"id": ""
+"tag": "div",
+"text": "PLO Equity Enginenuts4poker.comSign InUSERNAMEPASSWORD👁→ Si",
+"id": "root"
+"text": "PLO Equity Enginenuts4poker.com",
+"text": "nuts4poker.com",
+}
+],
+"customElements": []
