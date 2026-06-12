@@ -1505,13 +1505,30 @@ def health():
 
     # Buffer state
     try:
-        from buffer import get_latest_snapshot
+        from buffer import get_latest_snapshot, get_latest_seq, get_snapshot_age
         snap = get_latest_snapshot()
         buffer_has_data = snap is not None
-        buffer_table = snap.get('table_id', '?') if snap else None
+        # Handle new frame format: {'data': ..., 'seq': ..., 'ts': ...}
+        if snap and isinstance(snap, dict) and 'data' in snap:
+            buffer_table = snap.get('data', {}).get('table_id', '?')
+        else:
+            buffer_table = snap.get('table_id', '?') if snap else None
+        snapshot_seq = get_latest_seq()
+        snapshot_age = get_snapshot_age()
+        snapshot_age_seconds = round(snapshot_age, 2) if snapshot_age is not None else None
     except Exception:
         buffer_has_data = False
         buffer_table = None
+        snapshot_seq = 0
+        snapshot_age_seconds = None
+
+    # CDP status — try to reach Vivaldi CDP on port 9222
+    try:
+        import urllib.request
+        with urllib.request.urlopen('http://127.0.0.1:9222/json/version', timeout=2) as resp:
+            cdp_status = 'reachable' if resp.status == 200 else 'unreachable'
+    except Exception:
+        cdp_status = 'unreachable'
 
     return jsonify({
         'ok':              True,
@@ -1525,7 +1542,42 @@ def health():
         'pending_cmds':    n_cmds,
         'buffer_has_data': buffer_has_data,
         'buffer_table':    buffer_table,
+        'snapshot_age_seconds': snapshot_age_seconds,
+        'snapshot_seq':    snapshot_seq,
+        'cdp_status':      cdp_status,
     })
+
+
+@app.route('/api/heartbeat', methods=['GET'])
+def heartbeat():
+    """Lightweight health gate for verifier agents.
+
+    Returns 200 if snapshot is fresh (<30s old), 503 if stale or missing.
+    Sets X-Health header: 'ok' or 'degraded'.
+    """
+    try:
+        from buffer import get_snapshot_age
+        age = get_snapshot_age()
+    except Exception:
+        age = None
+
+    if age is not None and age < 30.0:
+        resp = make_response(jsonify({'ok': True, 'status': 'alive'}))
+        resp.status_code = 200
+        resp.headers['X-Health'] = 'ok'
+        resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        return resp
+    else:
+        resp = make_response(jsonify({
+            'ok': False,
+            'status': 'degraded',
+            'snapshot_age_seconds': round(age, 2) if age is not None else None,
+            'reason': 'snapshot stale' if age is not None else 'no snapshot yet',
+        }))
+        resp.status_code = 503
+        resp.headers['X-Health'] = 'degraded'
+        resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        return resp
 
 
 @app.route('/api/bots', methods=['GET'])

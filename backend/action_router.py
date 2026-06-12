@@ -145,21 +145,30 @@ class ActionRouter:
                       "allin", or a bet size like "bet_50", "bet_pot"
 
         Returns:
-            {"ok": True/False, "action": decision, ...}
+            {"ok": True/False, "action": decision, "selector": ..., "latency_ms": ...}
         """
+        start = time.time()
         decision_lower = decision.lower().strip()
         selector = DECISION_SELECTORS.get(decision_lower)
         if not selector:
             # Try clicking by visible text as fallback
             action_text = decision_lower.replace("_", " ")
             result = self.execute_click_text(tab_id, action_text)
+            latency_ms = (time.time() - start) * 1000
             result["action"] = decision_lower
             result["method"] = "text_match"
+            result["selector"] = None
+            result["latency_ms"] = round(latency_ms, 1)
+            logger.info('[CDP] action=%s latency=%.1fms', decision, latency_ms)
             return result
 
         result = self.execute_action(tab_id, selector)
+        latency_ms = (time.time() - start) * 1000
         result["action"] = decision_lower
         result["method"] = "selector"
+        result["selector"] = selector
+        result["latency_ms"] = round(latency_ms, 1)
+        logger.info('[CDP] action=%s latency=%.1fms', decision, latency_ms)
         return result
 
     def find_goldrush_tabs(self) -> List[Dict[str, str]]:
@@ -373,3 +382,19 @@ def get_router() -> ActionRouter:
     if _default_router is None:
         _default_router = ActionRouter()
     return _default_router
+
+
+def execute_decision(tab_id: str, decision: str) -> Dict[str, Any]:
+    """Pure event-driven interface: execute a decision via CDP on a tab.
+
+    Convenience function that uses the module-level ActionRouter singleton.
+    No equity derivation — just inject the action directly.
+
+    Args:
+        tab_id:   CDP page ID for the target tab
+        decision: Action name (e.g. "fold", "bet_50", "raise")
+
+    Returns:
+        {"ok": True/False, "action": decision, "selector": ..., "latency_ms": ...}
+    """
+    return get_router().execute_decision(tab_id, decision)
