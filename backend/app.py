@@ -27,7 +27,7 @@ from flask import session,  Flask, request, jsonify, send_from_directory, send_f
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from buffer import push_snapshot, extract_hands_and_board
+from buffer import push_snapshot, extract_hands_and_board, should_accept_snapshot, detect_board_change, bump_hand_epoch, get_hand_epoch
 
 # ── PID lock file ─────────────────────────────────────────────────────────────
 
@@ -1029,6 +1029,14 @@ def post_snapshot():
     app.logger.info('[SNAPSHOT][ACCEPT] table_id=%s bot_id=%s seats=%d',
                     table_id, bot_id, len(seats_raw))
     # ── End source guard ──────────────────────────────────────────────────
+
+    # ── Freshness guard: reject stale snapshots, auto-detect board changes ──
+    accept_stale, stale_reason = should_accept_snapshot(payload)
+    if not accept_stale:
+        app.logger.warning('[SNAPSHOT][STALE] %s', stale_reason)
+        return jsonify({'ok': False, 'error': 'stale_snapshot', 'reason': stale_reason}), 409
+    if detect_board_change(payload):
+        app.logger.info('[SNAPSHOT][EPOCH] Board change detected — bumped epoch to %d', get_hand_epoch())
 
     ts = time.time()
     cashout_cmd = None   # built outside lock, queued inside

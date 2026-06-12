@@ -308,6 +308,10 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var _observer = null;             // MutationObserver instance
   var _lastTickTime = 0;            // timestamp of last processTick for fallback interval
   var _tickScheduled = false;       // guard: prevent rAF stacking
+  var _pollActive = false;          // poll dedup guard — prevents concurrent sendSnapshot
+  var _handEpoch = 0;               // hand epoch — bumps on board change, sent to backend
+  var _seqId = 0;                   // monotonic snapshot sequence ID
+  var _lastBoardHash = '';          // track board changes to auto-bump epoch
   var _snapshot = {                 // persistent mutable snapshot (zero-alloc — reused each tick)
     seats: [],
     board: null,
@@ -1021,6 +1025,19 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     _snapshot.frame_locked = true;
     _snapshot.frame_url = location.href;
     _snapshot.dirty = true;
+
+    // ── Freshness: auto-bump hand epoch on board change ──
+    var boardHash = (boardCards || []).join('');
+    if (boardHash && boardHash !== _lastBoardHash) {
+      _lastBoardHash = boardHash;
+      _handEpoch++;
+      console.log('[W4P][EPOCH] Board change detected — hand_epoch=' + _handEpoch);
+    }
+    // Always increment sequence ID per snapshot
+    _seqId++;
+    _snapshot.hand_epoch = _handEpoch;
+    _snapshot.sequence_id = _seqId;
+
     return _snapshot;
   }
 
@@ -1043,6 +1060,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 
   // ── Snapshot response handler ────────────────────────────────
   function handleSnapshotResponse(data) {
+    _pollActive = false;  // Clear poll dedup guard
     if (data.ok) {
       if (data.seat_token) {
         if (!_seatToken) {
@@ -1089,18 +1107,21 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   function sendSnapshot(snap) {
     // ── Guard: in-flight check ──
     if (_snapshotInFlight) {
+      _pollActive = false;
       return;
     }
 
     // ── Guard: minimum interval ──
     var now = Date.now();
     if (now < _nextSnapshotAllowedAt) {
+      _pollActive = false;
       return;
     }
 
     // ── Guard: dedup — skip if state unchanged (forced send every 30s for heartbeat) ──
     var hash = stateHash(snap);
     if (hash !== '' && hash === _lastSnapshotHash && now - _lastSendTime < 30000) {
+      _pollActive = false;
       return;
     }
 
@@ -1111,6 +1132,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     }
     var hasCards = hero && hero.hole_cards && hero.hole_cards.length > 0;
     if (!hasCards && !(hero && hero.is_active) && now - _lastSendTime < 10000 && _n > 5) {
+      _pollActive = false;
       return;
     }
 
@@ -1124,6 +1146,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         _nextSnapshotAllowedAt = Date.now() + SNAPSHOT_INTERVAL_MS;
         handleSnapshotResponse(resp.data);
       } else {
+        _pollActive = false;  // Clear on error too
         if (resp && resp.status === 429) {
           _nextSnapshotAllowedAt = Date.now() + SNAPSHOT_BACKOFF_MS;
           console.log('[W4P][SNAPSHOT] 429 — backoff ' + SNAPSHOT_BACKOFF_MS + 'ms');
@@ -1693,7 +1716,13 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     else if (snap.street !== 'PREFLOP') _mode = 'HAND_ACTIVE';
     else _mode = 'IDLE';
 
-    // Send every tick — no dedup, no heartbeat gate
+    // ── Poll dedup guard: prevent concurrent sendSnapshot calls ──
+    if (_pollActive) {
+      if (_n % 50 === 0) console.log('[W4P][DEDUP] Skipped tick — poll already in flight');
+      window._w4p_timer = setTimeout(tick, pollMs);
+      return;
+    }
+    _pollActive = true;
     _lastSendTime = Date.now();
     sendSnapshot(snap);
     sendToCollector(snap);

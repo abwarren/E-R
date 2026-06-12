@@ -13,6 +13,10 @@ from collections import deque
 _seq = 0
 LAST_SNAPSHOT_TS = 0  # Unix timestamp of last push_snapshot call
 
+# Hand epoch — bumps on board change / new hand, used for stale rejection
+_hand_epoch = 0
+_LAST_BOARD_HASH = None  # track board changes to auto-bump epoch
+
 SNAPSHOT_BUFFER = deque(maxlen=1)
 BUFFER_LOCK = threading.Lock()
 
@@ -35,6 +39,7 @@ def push_snapshot(snapshot_dict):
             'data': snapshot_dict,
             'seq': _seq,
             'ts': time.time(),
+            'hand_epoch': _hand_epoch,
         }
         SNAPSHOT_BUFFER.append(frame)
 
@@ -130,3 +135,62 @@ def extract_hands_and_board(snapshot):
             board_str += str(river)
 
     return hands, board_str
+
+
+def get_hand_epoch():
+    """Return the current hand epoch."""
+    return _hand_epoch
+
+
+def bump_hand_epoch():
+    """Increment hand epoch — call on board change or new hand detection.
+
+    Returns the new epoch value.
+    """
+    global _hand_epoch
+    with BUFFER_LOCK:
+        _hand_epoch += 1
+        return _hand_epoch
+
+
+def should_accept_snapshot(snapshot_dict):
+    """Check if incoming snapshot is fresh enough to accept.
+
+    Rejects snapshots with hand_epoch older than current.
+    Always accepts snapshots with no hand_epoch (backward-compatible).
+
+    Returns (accept: bool, reason: str or None).
+    """
+    incoming_epoch = snapshot_dict.get('hand_epoch')
+    if incoming_epoch is not None and incoming_epoch < _hand_epoch:
+        return False, f'stale_epoch: incoming={incoming_epoch} current={_hand_epoch}'
+    return True, None
+
+
+def detect_board_change(snapshot_dict):
+    """Check if the board has changed since last snapshot.
+
+    Returns True if board changed (should bump epoch), False otherwise.
+    Always returns False if no previous board hash exists.
+    """
+    global _LAST_BOARD_HASH
+    board = snapshot_dict.get('board') or {}
+    flop = ''.join(str(c) for c in (board.get('flop') or []))
+    turn = board.get('turn') or ''
+    river = board.get('river') or ''
+    board_str = flop + (turn or '') + (river or '')
+
+    if not board_str:
+        return False  # no board → preflop, don't bump
+
+    if _LAST_BOARD_HASH is None:
+        _LAST_BOARD_HASH = board_str
+        return False
+
+    if board_str != _LAST_BOARD_HASH:
+        _LAST_BOARD_HASH = board_str
+        with BUFFER_LOCK:
+            global _hand_epoch
+            _hand_epoch += 1
+        return True
+    return False
