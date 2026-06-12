@@ -404,10 +404,11 @@ def register_equity_routes(app):
                             logger.warning('[ACTION-ROUTER] Action injection failed: %s', ae)
 
                 except Exception as e:
-                    logger.error(f"[EQUITY] Run failed: {e}")
+                    logger.exception('[ENGINE] Background thread died')
                     with _equity_lock:
-                        _equity_runs[run_id]['status'] = 'failed'
-                        _equity_runs[run_id]['error'] = str(e)
+                        if run_id in _equity_runs:
+                            _equity_runs[run_id]['status'] = 'error'
+                            _equity_runs[run_id]['error'] = str(e)
                     _equity_sse_notify({
                         'type': 'equity_error',
                         'run_id': run_id,
@@ -426,8 +427,8 @@ def register_equity_routes(app):
             })
 
         except Exception as e:
-            logger.error(f"[EQUITY] Run failed: {e}")
-            return jsonify({'ok': False, 'error': 'execution_error', 'message': str(e)}), 500
+            logger.exception('[EQUITY] Unhandled error in /api/run')
+            return jsonify({'ok': False, 'error': 'internal_error', 'message': str(e)[:200]}), 500
 
     @app.route('/api/run/<run_id>', methods=['GET'])
     def equity_status(run_id):
