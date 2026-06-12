@@ -258,6 +258,39 @@ def register_equity_routes(app):
                         if len(h) != hlen:
                             return jsonify({'ok': False, 'error': 'parse_error', 'message': f'Hand {i+1} has {len(h)} chars but expected {hlen} (all hands must match variant).'}), 400
 
+                    # ── Duplicate card detection: reject hands with conflicting cards ──
+                    _card_to_hands = {}  # card → list of hand indices
+                    for i, h in enumerate(hands):
+                        for j in range(0, len(h), 2):
+                            card = h[j:j+2]
+                            _card_to_hands.setdefault(card, []).append(i)
+                    _dupes = {c: idxs for c, idxs in _card_to_hands.items() if len(idxs) > 1}
+                    if _dupes:
+                        dup_details = ', '.join(
+                            f'{c}→hands {idxs}' for c, idxs in sorted(_dupes.items())[:5]
+                        )
+                        logger.warning('[DUPLICATE] %d duplicate cards detected: %s',
+                                       len(_dupes), dup_details)
+                        return jsonify({
+                            'ok': False,
+                            'error': 'duplicate_cards',
+                            'message': f'{len(_dupes)} card(s) appear in multiple hands — check input data',
+                            'duplicates': {c: idxs for c, idxs in list(_dupes.items())[:10]}
+                        }), 400
+
+                    # ── Also check board cards against hand cards ──
+                    if board:
+                        for j in range(0, len(board), 2):
+                            board_card = board[j:j+2]
+                            if board_card in _card_to_hands:
+                                dup_hands = _card_to_hands[board_card]
+                                logger.warning('[DUPLICATE] Board card %s also in hands %s', board_card, dup_hands)
+                                return jsonify({
+                                    'ok': False,
+                                    'error': 'duplicate_cards',
+                                    'message': f'Board card {board_card} also appears in hand(s) {dup_hands}',
+                                }), 400
+
                     # Preserve the UI's explicitly-selected variant (keeps its -max
                     # table size, e.g. plo6-8max) when it matches the detected PLO
                     # size.  Only synthesize from the hand count when the caller
