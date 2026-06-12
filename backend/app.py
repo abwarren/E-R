@@ -12,6 +12,8 @@ Stability fixes over v2:
 
 import os
 import sys
+import atexit
+import signal
 import time
 import hmac
 import hashlib
@@ -26,6 +28,10 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from buffer import push_snapshot, extract_hands_and_board
+
+# ── Process start time (used by /api/health) ────────────────────────────────────
+
+START_TIME = time.time()
 
 # ── App setup ──────────────────────────────────────────────────────────────────
 
@@ -2535,6 +2541,30 @@ def api_goldrush_latest():
     except Exception as e:
         app.logger.error(f"[GoldRush] Error: {e}")
         return jsonify({"ok": False, "error": str(e)}), 500
+
+@app.route('/api/health', methods=['GET'])
+def health():
+    """Public health endpoint — no auth required. Returns uptime, memory, buffer state."""
+    import os as _os
+    try:
+        from buffer import get_latest_snapshot
+        snap = get_latest_snapshot()
+        buffer_has_data = snap is not None
+        buffer_table = snap.get('table_id', '?') if snap else None
+    except Exception:
+        buffer_has_data = False
+        buffer_table = None
+
+    return jsonify({
+        'ok': True,
+        'status': 'healthy',
+        'pid': _os.getpid(),
+        'uptime_seconds': round(time.time() - START_TIME, 2),
+        'buffer_has_data': buffer_has_data,
+        'buffer_table': buffer_table,
+        'live_tables': len(_tables),
+    })
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', '4000')), debug=False)
