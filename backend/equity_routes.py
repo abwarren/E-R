@@ -13,11 +13,16 @@ import random
 import queue as _queue
 import threading
 from itertools import combinations
+from pathlib import Path
 
 import requests as _requests
 from flask import jsonify, request, Response
 
 logger = logging.getLogger(__name__)
+
+# Collector integration: canonical hand source for /api/run
+_COLLECTOR_SAVE_DIR = Path('/home/wa/REMOTEREMOTE/data/hand-collector/saved_hands')
+_COLLECTOR_FILE_MAX_AGE = 60.0
 
 # In-memory store for active equity runs
 _equity_runs = {}
@@ -43,6 +48,40 @@ def _equity_sse_notify(data):
 def register_equity_routes(app):
     """Register all equity engine routes on the Flask app."""
 
+    # ── Collector pre-normalizer — reads latest saved hands from collector files ──
+    def _read_hands_from_collector():
+        """Try to read canonical hands+board from the latest collector save file."""
+        try:
+            candidates = sorted(
+                _COLLECTOR_SAVE_DIR.glob('*.txt'),
+                key=lambda f: f.stat().st_mtime,
+                reverse=True
+            )
+            for f in candidates:
+                age = time.time() - f.stat().st_mtime
+                if age > _COLLECTOR_FILE_MAX_AGE:
+                    continue
+                text = f.read_text(encoding='utf-8').strip()
+                hands = []
+                board = None
+                for line in text.split('\n'):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    if line.startswith('BOARD:'):
+                        board = line[6:]
+                        continue
+                    # Validate as card string (8-14 chars for PLO4-PLO7)
+                    if len(line) in (8, 10, 12, 14) and len(line) % 2 == 0:
+                        hands.append(line)
+                if hands:
+                    logger.info('[COLLECTOR-NORM] Loaded %d hands from %s', len(hands), f.name)
+                    return hands, board or ''
+            return None, None
+        except Exception as e:
+            logger.warning('[COLLECTOR-NORM] Read error: %s', e)
+            return None, None
+
     @app.route('/api/run', methods=['POST'])
     def equity_run():
         """
@@ -62,6 +101,22 @@ def register_equity_routes(app):
 
             raw_hands = data.get('hands', [])
             names_raw = data.get('names', '')
+
+            # ── Collector pre-normalization: auto-fill hands from collector when sparse ──
+            # Resolves dual-source gap: snapshot→collector→engine path unified.
+            _is_sparse = (
+                not raw_hands or
+                (isinstance(raw_hands, str) and raw_hands.strip() == '') or
+                (isinstance(raw_hands, list) and len(raw_hands) < 2)
+            )
+            if _is_sparse:
+                col_hands, col_board = _read_hands_from_collector()
+                if col_hands and len(col_hands) >= 2:
+                    raw_hands = '\n'.join(col_hands + [col_board]) if col_board else '\n'.join(col_hands)
+                    logger.info('[COLLECTOR-NORM] Replaced sparse hands with %d collector hands', len(col_hands))
+                elif col_hands:
+                    # Single hand from collector + no board → keep as-is for preflop
+                    raw_hands = col_hands[0]
 
             # Initialise these before the str/list branch so they're always safe
             # for the _meta dict below.
