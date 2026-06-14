@@ -180,6 +180,16 @@ def parse_name_mapping(text: str) -> dict:
 def strip_ansi(text: str) -> str:
     return re.sub(r'\x1b\[[0-9;]*m', '', text)
 
+# ── Engine UI routes (tickboxes: autofill, auto run, clear river) ──
+@app.route('/engine/assets/<path:filename>')
+def serve_engine_assets(filename):
+    return send_from_directory(os.path.join(app.static_folder, 'assets'), filename)
+
+@app.route('/engine/')
+@app.route('/engine')
+def serve_engine_ui():
+    return send_from_directory(app.static_folder, 'engine-index.html')
+
 # ── React frontend ────────────────────────────────────────────────────────────
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
