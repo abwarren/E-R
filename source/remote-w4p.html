@@ -582,6 +582,7 @@ var globalCFExcluded = {};       // seats manually unticked while globalAutoCF i
 var khState = {};                // seatNo -> true (KH = Keep Hand, manual input required)
 var autoCcLastSent = {};         // seatNo -> timestamp (throttle re-sends to every 3s)
 var lastBoardKey = null;
+var lastStreet = null;
 
 // Per-seat raise amounts
 var seatAmounts = {};      // seatNo -> current amount
@@ -1465,31 +1466,38 @@ function fireAutoCcPreflop() {
   });
 }
 
-// -- New-hand detection --
+// -- New-hand / street-change detection --
 
 function checkNewHand() {
-  if (!lastTable || !lastTable.board) return;
-  var b = lastTable.board;
+  if (!lastTable) return;
+  var b = lastTable.board || {};
   var flopStr = Array.isArray(b.flop) ? b.flop.join(',') : '';
   var boardKey = lastTable.street + ':' + flopStr;
-  if (lastBoardKey !== null && lastBoardKey !== boardKey) {
-    var isPreflop = boardKey.indexOf('PREFLOP:') === 0;
-    if (isPreflop || flopStr !== lastBoardKey.split(':').slice(1).join(':')) {
-      preActionState = {};
-      cashoutState = {};
-      autoCcPreflop = {};
-      khState = {};
-      autoCcLastSent = {};
-      globalCFExcluded = {};
-      console.log('[AUTO_CC_PREFLOP] reset_new_hand');
-      seatAmounts = {};
-      emgAmount = null;
-      renderedSeats = {};
-      lastEmgHash = null;
-      console.log('[REMOTE] checkbox states reset after hand transition');
-    }
+  var newStreet = lastTable.street || '';
+  var streetChanged = lastStreet !== null && lastStreet !== newStreet;
+  var handChanged = lastBoardKey !== null && lastBoardKey !== boardKey;
+  if (streetChanged || handChanged) {
+    preActionState = {};
+    cashoutState = {};
+    autoCcPreflop = {};
+    khState = {};
+    autoCcLastSent = {};
+    globalCFExcluded = {};
+    globalAutoCcPreflop = false;
+    globalAutoCF = false;
+    // Reset global button CSS
+    var accBtn = document.getElementById('global-autocc-btn');
+    var cfBtn = document.getElementById('global-cf-btn');
+    if (accBtn) accBtn.classList.remove('active');
+    if (cfBtn) cfBtn.classList.remove('active-cf');
+    console.log('[REMOTE] reset_all_global: street=' + lastStreet + '→' + newStreet + ' hand_change=' + handChanged);
+    seatAmounts = {};
+    emgAmount = null;
+    renderedSeats = {};
+    lastEmgHash = null;
   }
   lastBoardKey = boardKey;
+  lastStreet = newStreet;
 }
 
 // -- Main render --
