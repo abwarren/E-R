@@ -286,6 +286,7 @@
   .global-autocc-btn.active { background:rgba(255,193,7,0.25); border-color:#ffc107; color:#ffc107; }
   .global-autocc-btn.active-cf { background:rgba(76,175,80,0.25); border-color:#4caf50; color:#4caf50; }
   .global-autocc-btn.active-kh { background:rgba(233,30,99,0.25); border-color:#e91e63; color:#e91e63; }
+  .global-autocc-btn.active-si { background:rgba(33,150,243,0.25); border-color:#2196f3; color:#2196f3; }
   .kh-toggle { border-color:#e91e63 !important; }
   .kh-toggle.active { background:rgba(233,30,99,0.3) !important; border-color:#e91e63 !important; color:#e91e63 !important; }
   .seat-box.kh-marked { border-color:#4caf50 !important; box-shadow: 0 0 12px rgba(76,175,80,0.5), 0 4px 12px rgba(0,0,0,0.5) !important; }
@@ -532,6 +533,7 @@
   <button class="global-autocc-btn" id="global-autocc-btn" onclick="toggleGlobalAutoCC()">AUTO C/C PREFLOP — ALL</button>
   <button class="global-autocc-btn" id="global-cf-btn" onclick="toggleGlobalAutoCF()" style="border-color:#4caf50;">SELECT ALL AUTO C/F</button>
   <button class="global-autocc-btn" id="execute-kh-btn" onclick="executeKH()" style="border-color:#e91e63;">EXECUTE KH</button>
+  <button class="global-autocc-btn" id="sit-in-all-btn" onclick="sitInAll()" style="border-color:#2196f3;">SIT-IN ALL</button>
 </div>
 
 <div class="main-area">
@@ -1366,6 +1368,34 @@ function executeKH() {
   console.log('[KH] executeKH complete: ' + khCount + ' KH (manual), ' + cfCount + ' auto-C/F');
   var btn = document.getElementById('execute-kh-btn');
   if (btn) { btn.classList.add('active-kh'); setTimeout(function() { btn.classList.remove('active-kh'); }, 2000); }
+  renderedSeats = {}; lastEmgHash = null; render();
+}
+
+// -- Sit-In All: toggle all sitting-out players back in --
+function sitInAll() {
+  if (!lastTable || !Array.isArray(lastTable.seats)) return;
+  var sitOutSeats = [];
+  lastTable.seats.forEach(function(seat) {
+    if (!seat.name || seat.name === 'Empty') return;
+    if (seat.status === 'sitting_out') {
+      var sn = getSeatNo(seat);
+      sitOutSeats.push(sn);
+    }
+  });
+  if (sitOutSeats.length === 0) {
+    console.log('[SIT-IN-ALL] No sitting-out players found');
+    return;
+  }
+  console.log('[SIT-IN-ALL] Sending sit_out toggle to ' + sitOutSeats.length + ' seats: ' + sitOutSeats.join(','));
+  // Stagger sends 300ms apart so PokerBet DOM can process each
+  sitOutSeats.forEach(function(sn, i) {
+    setTimeout(function() {
+      sendCmd(sn, 'sit_out');
+      console.log('[SIT-IN-ALL] Queued seat=' + sn);
+    }, i * 300);
+  });
+  var btn = document.getElementById('sit-in-all-btn');
+  if (btn) { btn.classList.add('active-si'); setTimeout(function() { btn.classList.remove('active-si'); }, 3000); }
   renderedSeats = {}; lastEmgHash = null; render();
 }
 
