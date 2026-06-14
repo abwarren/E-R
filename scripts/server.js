@@ -95,7 +95,7 @@ app.use('/engine/', express.static(ENGINE_STATIC, { maxAge: 0 }));
 // EQUITY/RNG API PROXY: specific routes -> engine Flask (127.0.0.1:1080)
 // =============================================================================
 const ENGINE_FLASK = 'http://127.0.0.1:5002';
-app.post('/api/run', createProxyMiddleware({ target: ENGINE_FLASK, changeOrigin: true }));
+// POST /api/run now handled by backend equity_routes.py (card validation + engine forwarding)
 app.post('/api/rng/generate', createProxyMiddleware({ target: ENGINE_FLASK, changeOrigin: true }));
 app.post('/api/equity', createProxyMiddleware({ target: ENGINE_FLASK, changeOrigin: true }));
 app.get('/api/results/latest', createProxyMiddleware({ target: ENGINE_FLASK, changeOrigin: true }));
@@ -131,7 +131,7 @@ app.get('/api/stream/:job_id', createProxyMiddleware({
   },
 }));
 // Results by job ID
-app.get('/api/results/:job_id', createProxyMiddleware({ target: ENGINE_FLASK, changeOrigin: true }));
+// GET /api/results/:job_id now handled by backend equity_routes.py
 
 // =============================================================================
 // SHARED BACKEND PROXY: /api/* -> local backend (127.0.0.1:1080)

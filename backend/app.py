@@ -1295,6 +1295,7 @@ def get_pending_command():
 
         cmd = _command_queue.get(token)
         if cmd and cmd.get('status') == 'pending':
+            cmd["_token"] = token
             return jsonify({'ok': True, 'command': cmd})
         return jsonify({'ok': True, 'command': None})
 
