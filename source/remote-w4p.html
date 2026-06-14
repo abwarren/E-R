@@ -583,6 +583,10 @@ var khState = {};                // seatNo -> true (KH = Keep Hand, manual input
 var autoCcLastSent = {};         // seatNo -> timestamp (throttle re-sends to every 3s)
 var lastBoardKey = null;
 var lastStreet = null;
+var khBattleArmed = false;
+var khBattleSeats = {};   // seatNo → true (KH seats in raise-max battle)
+var khBattleCoSeat = null; // the KH seat that also has CO (cashout on all-in)
+var khBattleRaiseLast = 0; // timestamp of last raise_max sent (throttle)
 
 // Per-seat raise amounts
 var seatAmounts = {};      // seatNo -> current amount
@@ -1348,25 +1352,50 @@ function applyPreset(seatNo, preset, prefix) {
 }
 
 // -- Global AUTO C/C toggle --
-// -- Execute KH: auto C/F all non-KH seats, highlight KH seats --
+// -- Execute KH: start a KH battle — KH seats raise-max until all-in, CO seat cashes out --
 function executeKH() {
   if (!lastTable || !Array.isArray(lastTable.seats)) return;
-  var khCount = 0, cfCount = 0;
+  var khCount = 0, cfCount = 0, coCount = 0;
+  khBattleSeats = {};
+  khBattleCoSeat = null;
   lastTable.seats.forEach(function(seat) {
     if (!seat.is_self_player && !seat.is_hero) return;
     if (!seat.name || seat.name === 'Empty') return;
     var sn = getSeatNo(seat);
     if (khState[sn]) {
       khCount++;
-      console.log('[KH] KEEP seat=' + sn + ' name=' + seat.name + ' — manual input required');
+      khBattleSeats[sn] = true;
+      if (cashoutState[sn]) {
+        khBattleCoSeat = sn;
+        coCount++;
+        sendCmd(sn, 'cashout_pre');
+        console.log('[KH_BATTLE] CO seat=' + sn + ' name=' + seat.name + ' — cashout armed');
+      }
+      console.log('[KH_BATTLE] KH seat=' + sn + ' name=' + seat.name + ' — will raise-max');
     } else {
       cfCount++;
       preActionState[sn] = 'check_fold';
       sendCmd(sn, 'check_fold');
-      console.log('[KH] AUTO_CF seat=' + sn + ' name=' + seat.name);
+      console.log('[KH_BATTLE] AUTO_CF seat=' + sn + ' name=' + seat.name);
     }
   });
-  console.log('[KH] executeKH complete: ' + khCount + ' KH (manual), ' + cfCount + ' auto-C/F');
+  if (khCount >= 2) {
+    khBattleArmed = true;
+    khBattleRaiseLast = 0;
+    console.log('[KH_BATTLE] BATTLE STARTED: ' + khCount + ' KH seats, ' + coCount + ' CO, ' + cfCount + ' auto-C/F');
+  } else if (khCount === 1) {
+    khBattleArmed = false;
+    // Single KH: just check/fold that seat too, same as others
+    Object.keys(khBattleSeats).forEach(function(sn) {
+      preActionState[sn] = 'check_fold';
+      sendCmd(sn, 'check_fold');
+      console.log('[KH_BATTLE] Single KH seat=' + sn + ' — auto-C/F');
+    });
+    khBattleSeats = {};
+    console.log('[KH_BATTLE] Only 1 KH seat — battle requires 2+. All seats check/fold.');
+  } else {
+    console.log('[KH_BATTLE] No KH seats selected — all check/fold');
+  }
   var btn = document.getElementById('execute-kh-btn');
   if (btn) { btn.classList.add('active-kh'); setTimeout(function() { btn.classList.remove('active-kh'); }, 2000); }
   renderedSeats = {}; lastEmgHash = null; render();
@@ -1485,11 +1514,17 @@ function checkNewHand() {
     globalCFExcluded = {};
     globalAutoCcPreflop = false;
     globalAutoCF = false;
+    khBattleArmed = false;
+    khBattleSeats = {};
+    khBattleCoSeat = null;
+    _khBattleLastAction = {};
     // Reset global button CSS
     var accBtn = document.getElementById('global-autocc-btn');
     var cfBtn = document.getElementById('global-cf-btn');
+    var khBtn = document.getElementById('execute-kh-btn');
     if (accBtn) accBtn.classList.remove('active');
     if (cfBtn) cfBtn.classList.remove('active-cf');
+    if (khBtn) khBtn.classList.remove('active-kh');
     console.log('[REMOTE] reset_all_global: street=' + lastStreet + '→' + newStreet + ' hand_change=' + handChanged);
     seatAmounts = {};
     emgAmount = null;
@@ -1498,6 +1533,72 @@ function checkNewHand() {
   }
   lastBoardKey = boardKey;
   lastStreet = newStreet;
+}
+
+// -- KH Battle loop: auto raise-max for KH seats, cashout for CO seat --
+
+var _khBattleLastAction = {}; // seatNo → timestamp (debounce per seat)
+
+function fireKHBattle() {
+  if (!khBattleArmed || !lastTable || !Array.isArray(lastTable.seats)) return;
+  var now = Date.now();
+  var stillAlive = false;
+  var activeSeat = null;
+  var activeSeatHasRaise = false;
+
+  // Find the KH seat that currently has action
+  lastTable.seats.forEach(function(seat) {
+    var sn = getSeatNo(seat);
+    if (!khBattleSeats[sn]) return;
+
+    // Check if seat is out (folded, sitting_out, no stack)
+    if (seat.status === 'folded' || seat.status === 'sitting_out') {
+      delete khBattleSeats[sn];
+      console.log('[KH_BATTLE] seat=' + sn + ' removed — status=' + seat.status);
+      return;
+    }
+    if (seat.stack_zar != null && seat.stack_zar <= 0) {
+      delete khBattleSeats[sn];
+      console.log('[KH_BATTLE] seat=' + sn + ' removed — all-in (stack=0)');
+      return;
+    }
+    stillAlive = true;
+
+    // Check if this seat has action (is their turn)
+    if (seat.action_on && Array.isArray(seat.available_actions) && seat.available_actions.length > 0) {
+      activeSeat = sn;
+      var avail = seat.available_actions.map(function(a) { return (a.action || a || '').toLowerCase(); });
+      activeSeatHasRaise = avail.some(function(a) { return a.indexOf('raise') !== -1 || a.indexOf('bet') !== -1; });
+    }
+  });
+
+  // If no KH seats remain, disarm
+  if (!stillAlive) {
+    khBattleArmed = false;
+    khBattleSeats = {};
+    khBattleCoSeat = null;
+    console.log('[KH_BATTLE] BATTLE OVER — all KH seats eliminated');
+    return;
+  }
+
+  // If a KH seat has action and can raise
+  if (activeSeat && activeSeatHasRaise) {
+    var lastRaise = _khBattleLastAction[activeSeat] || 0;
+    // Throttle: don't re-send raise_max within 2s for the same seat
+    if (now - lastRaise > 2000) {
+      _khBattleLastAction[activeSeat] = now;
+      sendCmd(activeSeat, 'raise_max');
+      console.log('[KH_BATTLE] seat=' + activeSeat + ' raise_max fired');
+    }
+  } else if (activeSeat && !activeSeatHasRaise) {
+    // Seat has action but no raise option — likely preflop small blind or forced call
+    // Don't auto-act, let the player manually decide or just log
+    console.log('[KH_BATTLE] seat=' + activeSeat + ' has action but no raise available — waiting');
+  }
+
+  // CO seat: cashout_pre already sent at battle start (line ~1369).
+  // w4p.js hyper-polls for .cash_out-c until it appears and fires.
+  // No re-arm needed — single shot is correct.
 }
 
 // -- Main render --
@@ -1510,6 +1611,7 @@ function render() {
   renderEmergencyPanel();
   applyGlobalCFToNewSeats();
   fireAutoCcPreflop();
+  fireKHBattle();
 }
 
 // -- Init & poll --
