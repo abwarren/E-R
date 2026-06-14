@@ -1113,54 +1113,51 @@ def post_snapshot():
             table["next_seat_no"] = max(table["seat_map"].values(), default=0) + 1
 
         for s in seats_raw:
-            # Use incoming seat_index as primary seat_no when available
+            # seat_index from DOM scraper IS the authoritative table position.
+            # Never reassign — the poker client layout determines where players sit.
+            # seat_map records identity→position for diagnostics only, not reassignment.
             incoming_seat_index = s.get("seat_index")
             name_key = normalize_name(s.get("name"))
-            is_anon = not name_key  # empty/anonymous seat — don't register in seat_map
+            is_anon = not name_key
 
             if incoming_seat_index is not None:
                 seat_no = int(incoming_seat_index)
-                # Normalize to 1-9 range
                 if seat_no < 1 or seat_no > 9:
                     seat_no = max(1, min(seat_no, 9))
 
                 if is_anon:
-                    # Anonymous seat: occupy seat_no without registering in seat_map.
-                    # This prevents empty seats from colliding with real players.
-                    # Also skip if a named player already occupies this seat in new_seats
-                    # (can happen when scraper sends duplicate seat_index entries).
-                    if seat_no in new_seats and normalize_name(new_seats[seat_no].get("name")):
+                    if seat_no in new_seats:
                         continue
                 else:
-                    # Named player — use seat_map for stable assignment
-                    rev_map = {sn: nk for nk, sn in table["seat_map"].items()}
-                    existing_owner = rev_map.get(seat_no)
-                    if existing_owner and existing_owner != name_key:
-                        # Collision — seat owned by a different player
-                        if name_key in table["seat_map"]:
-                            seat_no = table["seat_map"][name_key]
-                            app.logger.info(f'[SEAT_COLLISION_RESOLVED] seat_index={incoming_seat_index} name={s.get("name")} moved to owned seat_no={seat_no}')
-                        else:
-                            used = set(table["seat_map"].values())
-                            seat_no = next((n for n in range(1, 10) if n not in used), table["next_seat_no"])
-                            table["seat_map"][name_key] = seat_no
-                            table["next_seat_no"] = max(table["next_seat_no"], seat_no + 1)
-                            app.logger.info(f'[SEAT_COLLISION_RESOLVED] seat_index={incoming_seat_index} name={s.get("name")} moved to free seat_no={seat_no}')
-                    else:
-                        # Seat is free or same player - claim it (preserve stable mapping)
-                        if name_key in table["seat_map"]:
-                            seat_no = table["seat_map"][name_key]
-                        else:
-                            table["seat_map"][name_key] = seat_no
-                            if seat_no >= table["next_seat_no"]:
-                                table["next_seat_no"] = seat_no + 1
+                    # Named player at authoritative seat_index.
+                    # If another named player already occupies this seat in this batch,
+                    # latest writer wins (natural iteration order).
+                    existing = new_seats.get(seat_no)
+                    if existing and normalize_name(existing.get("name")):
+                        app.logger.info(
+                            f'[SEAT_SYNC] collision seat={seat_no} '
+                            f'prev={existing.get("name")} new={s.get("name")} — latest wins'
+                        )
+                    # Update seat_map for diagnostics (never used to reassign)
+                    prev = table["seat_map"].get(name_key)
+                    if prev != seat_no:
+                        if prev:
+                            app.logger.info(
+                                f'[SEAT_SYNC] {s.get("name")} seat_map {prev}→{seat_no}'
+                            )
+                        table["seat_map"][name_key] = seat_no
+                        if seat_no >= table["next_seat_no"]:
+                            table["next_seat_no"] = seat_no + 1
             else:
-                # Fallback: assign from seat_map by name_key (legacy)
+                # No seat_index from scraper — use seat_map as fallback (legacy)
                 if is_anon:
-                    continue  # skip anonymous seats with no seat_index
+                    continue
                 if name_key not in table["seat_map"]:
                     used = set(table["seat_map"].values())
-                    assigned = next((n for n in range(1, 10) if n not in used), table["next_seat_no"])
+                    assigned = next(
+                        (n for n in range(1, 10) if n not in used),
+                        table["next_seat_no"]
+                    )
                     table["seat_map"][name_key] = assigned
                     table["next_seat_no"] = max(table["next_seat_no"], assigned + 1)
                 seat_no = table["seat_map"][name_key]
