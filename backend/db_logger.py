@@ -293,7 +293,7 @@ def log_session(table_id, bot_id, snapshots=0, commands=0):
 
 # ── Account registry ─────────────────────────────────────────────────────────
 
-def upsert_account(username, password, player_name=None, bot_id=None, site='pokerbet', email=None, notes=None):
+def upsert_account(username, password, player_name=None, bot_id=None, site='pokerbet', email=None, notes=None, login_type=None):
     """Create or update an account record. Returns account_id."""
     pool = _get_pool()
     if not pool:
@@ -304,8 +304,8 @@ def upsert_account(username, password, player_name=None, bot_id=None, site='poke
         with conn.cursor() as cur:
             cur.execute(
                 """INSERT INTO accounts
-                   (username, password, player_name, bot_id, site, email, notes)
-                   VALUES (%s,%s,%s,%s,%s,%s,%s)
+                   (username, password, player_name, bot_id, site, email, notes, login_type)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
                    ON CONFLICT (username) DO UPDATE SET
                     password = EXCLUDED.password,
                     player_name = COALESCE(EXCLUDED.player_name, accounts.player_name),
@@ -313,9 +313,10 @@ def upsert_account(username, password, player_name=None, bot_id=None, site='poke
                     site = EXCLUDED.site,
                     email = COALESCE(EXCLUDED.email, accounts.email),
                     notes = COALESCE(EXCLUDED.notes, accounts.notes),
+                    login_type = COALESCE(EXCLUDED.login_type, accounts.login_type),
                     updated_at = NOW()
                    RETURNING account_id""",
-                (username, password, player_name, bot_id, site, email, notes),
+                (username, password, player_name, bot_id, site, email, notes, login_type),
             )
             account_id = cur.fetchone()[0]
         conn.commit()
@@ -347,19 +348,20 @@ def get_accounts(site=None, status='active'):
         with conn.cursor() as cur:
             if site:
                 cur.execute(
-                    "SELECT account_id, username, player_name, bot_id, site, status, last_login_at FROM accounts WHERE site=%s AND status=%s ORDER BY account_id",
+                    "SELECT account_id, username, player_name, bot_id, site, status, login_type, last_login_at FROM accounts WHERE site=%s AND status=%s ORDER BY account_id",
                     (site, status),
                 )
             else:
                 cur.execute(
-                    "SELECT account_id, username, player_name, bot_id, site, status, last_login_at FROM accounts WHERE status=%s ORDER BY account_id",
+                    "SELECT account_id, username, player_name, bot_id, site, status, login_type, last_login_at FROM accounts WHERE status=%s ORDER BY account_id",
                     (status,),
                 )
             rows = cur.fetchall()
             return [
                 {
                     "account_id": r[0], "username": r[1], "player_name": r[2],
-                    "bot_id": r[3], "site": r[4], "status": r[5], "last_login_at": r[6],
+                    "bot_id": r[3], "site": r[4], "status": r[5], "login_type": r[6],
+                    "last_login_at": r[7],
                 }
                 for r in rows
             ]
