@@ -201,11 +201,25 @@
 
     if (lines.length === 0) return null;
 
+    // Build player name mapping: first hand → Player1, second → Player2, etc.
+    const names = [];
+    for (const seat of seats) {
+      const cards = seat.hole_cards || seat.cards || [];
+      if (!cards.length) continue;
+      const name = seat.name;
+      if (name && name !== 'Empty') {
+        names.push(`Player${names.length + 1}=${name}`);
+      } else {
+        names.push(`Player${names.length + 1}=`);
+      }
+    }
+
     return {
       text: lines.join('\n'),
       hands: lines.slice(0, -1), // all but last (board)
       board: lines[lines.length - 1], // last line
-      boardLength: table.board ? (table.board.cards || [].concat(table.board.flop||[],table.board.turn||[],table.board.river||[]).filter(Boolean)).length : 0
+      boardLength: table.board ? (table.board.cards || [].concat(table.board.flop||[],table.board.turn||[],table.board.river||[]).filter(Boolean)).length : 0,
+      namesText: names.join('\n'),
     };
   }
 
@@ -427,6 +441,10 @@
       if (textarea) {
         setTextareaValue(textarea, payload);
       }
+      // Also auto-populate player names if available
+      if (parsed && parsed.namesText) {
+        setNamesTextarea(parsed.namesText);
+      }
 
       // Click run — defer by one frame so React 18 batches flush
       // the textarea/variant state before the button reads them.
@@ -517,6 +535,23 @@
     }
   }
 
+  function setNamesTextarea(namesText) {
+    // Find the Names textarea: rows=4 with monospace font in the engine panel
+    // The Engine tab has it below the hands textarea, inside a field-group.
+    const candidates = document.querySelectorAll('textarea[rows="4"]');
+    for (const ta of candidates) {
+      // Skip if it's inside a hidden panel or not visible
+      if (ta.offsetParent === null) continue;
+      const style = window.getComputedStyle(ta);
+      if (style.display === 'none' || style.visibility === 'hidden') continue;
+      // This should be the names textarea — set it
+      setTextareaValue(ta, namesText);
+      console.log('[AUTO] Player names auto-filled: ' +
+        namesText.split('\n').filter(Boolean).length + ' players');
+      return;
+    }
+  }
+
   // ══════════════════════════════════════════════════════════════════════════
   // POLLING
   // ══════════════════════════════════════════════════════════════════════════
@@ -555,6 +590,9 @@
       if (state.autoFill && text) {
         detectAndSetVariant(text);
         setTextareaValue(textarea, text);
+        if (parsed.namesText) {
+          setNamesTextarea(parsed.namesText);
+        }
       }
 
       await maybeAutoRun(text);
