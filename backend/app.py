@@ -110,7 +110,7 @@ import bot_deployment
 
 # Secret key for sessions
 import secrets
-secret_key_file = '/home/wa/REMOTEREMOTE/data/secret_key'
+secret_key_file = os.path.join(os.path.dirname(__file__), 'data', 'secret_key')
 if not os.path.exists(secret_key_file):
     secret_key = secrets.token_hex(32)
     with open(secret_key_file, 'w') as f:
@@ -176,7 +176,7 @@ TRACKER_API_KEY = os.getenv('TRACKER_API_KEY', DEFAULT_TRACKER_API_KEY)
 SEAT_TTL    = int(os.getenv('N4P_SEAT_TTL',    '30'))   # seconds before stale seat evicted
 CMD_TTL     = int(os.getenv('N4P_CMD_TTL',     '30'))   # seconds before unacked command expires
 PERSIST_INT = int(os.getenv('N4P_PERSIST_INT', '10'))   # seconds between state snapshots to disk
-STATE_FILE  = Path(os.getenv('N4P_STATE_FILE', '/home/wa/REMOTEREMOTE/state/state_snapshot.json'))
+STATE_FILE  = Path(os.getenv('N4P_STATE_FILE', f'{os.path.dirname(__file__)}/../state/state_snapshot.json'))
 
 # ── In-memory stores ───────────────────────────────────────────────────────────
 
@@ -1756,10 +1756,10 @@ def hands_clear():
 # ██  HAND COLLECTOR
 # ══════════════════════════════════════════════════════════════════════════════
 
-VALIDATED_HANDS_DIR = Path('/home/wa/REMOTEREMOTE/data/validated_hands')
+VALIDATED_HANDS_DIR = Path(os.path.join(os.path.dirname(__file__), 'data', 'validated_hands'))
 VALIDATED_HANDS_DIR.mkdir(parents=True, exist_ok=True)
-_COLLECTOR_HTML     = Path('/home/wa/REMOTEREMOTE/data/hand-collector/index.html')
-_COLLECTOR_SAVE_DIR = Path('/home/wa/REMOTEREMOTE/data/hand-collector/saved_hands')
+_COLLECTOR_HTML     = Path(os.path.join(os.path.dirname(__file__), 'data', 'hand-collector', 'index.html'))
+_COLLECTOR_SAVE_DIR = Path(os.path.join(os.path.dirname(__file__), 'data', 'hand-collector', 'saved_hands'))
 _COLLECTOR_SAVE_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Collector hand accumulator ──────────────────────────────────────────────
@@ -3019,7 +3019,7 @@ from datetime import datetime
 import time
 
 # GoldRush configuration
-_COLLECTOR_SAVE_DIR_GOLDRUSH = Path('/home/wa/REMOTEREMOTE/data/hand-collector/saved_hands_goldrush')
+_COLLECTOR_SAVE_DIR_GOLDRUSH = Path(os.path.join(os.path.dirname(__file__), 'data', 'hand-collector', 'saved_hands_goldrush'))
 _COLLECTOR_SAVE_DIR_GOLDRUSH.mkdir(parents=True, exist_ok=True)
 
 # GoldRush table state (separate from PokerBet)
