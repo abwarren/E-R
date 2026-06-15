@@ -1,0 +1,64 @@
+# E&R Container Deployment
+# docker compose up -d
+# Environment variables loaded from .env
+
+services:
+
+  engine:
+    build:
+      context: ../ENGINEENGINE
+      dockerfile: Dockerfile
+    container_name: er-engine
+    restart: unless-stopped
+    ports:
+      - "5002:5002"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+      - SCANNER_API_KEY
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:5002/api/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    networks:
+      - er-net
+
+  remote:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: er-remote
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+      - PORT=1080
+      - ENGINE_URL=http://engine:5002
+      - TRACKER_API_KEY
+      - N4P_SEAT_SECRET
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:1080/api/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    volumes:
+      - remote-state:/app/state
+      - remote-logs:/app/logs
+    depends_on:
+      engine:
+        condition: service_healthy
+    networks:
+      - er-net
+
+volumes:
+  remote-state:
+  remote-logs:
+
+networks:
+  er-net:
+    driver: bridge
