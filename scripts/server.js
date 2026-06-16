@@ -104,34 +104,7 @@ app.post('/api/run-batch', createProxyMiddleware({ target: ENGINE_FLASK, changeO
 app.post('/api/login', createProxyMiddleware({ target: ENGINE_FLASK, changeOrigin: true }));
 app.get('/api/auth/verify', createProxyMiddleware({ target: ENGINE_FLASK, changeOrigin: true }));
 app.post('/api/logout', createProxyMiddleware({ target: ENGINE_FLASK, changeOrigin: true }));
-// SSE stream — must NOT buffer, must preserve text/event-stream
-app.get('/api/stream/:job_id', createProxyMiddleware({
-  target: ENGINE_FLASK,
-  changeOrigin: true,
-  proxyTimeout: 0,          // no timeout for long-lived SSE
-  timeout: 0,
-  on: {
-    proxyReq: (proxyReq, req, _res) => {
-      proxyReq.setHeader('Host', 'localhost:1080');
-      proxyReq.setHeader('X-Real-IP', req.ip || req.connection.remoteAddress);
-    },
-    proxyRes: (proxyRes, req, res) => {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-      // Ensure content-type is preserved — don't let Express sniff it
-      if (proxyRes.headers['content-type']) {
-        res.setHeader('Content-Type', proxyRes.headers['content-type']);
-      }
-    },
-    error: (err, _req, res) => {
-      console.error('[Engine SSE Error]', err.message);
-      if (!res.headersSent) res.status(502).end();
-    },
-  },
-}));
-// Results by job ID
-// GET /api/results/:job_id now handled by backend equity_routes.py
+// All /api/stream/* and /api/results/* now handled by backend equity_routes.py
 
 // =============================================================================
 // SHARED BACKEND PROXY: /api/* -> local backend (127.0.0.1:1080)
