@@ -330,6 +330,19 @@ def _archive_hand(table):
             _hand_history[:] = _hand_history[-HAND_HISTORY_MAX:]
 
 
+def _safe_float(val, default=0):
+    """Safely cast a value to float, returning default on invalid input."""
+    if val is None:
+        return default
+    try:
+        f = float(val)
+        if f != f:  # NaN check
+            return default
+        return f
+    except (ValueError, TypeError):
+        return default
+
+
 def normalize_name(name):
     if not name:
         return None
@@ -1186,7 +1199,7 @@ def post_snapshot():
                 "source_seat_no":         s.get("seat_no"),               # browser-local, diagnostic
                 "source_visual_position": s.get("visual_position"),       # browser-local geometry
                 "name":                   s.get("name"),
-                "stack_zar":              s.get("stack_zar"),
+                "stack_zar":              _safe_float(s.get("stack_zar"), 0),
                 "hole_cards":             s.get("hole_cards", []),
                 "status":                 s.get("status", "empty"),
                 "is_dealer":              s.get("is_dealer", False),
@@ -1208,7 +1221,7 @@ def post_snapshot():
                 # Seat owned by a different bot — update metadata + observed cards
                 existing = table["seats"].get(sno)
                 if existing:
-                    existing["stack_zar"] = sdata.get("stack_zar", existing.get("stack_zar"))
+                    existing["stack_zar"] = _safe_float(sdata.get("stack_zar"), existing.get("stack_zar", 0))
                     existing["status"] = sdata.get("status", existing.get("status"))
                     existing["is_dealer"] = sdata.get("is_dealer", existing.get("is_dealer"))
                     existing["last_seen"] = sdata["last_seen"]
