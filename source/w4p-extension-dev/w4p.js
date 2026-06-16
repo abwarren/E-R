@@ -85,6 +85,11 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     return false;
   }
 
+  function stopObserver() {
+    if (_observer) { _observer.disconnect(); _observer = null; }
+    if (window._w4p_fallback) { clearInterval(window._w4p_fallback); window._w4p_fallback = null; }
+  }
+
   function stopW4PTimers() {
     if (window._w4p_timer) { clearTimeout(window._w4p_timer); window._w4p_timer = null; }
     if (window._w4p_cmdTimer) { clearTimeout(window._w4p_cmdTimer); window._w4p_cmdTimer = null; }
@@ -1615,9 +1620,9 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         // Acknowledge immediately
         bridgeFetch('/commands/ack', 'POST', { token: _seatToken, command_id: resp.data.command.id });
       }
+      window._w4p_cmdTimer = setTimeout(pollCommands, CMD_MS[_mode] || 500);
     });
 
-    window._w4p_cmdTimer = setTimeout(pollCommands, CMD_MS[_mode] || 500);
   }
 
   // ── Auto-untick "Wait for Big Blind" ─────────────────────────
@@ -1776,11 +1781,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         scheduleTick();
       }
     }, 500);
-  }
-
-  function stopObserver() {
-    if (_observer) { _observer.disconnect(); _observer = null; }
-    if (window._w4p_fallback) { clearInterval(window._w4p_fallback); window._w4p_fallback = null; }
   }
 
   // ── Start ────────────────────────────────────────────────────

@@ -1642,6 +1642,8 @@ function toggleEquityPanel() {
     panel.classList.add('visible');
     if (!eqSource) connectEquitySSE();
   } else {
+    if (eqSource) { eqSource.close(); eqSource = null; }
+    if (eqReconnectTimer) { clearTimeout(eqReconnectTimer); eqReconnectTimer = null; }
     btn.classList.remove('active');
     panel.classList.remove('visible');
   }
@@ -1703,7 +1705,6 @@ function renderEquity() {
 }
 
 // Auto-connect SSE on load so data is ready when panel opens
-setTimeout(connectEquitySSE, 500);
 
 // -- Main render --
 
