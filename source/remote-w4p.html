@@ -1011,7 +1011,7 @@ function renderSeats() {
         heroIsActive = true;
       }
       if (!seat.name || seat.status === 'sitting_out') return;
-      var bid = seat.bot_id;
+      var bid = seat.bot_id || seat.name;
       if (!bid) return; // only render trusted bot-owned seats
       // Keep latest by last_seen (higher timestamp wins)
       var existing = botMap[bid];
