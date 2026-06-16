@@ -303,6 +303,18 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var _cashoutPre = false;   // when true, hyper-poll for cashout DOM element
   var _cashoutTimer = null;
   var _lastBoardLen = 0;     // track board cards for new hand detection
+  function _heroFromUrl() {
+    try {
+      var url = window.location.href;
+      var m = url.match(/tbl\/(\d+)/);
+      if (m) return "hero_tbl" + m[1];
+      m = url.match(/userid=(-?\d+)/);
+      if (m) return "hero_uid" + m[1];
+      m = url.match(/hash=([a-f0-9]{4,})/);
+      if (m) return "hero_h" + m[1].slice(0, 8);
+    } catch(e) {}
+    return "hero_auto_" + Date.now().toString(36);
+  }
   var _lastHeroName = localStorage.getItem('w4p_hero_name') || null;  // persist hero name across sitting-out / folded states (localStorage survives reloads)
   var _wasHeroTurn = false;  // state-change gate: prevent repeated HERO_TURN activation
   var _snapshotInFlight = false;    // guard: prevent overlapping snapshot POSTs
@@ -1006,7 +1018,9 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         }
         console.log('[W4P] no hero | ' + containers.length + ' seats | ' + seatClasses.join(' | '));
       }
-      return null;
+      heroName = _heroFromUrl();
+      if (heroName) { _lastHeroName = heroName; console.log("[W4P] hero_from_url: " + heroName); }
+      else { return null; }
     }
 
     // ── Zero-alloc: mutate persistent _snapshot object ──
