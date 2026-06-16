@@ -830,7 +830,7 @@ def _table_view(table):
 
 def _serialise_state():
     """Return a JSON-safe snapshot of _tables (seats only — no lock held here)."""
-    return {
+    result = {
         tid: {
             **{k: v for k, v in t.items() if k != "seats"},
             "seats": {
@@ -840,7 +840,15 @@ def _serialise_state():
         }
         for tid, t in _tables.items()
     }
-
+    # Persist bot->seat ownership so cross-bot merge works after restart
+    result["__bot_state__"] = {
+        "seat_bots": {f"{tid}:{sno}": bid for (tid, sno), bid in _seat_bots.items()},
+        "bot_seats": {
+            bid: {"table_id": i["table_id"], "seat_no": i.get("seat_no", i.get("seat_index")), "last_seen": i["last_seen"]}
+            for bid, i in _bot_seats.items()
+        }
+    }
+    return result
 
 def _load_state():
     """Load persisted state from disk into _tables on startup."""
@@ -848,6 +856,16 @@ def _load_state():
         return
     try:
         raw = json.loads(STATE_FILE.read_text(encoding='utf-8'))
+        # Restore bot->seat ownership so cross-bot merge works after restart
+        bot_state = raw.pop("__bot_state__", None)
+        if bot_state:
+            for key, bid in bot_state.get("seat_bots", {}).items():
+                parts = key.split(":", 1)
+                if len(parts) == 2:
+                    _seat_bots[(parts[0], int(parts[1]))] = bid
+            for bid, info in bot_state.get("bot_seats", {}).items():
+                _bot_seats[bid] = info
+            app.logger.info(f"[PERSIST] Restored {len(_seat_bots)} bot->seat mapping(s)")
         for tid, t in raw.items():
             t["seats"] = {int(k): v for k, v in t.get("seats", {}).items()}
             _tables[tid] = t
