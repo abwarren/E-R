@@ -533,6 +533,7 @@
   .eq-bar.und { background: #f44336; }
   .eq-empty { color: #555; padding: 4px 0; }
   .eq-sig { color: #444; font-size: 9px; margin-left: auto; }
+  .seat-box.sitting-out { opacity: 0.35; }  .seat-box.sitting-out .seat-name::after { content: " (SITTING OUT)"; font-size: 8px; color: #ff9800; }
 </style>
 </head>
 <body>
@@ -853,7 +854,7 @@ function buildSeatBoxHtml(seat) {
 
   var isActive = isHero && acts.length > 0;
 
-  var cls = 'seat-box';
+  var cls = 'seat-box'; if (seat.status === 'sitting_out' || (seat.sitting_out && !seat.is_dealer)) cls += ' sitting-out';
   if (isHero) cls += ' hero';
   if (isActive) cls += ' expanded';
   if (khState[sn]) cls += ' kh-marked';
@@ -1010,7 +1011,7 @@ function renderSeats() {
       if (seat.is_self_player && seat.available_actions && seat.available_actions.length > 0) {
         heroIsActive = true;
       }
-      if (!seat.name || seat.status === 'sitting_out') return;
+      if (!seat.name) return;
       var bid = seat.bot_id || seat.name;
       if (!bid) return; // only render trusted bot-owned seats
       // Keep latest by last_seen (higher timestamp wins)
