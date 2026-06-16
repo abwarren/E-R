@@ -303,7 +303,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var _cashoutPre = false;   // when true, hyper-poll for cashout DOM element
   var _cashoutTimer = null;
   var _lastBoardLen = 0;     // track board cards for new hand detection
-  var _lastHeroName = null;  // persist hero name across sitting-out / folded states
+  var _lastHeroName = localStorage.getItem('w4p_hero_name') || null;  // persist hero name across sitting-out / folded states (localStorage survives reloads)
   var _wasHeroTurn = false;  // state-change gate: prevent repeated HERO_TURN activation
   var _snapshotInFlight = false;    // guard: prevent overlapping snapshot POSTs
   var _nextSnapshotAllowedAt = 0;   // throttle: timestamp when next snapshot is allowed
@@ -966,7 +966,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       // the ONLY reliable hero signal — it's set by the poker client on the
       // player's own seat and never appears on villains even at showdown.
 
-      if (isHero) { heroName = name || _lastHeroName; if (name) _lastHeroName = name; }
+      if (isHero) { heroName = name || _lastHeroName; if (name) { _lastHeroName = name; try { localStorage.setItem('w4p_hero_name', name); } catch(_) {} } }
 
       // Status detection
       var sittingOut = ct.classList.contains('seat-out-v') || !!ct.querySelector('.seat-out-v');
