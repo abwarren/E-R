@@ -575,12 +575,8 @@ def _apply_collector_hands_to_seats(table, seats):
         if occupied and status != "empty" and not seat.get("hole_cards"):
             target_indexes.append(idx)
 
-    # If collector has more hands than visible occupied seats, use placeholders.
-    for idx, seat in enumerate(seats):
-        if len(target_indexes) >= len(remaining):
-            break
-        if idx not in target_indexes and not seat.get("hole_cards"):
-            target_indexes.append(idx)
+    # Only fill seats with confirmed identity — never leak collector hands
+    # into anonymous placeholder seats (stale batch would pollute the view).
 
     for cards, idx in zip(remaining, target_indexes):
         seat = seats[idx]
