@@ -44,9 +44,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     opts.headers['X-API-Key'] = msg.apiKey || API_KEY;
 
     fetch(url, opts)
-      .then(function(r) { return r.json(); })
-      .then(function(data) { sendResponse({ ok: true, data: data }); })
-      .catch(function(e) { sendResponse({ ok: false, error: e.message }); });
+      .then(function(r) {
+        if (!r.ok) return sendResponse({ ok: false, error: 'HTTP ' + r.status, status: r.status });
+        return r.text().then(function(txt) {
+          try { sendResponse({ ok: true, data: JSON.parse(txt), status: r.status }); }
+          catch (_) { sendResponse({ ok: true, data: txt, status: r.status }); }
+        });
+      })
+      .catch(function(e) { sendResponse({ ok: false, error: e.message, status: 0 }); });
 
     return true; // keep sendResponse channel open for async
   }
