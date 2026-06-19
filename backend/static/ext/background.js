@@ -2,17 +2,17 @@
 // MAIN world scripts can't use host_permissions; the service worker can.
 //
 // ── API_BASE Configuration ──────────────────────────────────────────────
-// Default: local development (http://127.0.0.1:1080/api)
-// Production: https://haaats.xyz/api
+// Default: local development (http://127.0.0.1:4000/api)
+// Production: http://127.0.0.1:4000/api
 //
 // To switch between dev and prod:
 // 1. Click the extension icon → set API_BASE in the popup
 // 2. Or manually set via chrome.storage:
-//    chrome.storage.sync.set({ w4p_api_base: 'https://haaats.xyz/api' })
+//    chrome.storage.sync.set({ w4p_api_base: 'http://127.0.0.1:4000/api' })
 // ────────────────────────────────────────────────────────────────────────
 
-const DEFAULT_API_BASE = 'http://127.0.0.1:1080/api';
-const DEFAULT_SITE_BASE = 'http://127.0.0.1:1080';
+const DEFAULT_API_BASE = 'http://127.0.0.1:4000/api';
+const DEFAULT_SITE_BASE = 'http://127.0.0.1:4000';
 const API_KEY  = '03622c896cfbeacdfc537e9434f9ddc5';
 
 let API_BASE = DEFAULT_API_BASE;
@@ -44,9 +44,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     opts.headers['X-API-Key'] = msg.apiKey || API_KEY;
 
     fetch(url, opts)
-      .then(function(r) { return r.json(); })
-      .then(function(data) { sendResponse({ ok: true, data: data }); })
-      .catch(function(e) { sendResponse({ ok: false, error: e.message }); });
+      .then(function(r) {
+        if (!r.ok) return sendResponse({ ok: false, error: 'HTTP ' + r.status, status: r.status });
+        return r.text().then(function(txt) {
+          try { sendResponse({ ok: true, data: JSON.parse(txt), status: r.status }); }
+          catch (_) { sendResponse({ ok: true, data: txt, status: r.status }); }
+        });
+      })
+      .catch(function(e) { sendResponse({ ok: false, error: e.message, status: 0 }); });
 
     return true; // keep sendResponse channel open for async
   }

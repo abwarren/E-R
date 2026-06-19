@@ -16,7 +16,7 @@
     "*://*.skillgames.com/*",
     "*://*.skillgames.co.za/*",
     "*://*.betconstruct.com/*",
-    "https://haaats.xyz/*",
+    "http://127.0.0.1:4000/*",
     "http://127.0.0.1:1080/*",
     "http://localhost:1080/*"
   ],

@@ -85,6 +85,11 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     return false;
   }
 
+  function stopObserver() {
+    if (_observer) { _observer.disconnect(); _observer = null; }
+    if (window._w4p_fallback) { clearInterval(window._w4p_fallback); window._w4p_fallback = null; }
+  }
+
   function stopW4PTimers() {
     if (window._w4p_timer) { clearTimeout(window._w4p_timer); window._w4p_timer = null; }
     if (window._w4p_cmdTimer) { clearTimeout(window._w4p_cmdTimer); window._w4p_cmdTimer = null; }
@@ -245,33 +250,93 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     var m = API_BASE.match(/^(https?:\/\/[^/]+)/);
     return m ? m[1] : 'http://127.0.0.1:4000';
   })();
+  // ── LOCAL_MODE: when targeting localhost/127.0.0.1, use direct fetch
+  //    from MAIN world content script (bypasses MV3 SW PNA restrictions).
+  //    The postMessage bridge (below) is only needed for remote production URLs.
+  var LOCAL_MODE = (API_BASE.indexOf('127.0.0.1') !== -1 || API_BASE.indexOf('localhost') !== -1);
+  // ── Bridge via background service worker (bypasses Chrome PNA blocking) ──
+  var _bridgeReqId = 0;
+  var _bridgePending = {};
+  window.addEventListener('message', function(e) {
+    if (!e.data || e.data.channel !== 'W4P_BRIDGE_RESPONSE') return;
+    var pending = _bridgePending[e.data.reqId];
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    delete _bridgePending[e.data.reqId];
+    var resp = e.data.response;
+    if (resp && resp.ok) {
+      pending.cb({ ok: true, data: resp.data });
+    } else {
+      pending.cb({ ok: false, error: resp ? resp.error : 'bridge_error', status: 0 });
+    }
+  });
+
   function bridgeFetch(path, method, body, callback) {
-    var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
-    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
-    fetch(API_BASE + path, opts)
-      .then(function(r) {
-        if (!r.ok) throw new Error('HTTP_' + r.status);
-        return r.json();
-      })
-      .then(function(data) { if (callback) callback({ ok: true, data: data }); })
-      .catch(function(e) {
-        var status = 0;
-        if (e.message.indexOf('HTTP_') === 0) status = parseInt(e.message.substring(5), 10);
-        if (status) {
-          // fetch status captured for callback below
-        } else {
-          // network error captured for callback below
-        }
-        if (callback) callback({ ok: false, error: e.message, status: status });
-      });
+    // ── LOCAL_MODE: direct fetch from MAIN world content script ──
+    //    Chrome MV3 SW PNA rules block service-worker fetch to 127.0.0.1.
+    //    Direct fetch from the MAIN world content script works because
+    //    host_permissions includes 127.0.0.1:4000 and Express has CORS.
+    if (LOCAL_MODE) {
+      var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
+      if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+      fetch(API_BASE + path, opts)
+        .then(function(r) {
+          if (!r.ok) { if (callback) callback({ ok: false, error: 'HTTP ' + r.status, status: r.status }); return; }
+          return r.json().then(function(data) { if (callback) callback({ ok: true, data: data }); });
+        })
+        .catch(function(e) { if (callback) callback({ ok: false, error: e.message, status: 0 }); });
+      return;
+    }
+    // ── Remote mode: postMessage → bridge.js → background.js SW fetch ──
+    var reqId = _sessionId + '_' + (++_bridgeReqId);
+    _bridgePending[reqId] = {
+      cb: callback || function(){},
+      timer: setTimeout(function() {
+        delete _bridgePending[reqId];
+        if (callback) callback({ ok: false, error: 'bridge_timeout', status: 0 });
+      }, 15000)
+    };
+    window.postMessage({
+      channel: 'W4P_BRIDGE',
+      reqId: reqId,
+      path: path,
+      method: method || 'GET',
+      body: body,
+      apiKey: API_KEY
+    }, '*');
   }
+
   function bridgeFetchRaw(path, method, body, callback) {
-    var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
-    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
-    fetch(SITE_BASE + path, opts)
-      .then(function(r) { return r.json(); })
-      .then(function(data) { if (callback) callback({ ok: true, data: data }); })
-      .catch(function(e) { console.warn('[W4P] fetchRaw error:', path, e.message); if (callback) callback({ ok: false, error: e.message }); });
+    // ── LOCAL_MODE: direct fetch from MAIN world content script ──
+    if (LOCAL_MODE) {
+      var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
+      if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+      fetch(SITE_BASE + path, opts)
+        .then(function(r) {
+          if (!r.ok) { if (callback) callback({ ok: false, error: 'HTTP ' + r.status, status: r.status }); return; }
+          return r.json().then(function(data) { if (callback) callback({ ok: true, data: data }); });
+        })
+        .catch(function(e) { if (callback) callback({ ok: false, error: e.message, status: 0 }); });
+      return;
+    }
+    // ── Remote mode: postMessage → bridge.js → background.js SW fetch ──
+    var reqId = _sessionId + '_raw' + (++_bridgeReqId);
+    _bridgePending[reqId] = {
+      cb: callback || function(){},
+      timer: setTimeout(function() {
+        delete _bridgePending[reqId];
+        if (callback) callback({ ok: false, error: 'bridge_timeout', status: 0 });
+      }, 15000)
+    };
+    window.postMessage({
+      channel: 'W4P_BRIDGE',
+      reqId: reqId,
+      path: path,
+      method: method || 'GET',
+      body: body,
+      apiKey: API_KEY,
+      rawPath: true
+    }, '*');
   }
 
   // v15: tightened polling — faster detection, faster commands
@@ -298,6 +363,19 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var _cashoutPre = false;   // when true, hyper-poll for cashout DOM element
   var _cashoutTimer = null;
   var _lastBoardLen = 0;     // track board cards for new hand detection
+  function _heroFromUrl() {
+    try {
+      var url = window.location.href;
+      var m = url.match(/tbl\/(\d+)/);
+      if (m) return "hero_tbl" + m[1];
+      m = url.match(/userid=(-?\d+)/);
+      if (m) return "hero_uid" + m[1];
+      m = url.match(/hash=([a-f0-9]{4,})/);
+      if (m) return "hero_h" + m[1].slice(0, 8);
+    } catch(e) {}
+    return "hero_auto_" + Date.now().toString(36);
+  }
+  var _lastHeroName = localStorage.getItem('w4p_hero_name') || null;  // persist hero name across sitting-out / folded states (localStorage survives reloads)
   var _wasHeroTurn = false;  // state-change gate: prevent repeated HERO_TURN activation
   var _snapshotInFlight = false;    // guard: prevent overlapping snapshot POSTs
   var _nextSnapshotAllowedAt = 0;   // throttle: timestamp when next snapshot is allowed
@@ -960,7 +1038,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       // the ONLY reliable hero signal — it's set by the poker client on the
       // player's own seat and never appears on villains even at showdown.
 
-      if (isHero) heroName = name;
+      if (isHero) { heroName = name || _lastHeroName; if (name) { _lastHeroName = name; try { localStorage.setItem('w4p_hero_name', name); } catch(_) {} } }
 
       // Status detection
       var sittingOut = ct.classList.contains('seat-out-v') || !!ct.querySelector('.seat-out-v');
@@ -1000,7 +1078,9 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         }
         console.log('[W4P] no hero | ' + containers.length + ' seats | ' + seatClasses.join(' | '));
       }
-      return null;
+      heroName = _heroFromUrl();
+      if (heroName) { _lastHeroName = heroName; console.log("[W4P] hero_from_url: " + heroName); }
+      else { return null; }
     }
 
     // ── Zero-alloc: mutate persistent _snapshot object ──
@@ -1615,9 +1695,9 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         // Acknowledge immediately
         bridgeFetch('/commands/ack', 'POST', { token: _seatToken, command_id: resp.data.command.id });
       }
+      window._w4p_cmdTimer = setTimeout(pollCommands, CMD_MS[_mode] || 500);
     });
 
-    window._w4p_cmdTimer = setTimeout(pollCommands, CMD_MS[_mode] || 500);
   }
 
   // ── Auto-untick "Wait for Big Blind" ─────────────────────────
@@ -1776,11 +1856,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         scheduleTick();
       }
     }, 500);
-  }
-
-  function stopObserver() {
-    if (_observer) { _observer.disconnect(); _observer = null; }
-    if (window._w4p_fallback) { clearInterval(window._w4p_fallback); window._w4p_fallback = null; }
   }
 
   // ── Start ────────────────────────────────────────────────────
