@@ -250,10 +250,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     var m = API_BASE.match(/^(https?:\/\/[^/]+)/);
     return m ? m[1] : 'http://127.0.0.1:4000';
   })();
-  // ── LOCAL_MODE: when targeting localhost/127.0.0.1, use direct fetch
-  //    from MAIN world content script (bypasses MV3 SW PNA restrictions).
-  //    The postMessage bridge (below) is only needed for remote production URLs.
-  var LOCAL_MODE = (API_BASE.indexOf('127.0.0.1') !== -1 || API_BASE.indexOf('localhost') !== -1);
   // ── Bridge via background service worker (bypasses Chrome PNA blocking) ──
   var _bridgeReqId = 0;
   var _bridgePending = {};
@@ -272,22 +268,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   });
 
   function bridgeFetch(path, method, body, callback) {
-    // ── LOCAL_MODE: direct fetch from MAIN world content script ──
-    //    Chrome MV3 SW PNA rules block service-worker fetch to 127.0.0.1.
-    //    Direct fetch from the MAIN world content script works because
-    //    host_permissions includes 127.0.0.1:4000 and Express has CORS.
-    if (LOCAL_MODE) {
-      var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
-      if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
-      fetch(API_BASE + path, opts)
-        .then(function(r) {
-          if (!r.ok) { if (callback) callback({ ok: false, error: 'HTTP ' + r.status, status: r.status }); return; }
-          return r.json().then(function(data) { if (callback) callback({ ok: true, data: data }); });
-        })
-        .catch(function(e) { if (callback) callback({ ok: false, error: e.message, status: 0 }); });
-      return;
-    }
-    // ── Remote mode: postMessage → bridge.js → background.js SW fetch ──
     var reqId = _sessionId + '_' + (++_bridgeReqId);
     _bridgePending[reqId] = {
       cb: callback || function(){},
@@ -307,19 +287,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   }
 
   function bridgeFetchRaw(path, method, body, callback) {
-    // ── LOCAL_MODE: direct fetch from MAIN world content script ──
-    if (LOCAL_MODE) {
-      var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
-      if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
-      fetch(SITE_BASE + path, opts)
-        .then(function(r) {
-          if (!r.ok) { if (callback) callback({ ok: false, error: 'HTTP ' + r.status, status: r.status }); return; }
-          return r.json().then(function(data) { if (callback) callback({ ok: true, data: data }); });
-        })
-        .catch(function(e) { if (callback) callback({ ok: false, error: e.message, status: 0 }); });
-      return;
-    }
-    // ── Remote mode: postMessage → bridge.js → background.js SW fetch ──
     var reqId = _sessionId + '_raw' + (++_bridgeReqId);
     _bridgePending[reqId] = {
       cb: callback || function(){},
@@ -1234,6 +1201,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
           _nextSnapshotAllowedAt = Date.now() + SNAPSHOT_INTERVAL_MS;
         }
         //console.log('[W4P] bridge error:', resp ? (resp.error || 'no response') : 'no response');
+        console.log('[W4P][SNAPSHOT] bridge FAIL:', resp ? (resp.error || 'no response') : 'no response');
       }
     });
   }
