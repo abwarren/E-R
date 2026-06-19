@@ -43,15 +43,21 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     // Use provided apiKey, or fallback to hardcoded key
     opts.headers['X-API-Key'] = msg.apiKey || API_KEY;
 
+    console.log('[W4P-BG] FETCH', msg.method || 'GET', url);
+
     fetch(url, opts)
       .then(function(r) {
+        console.log('[W4P-BG] FETCH response:', r.status, r.statusText);
         if (!r.ok) return sendResponse({ ok: false, error: 'HTTP ' + r.status, status: r.status });
         return r.text().then(function(txt) {
           try { sendResponse({ ok: true, data: JSON.parse(txt), status: r.status }); }
           catch (_) { sendResponse({ ok: true, data: txt, status: r.status }); }
         });
       })
-      .catch(function(e) { sendResponse({ ok: false, error: e.message, status: 0 }); });
+      .catch(function(e) {
+        console.error('[W4P-BG] FETCH error:', e.message);
+        sendResponse({ ok: false, error: e.message, status: 0 });
+      });
 
     return true; // keep sendResponse channel open for async
   }
@@ -78,4 +84,4 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
   }
 });
 
-console.log('[W4P-BG] Loaded. Default API_BASE=' + DEFAULT_API_BASE);
+console.log('[W4P-BG] Service worker loaded. Default API_BASE=' + DEFAULT_API_BASE);
