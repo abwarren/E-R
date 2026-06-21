@@ -156,13 +156,25 @@ def bump_hand_epoch():
 def should_accept_snapshot(snapshot_dict):
     """Check if incoming snapshot is fresh enough to accept.
 
-    Rejects snapshots with hand_epoch older than current.
-    Always accepts snapshots with no hand_epoch (backward-compatible).
+    When server epoch has drifted ahead (test/e2e injections), live extension
+    clients auto-resync on their next snapshot. Stale replays without real
+    seat data or observer flag are still rejected.
 
     Returns (accept: bool, reason: str or None).
     """
+    global _hand_epoch
     incoming_epoch = snapshot_dict.get('hand_epoch')
     if incoming_epoch is not None and incoming_epoch < _hand_epoch:
+        seats = snapshot_dict.get('seats', [])
+        is_observer = snapshot_dict.get('observer', False)
+        has_live_data = is_observer or any(
+            s.get('name') or s.get('is_hero') for s in seats
+        )
+        if has_live_data:
+            was = _hand_epoch
+            with BUFFER_LOCK:
+                _hand_epoch = incoming_epoch
+            return True, f'epoch_resync: server {was}->{incoming_epoch} (live client)'
         return False, f'stale_epoch: incoming={incoming_epoch} current={_hand_epoch}'
     return True, None
 

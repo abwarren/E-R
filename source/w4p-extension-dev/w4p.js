@@ -184,7 +184,8 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
           console.log('[W4P][FRAME_WAIT] seats appeared after ~' + (_seatWaitCount * 500) + 'ms');
           _initFrame();
         } else if (_seatWaitCount >= 60) {
-          console.log('[W4P][FRAME_SKIP] no seats after 30s — giving up');
+          console.log('[W4P][OBSERVER] no seats after 30s — starting observer loop');
+          _initFrame();
         } else {
           setTimeout(seatRetry, 500);
         }
@@ -250,6 +251,8 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     var m = API_BASE.match(/^(https?:\/\/[^/]+)/);
     return m ? m[1] : 'http://127.0.0.1:4000';
   })();
+  // LOCAL_MODE: direct fetch bypass for local dev (127.0.0.1 / localhost)
+  var LOCAL_MODE = (API_BASE.indexOf('127.0.0.1') !== -1 || API_BASE.indexOf('localhost') !== -1);
   // ── Bridge via background service worker (bypasses Chrome PNA blocking) ──
   var _bridgeReqId = 0;
   var _bridgePending = {};
@@ -349,7 +352,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var _lastSnapshotHash = '';       // dedup: hash of last sent snapshot state
 
   // ── Phase 2: MutationObserver + zero-alloc snapshot ──
-  var _heroSeatIndex = null;        // cached hero seat index — don't re-query every tick
   var _observer = null;             // MutationObserver instance
   var _lastTickTime = 0;            // timestamp of last processTick for fallback interval
   var _tickScheduled = false;       // guard: prevent rAF stacking
@@ -363,20 +365,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     dirty: false
   };
 
-  // ── Cache hero seat index at init, don't re-query every tick ──
-  function getHeroIndex() {
-    if (_heroSeatIndex !== null) return _heroSeatIndex;
-    var containers = document.querySelectorAll('sg-poker-table-seat');
-    if (!containers.length) containers = document.querySelectorAll('.player-mini-container-p');
-    for (var i = 0; i < containers.length; i++) {
-      if (containers[i].classList.contains('self-player')) {
-        _heroSeatIndex = i;
-        return i;
-      }
-    }
-    _heroSeatIndex = -1;
-    return -1;
-  }
+  // getHeroIndex removed — extension reports table-relative data, backend decides hero
 
   // ── Zero-alloc: patch a single seat in the persistent snapshot ──
   function patchSeat(index, changes) {
@@ -909,8 +898,21 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     if (!containers.length) containers = document.querySelectorAll('.player-mini-container-p');
     if (!containers.length) {
       if (_n <= 5 || _n % 30 === 0)
-        console.log('[W4P] no seat containers');
-      return null;
+        console.log('[W4P] no seat containers — sending observer snapshot');
+      // Observer mode: return empty snapshot to keep pipeline alive
+      return {
+        table_id: tableId,
+        bot_id: null,
+        seats: [],
+        dealer_seat: null,
+        pot_zar: 0,
+        board: { flop: [], turn: null, river: null },
+        hero_seat_index: null,
+        street: 'PREFLOP',
+        street_cards: [],
+        collector_batch: null,
+        observer: true
+      };
     }
 
     // Dealer position
@@ -983,7 +985,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       var ct = containers[i];
       var isHero = ct.classList.contains('self-player');  // canonical: ONLY reliable hero signal (see line 913 comment)
 
-      var posMatch = ct.className.match(/position-(\d+)/);
+      var posMatch = ct.className.match(/player-(\d+)/);
       var seatIdx = posMatch ? parseInt(posMatch[1]) : i;
 
       // Player name
@@ -1010,7 +1012,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       // Status detection
       var sittingOut = ct.classList.contains('seat-out-v') || !!ct.querySelector('.seat-out-v');
       var isFolded = ct.classList.contains('folded') || !!ct.querySelector('.folded');
-      var isActive = isHero && avail.length > 0;  // visible buttons = hero's turn
+      var isActive = (activePlayerName && name === activePlayerName) || (isHero && avail.length > 0);  // active seat = named active player OR hero with buttons
 
       var status = 'playing';
       if (sittingOut) status = 'sitting_out';
@@ -1028,12 +1030,30 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         status:            status,
         sitting_out:       sittingOut,
         is_active:         isActive,
-        available_actions: isHero ? avail : [],
+        available_actions: isActive ? avail : [],
         bet:               getPlayerBet(seatIdx)
       });
     }
 
-    // Must have found hero
+    // -- DIAGNOSTIC: log .self-player elements vs seat containers --
+    if (_n <= 10 || _n % 20 === 0) {
+      var _allSelf = document.querySelectorAll(".player-mini-container-p.self-player, sg-poker-table-seat.self-player");
+      var _diag = ["[W4P][DIAG-SEAT] hero_found=" + (heroName ? "YES" : "NO") + " self_player_elements=" + _allSelf.length];
+      for (var _di = 0; _di < _allSelf.length; _di++) {
+        var _el = _allSelf[_di];
+        _diag.push("  self[" + _di + "]: tag=" + _el.tagName + " id=" + (_el.id || "none") + " cls=" + _el.className.replace(/\s+/g, " "));
+      }
+      for (var _di = 0; _di < containers.length; _di++) {
+        var _ct = containers[_di];
+        var _dn = _ct.querySelector("p.single-win-item-sizes") || _ct.querySelector(".player-name");
+        var _dnTxt = _dn ? _dn.textContent.trim() : "EMPTY";
+        _diag.push("  seat[" + _di + "]: name=" + _dnTxt + " cls=" + _ct.className.replace(/\s+/g, " "));
+      }
+      console.log(_diag.join("\n"));
+    }
+
+    // No hero detected — extension reports table-relative data only.
+    // Backend/UI decides which seat is hero. Never auto-assign is_hero.
     if (!heroName) {
       if (_n <= 5 || _n % 30 === 0) {
         var seatClasses = [];
@@ -1043,11 +1063,11 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
           var dnameText = dname ? dname.textContent.trim() : 'EMPTY';
           seatClasses.push(dnameText + ':' + dct.className.replace(/\s+/g, '.'));
         }
-        console.log('[W4P] no hero | ' + containers.length + ' seats | ' + seatClasses.join(' | '));
+        console.log('[W4P] observer | ' + containers.length + ' seats | ' + seatClasses.join(' | '));
       }
       heroName = _heroFromUrl();
-      if (heroName) { _lastHeroName = heroName; console.log("[W4P] hero_from_url: " + heroName); }
-      else { return null; }
+      _lastHeroName = heroName;
+      console.log("[W4P] bot_id: " + heroName + " (observer — no .self-player in DOM)");
     }
 
     // ── Zero-alloc: mutate persistent _snapshot object ──
@@ -1093,6 +1113,12 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     var hero = null;
     for (var i = 0; i < snap.seats.length; i++) {
       if (snap.seats[i].is_hero) { hero = snap.seats[i]; break; }
+    }
+    if (!hero) {
+      // Fallback: use first named seat for dedup when no hero
+      for (var i = 0; i < snap.seats.length; i++) {
+        if (snap.seats[i].name) { hero = snap.seats[i]; break; }
+      }
     }
     if (!hero) return '';
     return JSON.stringify({
@@ -1172,13 +1198,15 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       return;
     }
 
-    // ── Guard: reduced frequency when hero has no readable cards and not active ──
-    var hero = null;
+    // ── Guard: reduced frequency when NO seat is active and no cards visible ──
+    var anyActive = false;
+    var anyCards = false;
     for (var i = 0; i < snap.seats.length; i++) {
-      if (snap.seats[i].is_hero) { hero = snap.seats[i]; break; }
+      if (snap.seats[i].is_active) { anyActive = true; }
+      if (snap.seats[i].hole_cards && snap.seats[i].hole_cards.length > 0) { anyCards = true; }
+      if (anyActive && anyCards) break;
     }
-    var hasCards = hero && hero.hole_cards && hero.hole_cards.length > 0;
-    if (!hasCards && !(hero && hero.is_active) && now - _lastSendTime < 10000 && _n > 5) {
+    if (!anyCards && !anyActive && now - _lastSendTime < 10000 && _n > 5) {
       _pollActive = false;
       return;
     }
@@ -1771,7 +1799,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       return;
     }
     _pollActive = true;
-    _lastSendTime = Date.now();
     sendSnapshot(snap);
     sendToCollector(snap);
 

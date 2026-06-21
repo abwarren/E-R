@@ -592,6 +592,8 @@ def _build_seats_list(table):
     out = []
     # Always build exactly 9 seats for 9-max tables
     max_seats = 9
+    # Safety: if no seat has is_active, do not apply aggressive stale cleanup
+    _any_active = any(s.get("is_active", False) for s in table["seats"].values()) if table.get("seats") else False
     for seat_no in range(1, max_seats + 1):
         seat = table["seats"].get(seat_no)
         token = generate_seat_token(table["table_id"], seat_no)
@@ -630,7 +632,12 @@ def _build_seats_list(table):
             # Staleness: non-hero controlled seats expire after _STALE_TTL without refresh.
             now_ts = time.time()
             last_seen = seat_data.get("last_seen") or 0
-            is_stale = not is_hero and bot_id is not None and (now_ts - last_seen) > _STALE_TTL
+            is_stale = (
+                bot_id is not None
+                and not seat_data.get("is_active", False)
+                and (now_ts - last_seen) > _STALE_TTL
+                and _any_active
+            )
 
             if is_self and not is_stale:
                 # Controlled snapshot source (hero or other bot) — render with full identity
@@ -1021,8 +1028,15 @@ def post_snapshot():
 
     seats_raw = payload.get('seats', [])
     hero_seat = next((s for s in seats_raw if s.get('is_hero')), None)
+    observer_mode = payload.get('observer', False)
     if not hero_seat:
-        return jsonify({'ok': False, 'error': 'No hero seat found'}), 400
+        if not seats_raw and not observer_mode:
+            return jsonify({'ok': False, 'error': 'No seats in snapshot'}), 400
+        if not seats_raw and observer_mode:
+            app.logger.info('[SNAPSHOT][OBSERVER] Observer heartbeat - no seats, keeping pipeline alive')
+            # Observer heartbeat — fall through to store empty table
+        observer_mode = True
+        app.logger.info('[SNAPSHOT][OBSERVER] No hero seat - entering observer mode, seats=%d', len(seats_raw))
 
     # Extract bot identity (hero player name from w4p.js)
     bot_id = payload.get('bot_id')
@@ -1037,7 +1051,7 @@ def post_snapshot():
     elif _table_id_lower.startswith(('test_', 'demo_', 'fake_', 'mock_', 'w4p_inject_')):
         _reject_reason = 'fake/test table_id prefix'
     # Reject snapshots with no bot_id (no hero identity)
-    elif not bot_id or not str(bot_id).strip():
+    elif not observer_mode and (not bot_id or not str(bot_id).strip()):
         _reject_reason = 'missing bot_id (no hero identity)'
     elif str(bot_id).strip().lower() in ('unknown-bot', 'test-bot', 'fake-bot', 'demo-bot'):
         _reject_reason = 'fake/test bot_id'
@@ -1177,17 +1191,22 @@ def post_snapshot():
                             table["next_seat_no"] = seat_no + 1
             else:
                 # No seat_index from scraper — use seat_map as fallback (legacy)
-                if is_anon:
+                is_hero_seat = s.get("is_hero", False)
+                if is_anon and not is_hero_seat:
                     continue
-                if name_key not in table["seat_map"]:
-                    used = set(table["seat_map"].values())
-                    assigned = next(
-                        (n for n in range(1, 10) if n not in used),
-                        table["next_seat_no"]
-                    )
-                    table["seat_map"][name_key] = assigned
-                    table["next_seat_no"] = max(table["next_seat_no"], assigned + 1)
-                seat_no = table["seat_map"][name_key]
+                # Hero fallback: when hero has no seat_index and no name (observer mode)
+                if is_hero_seat and is_anon:
+                    seat_no = 0
+                else:
+                    if name_key not in table["seat_map"]:
+                                        used = set(table["seat_map"].values())
+                                        assigned = next(
+                                                            (n for n in range(1, 10) if n not in used),
+                                                            table["next_seat_no"]
+                                        )
+                                        table["seat_map"][name_key] = assigned
+                                        table["next_seat_no"] = max(table["next_seat_no"], assigned + 1)
+                    seat_no = table["seat_map"][name_key]
 
             new_seats[seat_no] = {
                 "seat_no":                seat_no,
@@ -1291,12 +1310,13 @@ def post_snapshot():
         pass  # Buffer push must never fail the snapshot endpoint
 
     return jsonify({
-        'ok':         True,
-        'seat_token': token,
-        'seat_no':    hero_seat_no,
-        'seat_index': hero_seat.get('seat_index', hero_seat_no),
-        'table_id':   table_id,
-        'player_name': hero_seat.get('name'),
+        'ok':              True,
+        'observer_mode':   observer_mode,
+        'seat_token':      token,
+        'seat_no':         hero_seat_no,
+        'seat_index':      hero_seat.get('seat_index', hero_seat_no) if hero_seat else None,
+        'table_id':        table_id,
+        'player_name':     hero_seat.get('name') if hero_seat else None,
     })
 
 # ── Endpoint 2: GET /api/commands/pending ─────────────────────────────────────
