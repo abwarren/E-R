@@ -693,6 +693,7 @@ def _build_seats_list(table):
                 seat_data["buttons"] = _bot_buttons.get(bot_id, {}) if bot_id else {}
                 out.append({
                     **seat_data,
+                    "is_active":  seat_data.get("is_active", False),
                     "pending_cmd": pending_cmd,
                     "bot_id": bot_id,
                 })
@@ -724,6 +725,7 @@ def _build_seats_list(table):
                 "status":     "empty",
                 "is_dealer":  False,
                 "is_hero":    False,
+                "is_active":  False,
                 "last_seen":  None,
                 "pending_cmd": None,
                 "bot_id":     None,
