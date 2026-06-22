@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+
+# Virtual env
+venv/
+.venv/
+env/
+
+# Backups
+*.bak
+*.bak.*
+*.backup
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# State / runtime data
+state/state_snapshot.json
+backend/data/hand-collector/saved_hands/
+
+# Docker
+*.tar.gz
+
+# Keys
+*.pem
+*.key
+!example_key
