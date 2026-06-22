@@ -133,29 +133,22 @@
      ================================================================ */
   .remote-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(280px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, auto);
+    gap: 12px;
     width: 100%;
+    min-height: 400px;
     padding: 16px;
     box-sizing: border-box;
   }
 
-  @media (max-width: 1100px) {
-    .remote-grid {
-      grid-template-columns: repeat(2, minmax(260px, 1fr));
-    }
-  }
-
-  @media (max-width: 700px) {
-    .remote-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
   .seat-slot {
-    position: relative;
-    width: 100%;
     min-height: 120px;
+    display: flex;
+    align-items: stretch;
+  }
+  .seat-slot[data-empty="true"] {
+    opacity: 0.25;
   }
 
   /* -- Seat box -- */
@@ -293,6 +286,7 @@
   .global-autocc-btn.active { background:rgba(255,193,7,0.25); border-color:#ffc107; color:#ffc107; }
   .global-autocc-btn.active-cf { background:rgba(76,175,80,0.25); border-color:#4caf50; color:#4caf50; }
   .global-autocc-btn.active-kh { background:rgba(233,30,99,0.25); border-color:#e91e63; color:#e91e63; }
+  .global-autocc-btn.active-si { background:rgba(33,150,243,0.25); border-color:#2196f3; color:#2196f3; }
   .kh-toggle { border-color:#e91e63 !important; }
   .kh-toggle.active { background:rgba(233,30,99,0.3) !important; border-color:#e91e63 !important; color:#e91e63 !important; }
   .seat-box.kh-marked { border-color:#4caf50 !important; box-shadow: 0 0 12px rgba(76,175,80,0.5), 0 4px 12px rgba(0,0,0,0.5) !important; }
@@ -521,6 +515,25 @@
   .log-ts  { color: #4a5a70; }
   .log-ok  { color: #4caf50; }
   .log-err { color: #f44336; }
+  /* -- Equity panel -- */
+  .eq-toggle { font-size: 10px; font-weight: 700; color: #555; cursor: pointer; padding: 2px 6px; border-radius: 3px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); user-select: none; }
+  .eq-toggle:hover { border-color: rgba(255,255,255,0.2); }
+  .eq-toggle.active { background: rgba(156,39,176,0.2); border-color: #9c27b0; color: #9c27b0; }
+  .eq-panel { display: none; background: #0d1525; border-top: 1px solid #30363d; padding: 6px 12px; font-size: 10px; flex-shrink: 0; }
+  .eq-panel.visible { display: block; }
+  .eq-header { color: #9c27b0; font-weight: 700; font-size: 11px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .eq-matchup { display: flex; align-items: center; gap: 6px; padding: 2px 0; border-bottom: 1px solid #151d30; }
+  .eq-hand { color: #aaa; font-family: 'Consolas', monospace; min-width: 100px; }
+  .eq-pct { font-weight: 700; min-width: 48px; }
+  .eq-pct.fav { color: #4caf50; }
+  .eq-pct.und { color: #f44336; }
+  .eq-bar-wrap { flex: 1; height: 8px; background: #1a1a2e; border-radius: 4px; overflow: hidden; min-width: 60px; }
+  .eq-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .eq-bar.fav { background: #4caf50; }
+  .eq-bar.und { background: #f44336; }
+  .eq-empty { color: #555; padding: 4px 0; }
+  .eq-sig { color: #444; font-size: 9px; margin-left: auto; }
+  .seat-box.sitting-out { opacity: 0.35; }  .seat-box.sitting-out .seat-name::after { content: " (SITTING OUT)"; font-size: 8px; color: #ff9800; }
 </style>
 </head>
 <body>
@@ -532,6 +545,7 @@
     <span id="conn-dot" class="conn-dot"></span>
     <button class="force-test-btn" id="force-test" title="Inject fake actions to test UI expansion">FORCE TEST</button>
     <button class="emg-toggle" id="emg-toggle" title="Toggle emergency fallback panel">EMG</button>
+    <button class="eq-toggle" id="eq-toggle" title="Toggle equity panel" onclick="toggleEquityPanel()">EQ</button>
   </div>
 </header>
 
@@ -539,6 +553,7 @@
   <button class="global-autocc-btn" id="global-autocc-btn" onclick="toggleGlobalAutoCC()">AUTO C/C PREFLOP — ALL</button>
   <button class="global-autocc-btn" id="global-cf-btn" onclick="toggleGlobalAutoCF()" style="border-color:#4caf50;">SELECT ALL AUTO C/F</button>
   <button class="global-autocc-btn" id="execute-kh-btn" onclick="executeKH()" style="border-color:#e91e63;">EXECUTE KH</button>
+  <button class="global-autocc-btn" id="sit-in-all-btn" onclick="sitInAll()" style="border-color:#2196f3;">SIT-IN ALL</button>
 </div>
 
 <div class="main-area">
@@ -558,6 +573,11 @@
   <div class="emg-banner">EMERGENCY FALLBACK PANEL</div>
   <div class="emg-hero-info" id="emg-hero-info">No hero</div>
   <div id="emg-content"></div>
+</div>
+
+<div class="eq-panel" id="eq-panel">
+  <div class="eq-header">EQUITY <span class="eq-sig" id="eq-sig"></span></div>
+  <div id="eq-content"><div class="eq-empty">No equity data</div></div>
 </div>
 
 <div id="cmd-log"></div>
@@ -587,6 +607,11 @@ var globalCFExcluded = {};       // seats manually unticked while globalAutoCF i
 var khState = {};                // seatNo -> true (KH = Keep Hand, manual input required)
 var autoCcLastSent = {};         // seatNo -> timestamp (throttle re-sends to every 3s)
 var lastBoardKey = null;
+var lastStreet = null;
+var khBattleArmed = false;
+var khBattleSeats = {};   // seatNo → true (KH seats in raise-max battle)
+var khBattleCoSeat = null; // the KH seat that also has CO (cashout on all-in)
+var khBattleRaiseLast = 0; // timestamp of last raise_max sent (throttle)
 
 // Per-seat raise amounts
 var seatAmounts = {};      // seatNo -> current amount
@@ -829,7 +854,7 @@ function buildSeatBoxHtml(seat) {
 
   var isActive = isHero && acts.length > 0;
 
-  var cls = 'seat-box';
+  var cls = 'seat-box'; if (seat.status === 'sitting_out' || (seat.sitting_out && !seat.is_dealer)) cls += ' sitting-out';
   if (isHero) cls += ' hero';
   if (isActive) cls += ' expanded';
   if (khState[sn]) cls += ' kh-marked';
@@ -887,12 +912,12 @@ function buildSeatBoxHtml(seat) {
       var hasBet = acts.indexOf('bet') >= 0;
       var raiseWord = hasBet ? 'bet' : 'raise';
 
-      var sMin = slider && slider.min != null ? slider.min : 1;
-      var sMax = slider && slider.max != null ? slider.max : (seat.stack_zar || 9999);
-      var sStep = slider && slider.step != null ? slider.step : 1;
-      var sCur = seatAmounts[sn] != null ? seatAmounts[sn] : (slider && slider.current != null ? slider.current : sMin);
+      var sMin = slider ? slider.min : 1;
+      var sMax = slider ? slider.max : (seat.stack_zar || 9999);
+      var sStep = slider ? (slider.step || 1) : 1;
+      var sCur = seatAmounts[sn] != null ? seatAmounts[sn] : (slider ? (slider.current || sMin) : sMin);
       if (sCur < sMin) sCur = sMin;
-      if (sMax != null && sCur > sMax) sCur = sMax;
+      if (sCur > sMax) sCur = sMax;
 
       html += '<div class="seat-actions">';
       html += '<div class="sa-turn-label">YOUR TURN</div>';
@@ -957,76 +982,78 @@ function renderSeats() {
   var container = document.getElementById('seats-container');
 
   if (!slotsCreated) {
-    if (!container) return;  // DOM not ready yet
-    for (var i = 0; i < 9; i++) {
+    if (!container) return;
+    // Clear any existing children (rebuild on hot-reload)
+    container.innerHTML = '';
+    seatSlots = [];
+    for (var i = 1; i <= 9; i++) {
       var slot = document.createElement('div');
       slot.className = 'seat-slot';
-      slot.dataset.pos = i;
+      slot.dataset.slot = i;
+      slot.dataset.empty = 'true';
       container.appendChild(slot);
-      seatSlots[i] = slot;  // cache DOM ref
+      seatSlots[i] = slot;  // index by slot number 1-9
     }
     slotsCreated = true;
   }
 
-  var posSeatMap = {};
-  heroIsActive = false;  // recalculate each render
+  // Clear all slots before rebuilding — prevents stale cards
+  for (var si = 1; si <= 9; si++) {
+    var sl = seatSlots[si];
+    if (sl) { sl.innerHTML = ''; sl.dataset.empty = 'true'; sl.dataset.bot = ''; }
+  }
+
+  // Deduplicate by bot_id — only keep latest row per bot
+  var botMap = {};
+  heroIsActive = false;
   if (lastTable && Array.isArray(lastTable.seats)) {
     lastTable.seats.forEach(function(seat) {
-      if (seat.name != null && seat.status !== "sitting_out") {
-        var rawPos = seat.seat_no != null ? seat.seat_no : seat.seat_index;
-        var pos = rawPos >= 1 ? rawPos - 1 : rawPos;  // map 1-9 → 0-8
-        if (pos != null && pos >= 0 && pos < 9) posSeatMap[pos] = seat;
-      }
-      // detect if any hero has pending actions (drives adaptive poll rate)
       if (seat.is_self_player && seat.available_actions && seat.available_actions.length > 0) {
         heroIsActive = true;
+      }
+      if (!seat.name) return;
+      var bid = seat.bot_id || seat.name;
+      if (!bid) return; // only render trusted bot-owned seats
+      // Keep latest by last_seen (higher timestamp wins)
+      var existing = botMap[bid];
+      if (!existing || (seat.last_seen || 0) > (existing.last_seen || 0)) {
+        botMap[bid] = seat;
       }
     });
   }
 
-  for (var pos = 0; pos < 9; pos++) {
-    var seat = posSeatMap[pos];
-    // ---- Seat ownership tracking ----
-    var tableId = lastTable ? lastTable.table_id : '?';
-    if (seat && seat.name) {
-      var stableKey = tableId + ':' + seat.name;
-      var sn = getSeatNo(seat);
-      var prevOwner = lastSeatAssign[sn];
-      if (prevOwner && prevOwner !== seat.name) {
-        // Different player now occupying this seat
-        console.log('[REMOTE][SEAT_COLLISION] seat=' + sn + ' was="' + prevOwner + '" now="' + seat.name + '"');
-      }
-      if (prevOwner !== seat.name) {
-        console.log('[REMOTE][SEAT_ASSIGN] player="' + seat.name + '" seat=' + sn + ' pos=' + pos);
-        lastSeatAssign[sn] = seat.name;
-      }
-      // Track player->seat mapping
-      if (!seatOwners[stableKey] || seatOwners[stableKey] !== sn) {
-        var oldSn = seatOwners[stableKey];
-        seatOwners[stableKey] = sn;
-        console.log('[REMOTE][SEAT_STABLE] player="' + seat.name + '" seat=' + sn + (oldSn ? ' (was seat ' + oldSn + ')' : ''));
-      }
-    }
-    // ---- Action-on highlight (CSS only, not ownership) ----
-    if (seat && seat.action_on) {
-      console.log('[REMOTE][ACTIVE_REFRESH] seat=' + getSeatNo(seat) + ' player="' + seat.name + '" action_on=true');
-    }
-    // ---- Diff-based render ----
-    var hash = seat ? seatHash(seat) : 'empty';
-    if (renderedSeats[pos] === hash) continue;
+  var botList = Object.keys(botMap);
+  console.log('[REMOTE][GRID] clearing slots=9 render_count=' + botList.length + ' bots=' + botList.join(','));
 
-    var slot = seatSlots[pos];  // use cached ref
-    if (!slot) continue;  // guard: skip if DOM not ready
-    if (seat) {
-      slot.style.display = '';
-      slot.innerHTML = buildSeatBoxHtml(seat);
-      // Apply action-on CSS class without changing seat ownership
-      slot.querySelector('.seat-box').classList.toggle('action-on', !!seat.action_on);
-    } else {
-      slot.style.display = 'none';
-      slot.innerHTML = '';
+  // Place each bot by remote_slot
+  var usedSlots = {};
+  botList.forEach(function(bid) {
+    var seat = botMap[bid];
+    var slotNum = Number(seat.seat_no || seat.seat_index);
+    if (!(slotNum >= 1 && slotNum <= 9)) return;
+    if (usedSlots[slotNum]) {
+      console.log('[REMOTE][GRID][WARN] duplicate slot=' + slotNum + ' bots=' + usedSlots[slotNum] + ',' + bid);
     }
-    renderedSeats[pos] = hash;
+    usedSlots[slotNum] = bid;
+    var slotEl = seatSlots[slotNum];
+    if (!slotEl) return;
+    slotEl.dataset.empty = 'false';
+    slotEl.dataset.bot = bid;
+    slotEl.innerHTML = buildSeatBoxHtml(seat);
+    var box = slotEl.querySelector('.seat-box');
+    if (box) box.classList.toggle('action-on', !!seat.action_on);
+    console.log('[REMOTE][GRID] bot=' + bid + ' remote_slot=' + slotNum + ' cell=slot-' + slotNum +
+      ' source_seat_no=' + seat.source_seat_no + ' source_visual_position=' + seat.source_visual_position);
+  });
+
+  // Show empty placeholders for unused slots
+  for (var sn = 1; sn <= 9; sn++) {
+    if (!usedSlots[sn]) {
+      var slEl = seatSlots[sn];
+      if (slEl && slEl.dataset.empty === 'true') {
+        slEl.innerHTML = '<div class="seat-box empty">Slot ' + sn + '</div>';
+      }
+    }
   }
 }
 
@@ -1075,12 +1102,12 @@ function renderEmergencyPanel() {
   var hasBet = acts.indexOf('bet') >= 0;
   var raiseWord = hasBet ? 'bet' : 'raise';
 
-  var sMin = slider && slider.min != null ? slider.min : 1;
-  var sMax = slider && slider.max != null ? slider.max : (hero.stack_zar || 9999);
-  var sStep = slider && slider.step != null ? slider.step : 1;
-  var sCur = emgAmount != null ? emgAmount : (slider && slider.current != null ? slider.current : sMin);
+  var sMin = slider ? slider.min : 1;
+  var sMax = slider ? slider.max : (hero.stack_zar || 9999);
+  var sStep = slider ? (slider.step || 1) : 1;
+  var sCur = emgAmount != null ? emgAmount : (slider ? (slider.current || sMin) : sMin);
   if (sCur < sMin) sCur = sMin;
-  if (sMax != null && sCur > sMax) sCur = sMax;
+  if (sCur > sMax) sCur = sMax;
 
   var emgHash = hero.name + '|' + sn + '|' + acts.join(',') + '|' +
     (preActionState[sn] || '') + '|' + (cashoutState[sn] || false);
@@ -1314,8 +1341,8 @@ function applyPreset(seatNo, preset, prefix) {
   var stack = hero.stack_zar || 0;
   var pot = lastTable.pot_zar || 0;
   var slider = hero.buttons && hero.buttons.slider ? hero.buttons.slider : null;
-  var sMin = slider && slider.min != null ? slider.min : 1;
-  var sMax = slider && slider.max != null ? slider.max : stack;
+  var sMin = slider ? slider.min : 1;
+  var sMax = slider ? slider.max : stack;
   var val = sMin;
 
   // POT and MAX: send as commands to w4p.js (click native PokerBet controls)
@@ -1331,7 +1358,6 @@ function applyPreset(seatNo, preset, prefix) {
   if (preset === 'min') val = sMin;
   else if (preset === 'half') val = Math.max(pot * 0.5, sMin);
 
-  if (sMax == null || sMax <= 0) sMax = stack || 9999;
   val = Math.min(Math.max(val, sMin), sMax);
   val = Math.round(val * 100) / 100;
 
@@ -1351,27 +1377,80 @@ function applyPreset(seatNo, preset, prefix) {
 }
 
 // -- Global AUTO C/C toggle --
-// -- Execute KH: auto C/F all non-KH seats, highlight KH seats --
+// -- Execute KH: start a KH battle — KH seats raise-max until all-in, CO seat cashes out --
 function executeKH() {
   if (!lastTable || !Array.isArray(lastTable.seats)) return;
-  var khCount = 0, cfCount = 0;
+  var khCount = 0, cfCount = 0, coCount = 0;
+  khBattleSeats = {};
+  khBattleCoSeat = null;
   lastTable.seats.forEach(function(seat) {
     if (!seat.is_self_player && !seat.is_hero) return;
     if (!seat.name || seat.name === 'Empty') return;
     var sn = getSeatNo(seat);
     if (khState[sn]) {
       khCount++;
-      console.log('[KH] KEEP seat=' + sn + ' name=' + seat.name + ' — manual input required');
+      khBattleSeats[sn] = true;
+      if (cashoutState[sn]) {
+        khBattleCoSeat = sn;
+        coCount++;
+        sendCmd(sn, 'cashout_pre');
+        console.log('[KH_BATTLE] CO seat=' + sn + ' name=' + seat.name + ' — cashout armed');
+      }
+      console.log('[KH_BATTLE] KH seat=' + sn + ' name=' + seat.name + ' — will raise-max');
     } else {
       cfCount++;
       preActionState[sn] = 'check_fold';
       sendCmd(sn, 'check_fold');
-      console.log('[KH] AUTO_CF seat=' + sn + ' name=' + seat.name);
+      console.log('[KH_BATTLE] AUTO_CF seat=' + sn + ' name=' + seat.name);
     }
   });
-  console.log('[KH] executeKH complete: ' + khCount + ' KH (manual), ' + cfCount + ' auto-C/F');
+  if (khCount >= 2) {
+    khBattleArmed = true;
+    khBattleRaiseLast = 0;
+    console.log('[KH_BATTLE] BATTLE STARTED: ' + khCount + ' KH seats, ' + coCount + ' CO, ' + cfCount + ' auto-C/F');
+  } else if (khCount === 1) {
+    khBattleArmed = false;
+    // Single KH: just check/fold that seat too, same as others
+    Object.keys(khBattleSeats).forEach(function(sn) {
+      preActionState[sn] = 'check_fold';
+      sendCmd(sn, 'check_fold');
+      console.log('[KH_BATTLE] Single KH seat=' + sn + ' — auto-C/F');
+    });
+    khBattleSeats = {};
+    console.log('[KH_BATTLE] Only 1 KH seat — battle requires 2+. All seats check/fold.');
+  } else {
+    console.log('[KH_BATTLE] No KH seats selected — all check/fold');
+  }
   var btn = document.getElementById('execute-kh-btn');
   if (btn) { btn.classList.add('active-kh'); setTimeout(function() { btn.classList.remove('active-kh'); }, 2000); }
+  renderedSeats = {}; lastEmgHash = null; render();
+}
+
+// -- Sit-In All: toggle all sitting-out players back in --
+function sitInAll() {
+  if (!lastTable || !Array.isArray(lastTable.seats)) return;
+  var sitOutSeats = [];
+  lastTable.seats.forEach(function(seat) {
+    if (!seat.name || seat.name === 'Empty') return;
+    if (seat.status === 'sitting_out') {
+      var sn = getSeatNo(seat);
+      sitOutSeats.push(sn);
+    }
+  });
+  if (sitOutSeats.length === 0) {
+    console.log('[SIT-IN-ALL] No sitting-out players found');
+    return;
+  }
+  console.log('[SIT-IN-ALL] Sending sit_out toggle to ' + sitOutSeats.length + ' seats: ' + sitOutSeats.join(','));
+  // Stagger sends 300ms apart so PokerBet DOM can process each
+  sitOutSeats.forEach(function(sn, i) {
+    setTimeout(function() {
+      sendCmd(sn, 'sit_out');
+      console.log('[SIT-IN-ALL] Queued seat=' + sn);
+    }, i * 300);
+  });
+  var btn = document.getElementById('sit-in-all-btn');
+  if (btn) { btn.classList.add('active-si'); setTimeout(function() { btn.classList.remove('active-si'); }, 3000); }
   renderedSeats = {}; lastEmgHash = null; render();
 }
 
@@ -1441,32 +1520,191 @@ function fireAutoCcPreflop() {
   });
 }
 
-// -- New-hand detection --
+// -- New-hand / street-change detection --
 
 function checkNewHand() {
-  if (!lastTable || !lastTable.board) return;
-  var b = lastTable.board;
+  if (!lastTable) return;
+  var b = lastTable.board || {};
   var flopStr = Array.isArray(b.flop) ? b.flop.join(',') : '';
   var boardKey = lastTable.street + ':' + flopStr;
-  if (lastBoardKey !== null && lastBoardKey !== boardKey) {
-    var isPreflop = boardKey.indexOf('PREFLOP:') === 0;
-    if (isPreflop || flopStr !== lastBoardKey.split(':').slice(1).join(':')) {
-      preActionState = {};
-      cashoutState = {};
-      autoCcPreflop = {};
-      khState = {};
-      autoCcLastSent = {};
-      globalCFExcluded = {};
-      console.log('[AUTO_CC_PREFLOP] reset_new_hand');
-      seatAmounts = {};
-      emgAmount = null;
-      renderedSeats = {};
-      lastEmgHash = null;
-      console.log('[REMOTE] checkbox states reset after hand transition');
-    }
+  var newStreet = lastTable.street || '';
+  var streetChanged = lastStreet !== null && lastStreet !== newStreet;
+  var handChanged = lastBoardKey !== null && lastBoardKey !== boardKey;
+  if (streetChanged || handChanged) {
+    preActionState = {};
+    cashoutState = {};
+    autoCcPreflop = {};
+    khState = {};
+    autoCcLastSent = {};
+    globalCFExcluded = {};
+    globalAutoCcPreflop = false;
+    globalAutoCF = false;
+    khBattleArmed = false;
+    khBattleSeats = {};
+    khBattleCoSeat = null;
+    _khBattleLastAction = {};
+    // Reset global button CSS
+    var accBtn = document.getElementById('global-autocc-btn');
+    var cfBtn = document.getElementById('global-cf-btn');
+    var khBtn = document.getElementById('execute-kh-btn');
+    if (accBtn) accBtn.classList.remove('active');
+    if (cfBtn) cfBtn.classList.remove('active-cf');
+    if (khBtn) khBtn.classList.remove('active-kh');
+    console.log('[REMOTE] reset_all_global: street=' + lastStreet + '→' + newStreet + ' hand_change=' + handChanged);
+    seatAmounts = {};
+    emgAmount = null;
+    renderedSeats = {};
+    lastEmgHash = null;
   }
   lastBoardKey = boardKey;
+  lastStreet = newStreet;
 }
+
+// -- KH Battle loop: auto raise-max for KH seats, cashout for CO seat --
+
+var _khBattleLastAction = {}; // seatNo → timestamp (debounce per seat)
+
+function fireKHBattle() {
+  if (!khBattleArmed || !lastTable || !Array.isArray(lastTable.seats)) return;
+  var now = Date.now();
+  var stillAlive = false;
+  var activeSeat = null;
+  var activeSeatHasRaise = false;
+
+  // Find the KH seat that currently has action
+  lastTable.seats.forEach(function(seat) {
+    var sn = getSeatNo(seat);
+    if (!khBattleSeats[sn]) return;
+
+    // Check if seat is out (folded, sitting_out, no stack)
+    if (seat.status === 'folded' || seat.status === 'sitting_out') {
+      delete khBattleSeats[sn];
+      console.log('[KH_BATTLE] seat=' + sn + ' removed — status=' + seat.status);
+      return;
+    }
+    if (seat.stack_zar != null && seat.stack_zar <= 0) {
+      delete khBattleSeats[sn];
+      console.log('[KH_BATTLE] seat=' + sn + ' removed — all-in (stack=0)');
+      return;
+    }
+    stillAlive = true;
+
+    // Check if this seat has action (is their turn)
+    if (seat.action_on && Array.isArray(seat.available_actions) && seat.available_actions.length > 0) {
+      activeSeat = sn;
+      var avail = seat.available_actions.map(function(a) { return (a.action || a || '').toLowerCase(); });
+      activeSeatHasRaise = avail.some(function(a) { return a.indexOf('raise') !== -1 || a.indexOf('bet') !== -1; });
+    }
+  });
+
+  // If no KH seats remain, disarm
+  if (!stillAlive) {
+    khBattleArmed = false;
+    khBattleSeats = {};
+    khBattleCoSeat = null;
+    console.log('[KH_BATTLE] BATTLE OVER — all KH seats eliminated');
+    return;
+  }
+
+  // If a KH seat has action and can raise
+  if (activeSeat && activeSeatHasRaise) {
+    var lastRaise = _khBattleLastAction[activeSeat] || 0;
+    // Throttle: don't re-send raise_max within 2s for the same seat
+    if (now - lastRaise > 2000) {
+      _khBattleLastAction[activeSeat] = now;
+      sendCmd(activeSeat, 'raise_max');
+      console.log('[KH_BATTLE] seat=' + activeSeat + ' raise_max fired');
+    }
+  } else if (activeSeat && !activeSeatHasRaise) {
+    // Seat has action but no raise option — likely preflop small blind or forced call
+    // Don't auto-act, let the player manually decide or just log
+    console.log('[KH_BATTLE] seat=' + activeSeat + ' has action but no raise available — waiting');
+  }
+
+  // CO seat: cashout_pre already sent at battle start (line ~1369).
+  // w4p.js hyper-polls for .cash_out-c until it appears and fires.
+  // No re-arm needed — single shot is correct.
+}
+
+
+// -- Equity panel --
+var eqVisible = false;
+var eqLatest = null;       // last equity result from SSE
+var eqSource = null;       // EventSource handle
+var eqReconnectTimer = null;
+
+function toggleEquityPanel() {
+  eqVisible = !eqVisible;
+  var btn = document.getElementById('eq-toggle');
+  var panel = document.getElementById('eq-panel');
+  if (eqVisible) {
+    btn.classList.add('active');
+    panel.classList.add('visible');
+    if (!eqSource) connectEquitySSE();
+  } else {
+    if (eqSource) { eqSource.close(); eqSource = null; }
+    if (eqReconnectTimer) { clearTimeout(eqReconnectTimer); eqReconnectTimer = null; }
+    btn.classList.remove('active');
+    panel.classList.remove('visible');
+  }
+}
+
+function connectEquitySSE() {
+  if (eqSource) { eqSource.close(); eqSource = null; }
+  if (eqReconnectTimer) { clearTimeout(eqReconnectTimer); eqReconnectTimer = null; }
+  eqSource = new EventSource(API + '/stream/equity');
+  eqSource.onmessage = function(e) {
+    try {
+      var d = JSON.parse(e.data);
+      if (d.type === 'equity_result' && d.results) {
+        eqLatest = d;
+        renderEquity();
+      }
+    } catch(_) {}
+  };
+  eqSource.onerror = function() {
+    eqSource.close(); eqSource = null;
+    eqReconnectTimer = setTimeout(connectEquitySSE, 5000);
+  };
+}
+
+function renderEquity() {
+  var el = document.getElementById('eq-content');
+  if (!el) return;
+  if (!eqLatest || !eqLatest.results) {
+    el.innerHTML = '<div class="eq-empty">No equity data</div>';
+    return;
+  }
+  var r = eqLatest.results;
+  var sig = document.getElementById('eq-sig');
+  if (sig) sig.textContent = r._meta ? (r._meta.final_variant || '') + ' ' + (r.runtime || '') : '';
+  
+  var matchups = r.matchups || [];
+  if (!matchups.length) {
+    el.innerHTML = '<div class="eq-empty">No matchups in result</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < matchups.length; i++) {
+    var m = matchups[i];
+    var favPct = m.fav_real || m.fav_raw || 0;
+    var undPct = m.und_real || m.und_raw || 0;
+    var total = favPct + undPct || 1;
+    var favW = (favPct / total * 100).toFixed(1);
+    var undW = (undPct / total * 100).toFixed(1);
+    html += '<div class="eq-matchup">';
+    html += '<span class="eq-hand">' + esc(m.favourite_name || '?') + ': ' + esc(m.favourite_hand || '??') + '</span>';
+    html += '<span class="eq-pct fav">' + favW + '%</span>';
+    html += '<div class="eq-bar-wrap"><div class="eq-bar fav" style="width:' + favW + '%"></div></div>';
+    html += '<div class="eq-bar-wrap"><div class="eq-bar und" style="width:' + undW + '%"></div></div>';
+    html += '<span class="eq-pct und">' + undW + '%</span>';
+    html += '<span class="eq-hand" style="text-align:right">' + esc(m.underdog_name || '?') + ': ' + esc(m.underdog_hand || '??') + '</span>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// Auto-connect SSE on load so data is ready when panel opens
 
 // -- Main render --
 
@@ -1478,6 +1716,7 @@ function render() {
   renderEmergencyPanel();
   applyGlobalCFToNewSeats();
   fireAutoCcPreflop();
+  fireKHBattle();
 }
 
 // -- Init & poll --

@@ -125,6 +125,7 @@ const proxyOptions = {
       proxyReq.setHeader('X-Real-IP', req.ip || req.connection.remoteAddress);
       proxyReq.setHeader('X-Forwarded-For', req.headers['x-forwarded-for'] || req.ip || '');
       proxyReq.setHeader('X-Forwarded-Proto', req.protocol || 'http');
+      if (req.headers['x-api-key']) proxyReq.setHeader('X-API-Key', req.headers['x-api-key']);
     },
     proxyRes: (proxyRes, req, res) => {
       proxyRes.headers['access-control-allow-origin'] = '*';
@@ -140,6 +141,7 @@ const proxyOptions = {
     },
   },
 };
+
 
 // Proxy ALL /api/* routes to the backend (snapshots, commands, table state, etc.)
 app.use('/api', createProxyMiddleware(proxyOptions));

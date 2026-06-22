@@ -1,18 +1,4 @@
-// ── TEMPORARY DIAGNOSTIC BUILD: FRAME_GUARD_V2 ──
-console.log(
-  "[W4P_SOURCE_OF_TRUTH]",
-  "/home/wa/ConceptPoker/extension",
-  Date.now()
-);
-console.log(
-  "[W4P_BUILD]",
-  "path=/home/wa/ConceptPoker/extension/w4p.js",
-  "build=FRAME_GUARD_V2",
-  "ts=" + Date.now()
-);
-window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
-
-// W4P Injectable v22-stable-hardened - PLO Remote Table Control (hero-only: .self-player class ONLY, no fallbacks)
+// W4P Injectable v23-hardened - PLO Remote Table Control (hero-only: .self-player class ONLY, no fallbacks)
 // v19: remove .active gate — self-player + visible buttons = available_actions
 // v19.1-3: fix MAX flow, diagnostics, getBoundingClientRect consistency
 // v20: unified direct fetch — same file works as extension AND standalone (no bridge.js needed)
@@ -31,18 +17,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 (function(){
   'use strict';
 
-  // ── Frame identity & fingerprint (pure — no side effects) ──
-  var _isTop = window === window.top;
-  var _frameEl = window.frameElement;
-  var _frameId = _frameEl ? (_frameEl.id || '') : '';
-  var _frameSrc = _frameEl ? (_frameEl.src || '') : '';
-  var _locHref = location.href || '';
-  var _timeOrigin = (typeof performance !== 'undefined' && performance.timeOrigin) || '';
-
-  var _host = location.hostname || '';
-  var _path = location.pathname || '';
-  var _href = _locHref;
-
   // ── URL Guard: only run on real PokerBet/GoldRush poker game frames ──
   function hasPokerTableProof() {
     try {
@@ -60,7 +34,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     var path = location.pathname || '';
 
     if (
-      host === '192.168.0.106' ||
+      host === '127.0.0.1' ||
       host === 'localhost' ||
       host === '127.0.0.1'
     ) {
@@ -85,17 +59,11 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     return false;
   }
 
-  function stopObserver() {
-    if (_observer) { _observer.disconnect(); _observer = null; }
-    if (window._w4p_fallback) { clearInterval(window._w4p_fallback); window._w4p_fallback = null; }
-  }
-
   function stopW4PTimers() {
     if (window._w4p_timer) { clearTimeout(window._w4p_timer); window._w4p_timer = null; }
     if (window._w4p_cmdTimer) { clearTimeout(window._w4p_cmdTimer); window._w4p_cmdTimer = null; }
     if (window._w4p_bbTimer) { clearInterval(window._w4p_bbTimer); window._w4p_bbTimer = null; }
     if (window._w4p) { clearInterval(window._w4p); window._w4p = null; }
-    stopObserver();
   }
 
   var _nonPokerStopLogged = false;
@@ -119,191 +87,74 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     return;
   }
 
-  var _urlTableId = (_locHref.match(/\/tbl\/(\d+)/) || _locHref.match(/openGames=(\d+)/) || _locHref.match(/game[_-]?id[=\/](\d+)/i) || [,''])[1] || '';
-
-  console.log('[W4P_BOOT] frameId=' + (_frameId || 'none') + ' url=' + _locHref.substring(0, 80) + ' ts=' + Date.now());
-
-  // ── Poker app URL detection (used by multiple guards below) ──
-  var _isPokerAppUrl =
-    /poker-web\.goldrush\.co\.za/i.test(_locHref) ||
-    /games\.goldrush\.co\.za\/LaunchGame/i.test(_locHref) ||
-    /skillgames/i.test(_locHref) ||
-    /\/187\d{3,}/i.test(_locHref);
-
-  // ══════════════════════════════════════════════════════════════
-  // FRAME TYPE DETECTION & VALIDATION — no side effects
-  // Types identified: top | lobby | detached | preload | unknown | table
-  // ══════════════════════════════════════════════════════════════
-
-  // ── Top window — game runs inside iframe, exit immediately ──
-  if (_isTop) {
-    console.log('[W4P][FRAME_SKIP] top window — game runs inside iframe, exiting');
-    return;
-  }
-
-  // ── Poker URL bypass: skip all frameElement checks for known poker table URLs ──
-  // Cross-origin iframes (e.g. poker-web.goldrush.co.za within goldrush.co.za) have
-  // null frameElement. URL identification is more reliable than frameElement.
-  if (_isPokerAppUrl) {
-    console.log('[W4P][FRAME_BYPASS] poker URL match — all frameElement checks bypassed, url=' + _locHref.substring(0, 120));
-  } else {
-    // ── Detached iframe — frameElement is null or stale ──
-    if (!_frameEl) {
-      console.log('[W4P][FRAME_SKIP] detached iframe — no frameElement and not poker app URL, exiting url=' + _locHref.substring(0, 120));
-      return;
-    }
-    // ── Lobby / chat / sidebar frames ──
-    if (/lobby|chat|sidebar|topbar|header|footer|nav/i.test(_frameId) || /lobby|chat/i.test(_frameSrc)) {
-      console.log('[W4P][FRAME_SKIP] lobby iframe id=' + _frameId + ' src=' + _frameSrc.substring(0, 80));
-      return;
-    }
-    // ── Preload frame (zero-size or hidden) — after lobby check for accurate logging ──
-    if (_frameEl.offsetWidth === 0 || _frameEl.offsetHeight === 0) {
-      console.log('[W4P][FRAME_SKIP] preload iframe (hidden) id=' + _frameId + ' — zero-size, exiting');
-      return;
-    }
-    // ── Table frame check by ID/src (non-poker URLs only) ──
-    var _isTableFrame = (_frameId.indexOf('187') === 0) ||
-                        (_frameSrc.indexOf('skillgames') !== -1) ||
-                        (_frameSrc.indexOf('187') !== -1);
-    if (!_isTableFrame) {
-      console.log('[W4P][FRAME_SKIP] unknown frame id=' + _frameId + ' src=' + _frameSrc.substring(0, 80) + ' — not a table iframe');
-      return;
-    }
-  } // end _isPokerAppUrl guard
-
-  // ── Preload: table iframe exists but no seat content yet ─────
-  // NOTE: For known poker app URLs, retry up to 30s for Angular to render seats
-  if (!document.querySelector('sg-poker-table-seat, .player-mini-container-p')) {
-    if (_isPokerAppUrl) {
-      console.log('[W4P][FRAME_WAIT] poker URL — waiting up to 30s for seats...');
-      var _seatWaitCount = 0;
-      (function seatRetry() {
-        _seatWaitCount++;
-        if (document.querySelector('sg-poker-table-seat, .player-mini-container-p')) {
-          console.log('[W4P][FRAME_WAIT] seats appeared after ~' + (_seatWaitCount * 500) + 'ms');
-          _initFrame();
-        } else if (_seatWaitCount >= 60) {
-          console.log('[W4P][FRAME_SKIP] no seats after 30s — giving up');
-        } else {
-          setTimeout(seatRetry, 500);
-        }
-      })();
-      return;
-    }
-    console.log('[W4P][FRAME_SKIP] preload iframe (empty) id=' + (_frameId || 'none') + ' url=' + _locHref.substring(0, 80) + ' — no seats yet, exiting');
-    return;
-  }
-  _initFrame(); return; // seats found immediately — start frame
-
-  function _initFrame() {
-
-  // ═  // ══════════════════════════════════════════════════════════════
- // FRAME FINGERPRINT — multi-dimensional, deterministic
-  // Components: frameElement.id | location.href (no query/hash) | performance.timeOrigin
-  // ══════════════════════════════════════════════════════════════
-  var _fpUrl = _locHref.replace(/[?#].*$/, '');  // strip query/hash for stability across hand transitions
-  var _fingerprint = _frameId + '|' + _fpUrl + '|' + _urlTableId + '|' + _timeOrigin;
-  var _guardKey = 'w4p_v22_' + _fingerprint;
-
-  // ── Per-frame singleton guard ────────────────────────────────
-  if (window.__W4P_ALREADY_RUNNING__ === _guardKey) {
-    console.log('[W4P][DUPLICATE_BLOCKED] key=' + _guardKey + ' — already running in this frame');
-    return;
-  }
-  window.__W4P_ALREADY_RUNNING__ = _guardKey;
-
-  // ── Top-level coordination (across all frames) ───────────────
-  try {
-    if (window.top.__W4P_SESSION__ === _guardKey) {
-      console.log('[W4P][DUPLICATE_BLOCKED] top-level session key=' + _guardKey + ' — already active, exiting');
-      return;
-    }
-    window.top.__W4P_SESSION__ = _guardKey;
-  } catch (_e) {
-    // Cross-origin top window — per-frame guard is sufficient
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  // FRAME LOCKED — confirmed active table iframe
-  // Side effects below this line are safe
-  // ══════════════════════════════════════════════════════════════
-  console.log('[W4P][FRAME_LOCKED] table frame id=' + _frameId + ' src=' + _frameSrc.substring(0, 80) + ' fingerprint=' + _fingerprint.substring(0, 60));
-
-  // ── Cleanup prior instances (safe: frame validated) ──────────
+  // ── Cleanup prior instances ──────────────────────────────────
   if (window._w4p_timer) { clearTimeout(window._w4p_timer); window._w4p_timer = null; }
   if (window._w4p_cmdTimer) { clearTimeout(window._w4p_cmdTimer); window._w4p_cmdTimer = null; }
   if (window._w4p_bbTimer) { clearInterval(window._w4p_bbTimer); window._w4p_bbTimer = null; }
   if (window._w4p) { clearInterval(window._w4p); window._w4p = null; }
   window._w4p_injected = false;
 
-  // ── Config ───────────────────────────────────────────────────
-  // API_BASE: set via window.__W4P_API_BASE before injection, or defaults:
-  //   Local dev:  http://127.0.0.1:4000/api
-  //   Production: http://127.0.0.1:4000/api
-  var API_BASE = window.__W4P_API_BASE || 'http://127.0.0.1:4000/api';
+  // ── Config: Local Only — No external URLs ────────────────────
+  var API_BASE = 'http://127.0.0.1:4000/api';
+  var API_KEY  = '03622c896cfbeacdfc537e9434f9ddc5';
+  var SITE_BASE = 'http://127.0.0.1:4000';
   var API_KEY  = '03622c896cfbeacdfc537e9434f9ddc5';
 
-  // ── Direct fetch (CORS enabled on Flask — works standalone and in extension) ──
-  // Set via window.__W4P_SITE_BASE, defaults to API_BASE root
-  var SITE_BASE = window.__W4P_SITE_BASE || (function() {
-    var m = API_BASE.match(/^(https?:\/\/[^/]+)/);
-    return m ? m[1] : 'http://127.0.0.1:4000';
-  })();
-  // ── Bridge via background service worker (bypasses Chrome PNA blocking) ──
-  var _bridgeReqId = 0;
-  var _bridgePending = {};
-  window.addEventListener('message', function(e) {
-    if (!e.data || e.data.channel !== 'W4P_BRIDGE_RESPONSE') return;
-    var pending = _bridgePending[e.data.reqId];
-    if (!pending) return;
-    clearTimeout(pending.timer);
-    delete _bridgePending[e.data.reqId];
-    var resp = e.data.response;
-    if (resp && resp.ok) {
-      pending.cb({ ok: true, data: resp.data });
-    } else {
-      pending.cb({ ok: false, error: resp ? resp.error : 'bridge_error', status: 0 });
-    }
-  });
-
   function bridgeFetch(path, method, body, callback) {
-    var reqId = _sessionId + '_' + (++_bridgeReqId);
-    _bridgePending[reqId] = {
-      cb: callback || function(){},
-      timer: setTimeout(function() {
-        delete _bridgePending[reqId];
-        if (callback) callback({ ok: false, error: 'bridge_timeout', status: 0 });
-      }, 15000)
-    };
-    window.postMessage({
-      channel: 'W4P_BRIDGE',
-      reqId: reqId,
-      path: path,
-      method: method || 'GET',
-      body: body,
-      apiKey: API_KEY
-    }, '*');
+    var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
+    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    fetch(API_BASE + path, opts)
+      .then(function(r) { return r.json(); })
+      .then(function(data) { if (callback) callback({ ok: true, data: data }); })
+      .catch(function(e) { var _ = e; if (callback) callback({ ok: false, error: e.message }); });
+  }
+  function bridgeFetchRaw(path, method, body, callback) {
+    var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
+    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    fetch(SITE_BASE + path, opts)
+      .then(function(r) { return r.json(); })
+      .then(function(data) { if (callback) callback({ ok: true, data: data }); })
+      .catch(function(e) { console.warn('[W4P] fetchRaw error:', path, e.message); if (callback) callback({ ok: false, error: e.message }); });
   }
 
-  function bridgeFetchRaw(path, method, body, callback) {
-    var reqId = _sessionId + '_raw' + (++_bridgeReqId);
-    _bridgePending[reqId] = {
-      cb: callback || function(){},
-      timer: setTimeout(function() {
-        delete _bridgePending[reqId];
-        if (callback) callback({ ok: false, error: 'bridge_timeout', status: 0 });
-      }, 15000)
-    };
-    window.postMessage({
-      channel: 'W4P_BRIDGE',
-      reqId: reqId,
-      path: path,
-      method: method || 'GET',
-      body: body,
-      apiKey: API_KEY,
-      rawPath: true
-    }, '*');
+  function logFrameDiagnostics(reason) {
+    try {
+      var bodyText = document.body ? (document.body.innerText || '') : '';
+      var all = document.querySelectorAll('*');
+      var classCounts = {};
+      var candidateSeatElements = 0;
+      var cardLikeElementsCount = 0;
+      var buttonLikeElementsCount = 0;
+      for (var i = 0; i < Math.min(all.length, 500); i++) {
+        var el = all[i];
+        var tag = el.tagName.toLowerCase();
+        var cn = String(el.className || '');
+        if (/seat|player|poker|table/i.test(tag + ' ' + cn)) candidateSeatElements++;
+        if (/card|cart|single-cart/i.test(tag + ' ' + cn)) cardLikeElementsCount++;
+        if (/button|btn|control|action|fold|check|call|raise|bet/i.test(tag + ' ' + cn)) buttonLikeElementsCount++;
+        if (cn) {
+          var parts = cn.trim().split(/\s+/);
+          for (var p = 0; p < parts.length; p++) {
+            if (parts[p]) classCounts[parts[p]] = (classCounts[parts[p]] || 0) + 1;
+          }
+        }
+      }
+      console.log('[W4P][FRAME-DIAG]', {
+        reason: reason,
+        currentFrameUrl: location.href.substring(0, 200),
+        title: (document.title || '').substring(0, 100),
+        bodyTextLength: bodyText.length,
+        visibleTextSample: bodyText.replace(/\s+/g, ' ').substring(0, 500),
+        candidateSeatElements: candidateSeatElements,
+        candidateClassNames: Object.keys(classCounts).sort(function(a, b) { return classCounts[b] - classCounts[a]; }).slice(0, 30),
+        cardLikeElementsCount: cardLikeElementsCount,
+        buttonLikeElementsCount: buttonLikeElementsCount,
+        elemCount: all.length,
+        inIframe: window !== window.top
+      });
+    } catch (e) {
+      console.log('[W4P][FRAME-DIAG] error:', e.message);
+    }
   }
 
   // v15: tightened polling — faster detection, faster commands
@@ -311,8 +162,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var CMD_MS  = { HERO_TURN: 150, HAND_ACTIVE: 150, IDLE: 150 };
   var HEARTBEAT_MS = 8000;
   var CASHOUT_POLL_MS = 75;  // hyper-poll interval when cashout preselected
-  var SNAPSHOT_INTERVAL_MS = 1000;   // minimum ms between snapshot POSTs
-  var SNAPSHOT_BACKOFF_MS = 10000;   // backoff ms after 429 response
 
   var _mode = 'IDLE';
   var _seatToken = null;
@@ -321,76 +170,10 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   var _lastSendTime = 0;
   var _n = 0;
   var _sessionId = 'w4p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-  var _clientId = localStorage.getItem('w4p_client_id');
-  if (!_clientId) {
-    _clientId = 'w4pc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 12);
-    localStorage.setItem('w4p_client_id', _clientId);
-  }
   var _lastButtons = null;
   var _cashoutPre = false;   // when true, hyper-poll for cashout DOM element
   var _cashoutTimer = null;
   var _lastBoardLen = 0;     // track board cards for new hand detection
-  function _heroFromUrl() {
-    try {
-      var url = window.location.href;
-      var m = url.match(/tbl\/(\d+)/);
-      if (m) return "hero_tbl" + m[1];
-      m = url.match(/userid=(-?\d+)/);
-      if (m) return "hero_uid" + m[1];
-      m = url.match(/hash=([a-f0-9]{4,})/);
-      if (m) return "hero_h" + m[1].slice(0, 8);
-    } catch(e) {}
-    return "hero_auto_" + Date.now().toString(36);
-  }
-  var _lastHeroName = localStorage.getItem('w4p_hero_name') || null;  // persist hero name across sitting-out / folded states (localStorage survives reloads)
-  var _wasHeroTurn = false;  // state-change gate: prevent repeated HERO_TURN activation
-  var _snapshotInFlight = false;    // guard: prevent overlapping snapshot POSTs
-  var _nextSnapshotAllowedAt = 0;   // throttle: timestamp when next snapshot is allowed
-  var _lastSnapshotHash = '';       // dedup: hash of last sent snapshot state
-
-  // ── Phase 2: MutationObserver + zero-alloc snapshot ──
-  var _heroSeatIndex = null;        // cached hero seat index — don't re-query every tick
-  var _observer = null;             // MutationObserver instance
-  var _lastTickTime = 0;            // timestamp of last processTick for fallback interval
-  var _tickScheduled = false;       // guard: prevent rAF stacking
-  var _pollActive = false;          // poll dedup guard — prevents concurrent sendSnapshot
-  var _handEpoch = 0;               // hand epoch — bumps on board change, sent to backend
-  var _seqId = 0;                   // monotonic snapshot sequence ID
-  var _lastBoardHash = '';          // track board changes to auto-bump epoch
-  var _snapshot = {                 // persistent mutable snapshot (zero-alloc — reused each tick)
-    seats: [],
-    board: null,
-    dirty: false
-  };
-
-  // ── Cache hero seat index at init, don't re-query every tick ──
-  function getHeroIndex() {
-    if (_heroSeatIndex !== null) return _heroSeatIndex;
-    var containers = document.querySelectorAll('sg-poker-table-seat');
-    if (!containers.length) containers = document.querySelectorAll('.player-mini-container-p');
-    for (var i = 0; i < containers.length; i++) {
-      if (containers[i].classList.contains('self-player')) {
-        _heroSeatIndex = i;
-        return i;
-      }
-    }
-    _heroSeatIndex = -1;
-    return -1;
-  }
-
-  // ── Zero-alloc: patch a single seat in the persistent snapshot ──
-  function patchSeat(index, changes) {
-    if (!_snapshot.seats[index]) {
-      _snapshot.seats[index] = {};
-    }
-    var seat = _snapshot.seats[index];
-    for (var key in changes) {
-      if (changes.hasOwnProperty(key)) {
-        seat[key] = changes[key];
-      }
-    }
-    _snapshot.dirty = true;
-  }
 
   // ── v22-hardened: duplicate command guard + action cooldowns ──
   var _lastCmdId = null;              // last executed command ID — reject duplicates
@@ -479,98 +262,16 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     }
   }
 
-  
-  // ── Robust card parser: accepts PLO4/PLO5/PLO6/PLO7 hero cards ──
-  function cardsFromClass(cls) {
-    var out = [];
-    if (!cls) return out;
-
-    cls = String(cls);
-
-    function add(rank, suit) {
-      if (!rank || !suit) return;
-
-      rank = String(rank).toLowerCase();
-      suit = String(suit).toLowerCase();
-
-      rank = RANK_MAP[rank] || rank.toUpperCase();
-      suit = suit[0];
-
-      if (!/^[AKQJT2-9]$/.test(rank)) return;
-      if (!/^[shdc]$/.test(suit)) return;
-
-      var c = rank + suit;
-      if (out.indexOf(c) === -1) out.push(c);
-    }
-
-    var m;
-
-    // Main Goldrush/PokerBet class pattern:
-    // icon-layer2_dq_p-c-d, icon-layer2_s10_p-c-d, etc.
-    var re1 = /icon-layer2_([shdc])(10|[akqjt2-9])_p-c-d/ig;
-    while ((m = re1.exec(cls)) !== null) {
-      add(m[2], m[1]);
-    }
-
-    // Backup: rank then suit, e.g. Qd, card-Qd, q-d
-    var re2 = /(?:^|[^a-z0-9])(?:card[-_])?(10|[akqjt2-9])[-_]?([shdc])(?:[^a-z0-9]|$)/ig;
-    while ((m = re2.exec(cls)) !== null) {
-      add(m[1], m[2]);
-    }
-
-    // Backup: suit then rank, e.g. dQ, d-q
-    var re3 = /(?:^|[^a-z0-9])([shdc])[-_]?(10|[akqjt2-9])(?:[^a-z0-9]|$)/ig;
-    while ((m = re3.exec(cls)) !== null) {
-      add(m[2], m[1]);
-    }
-
-    return out;
-  }
-
+  // ── Card parser ──────────────────────────────────────────────
   function parseCard(cls) {
-    var cards = cardsFromClass(cls);
-    return cards.length ? cards[0] : null;
+    if (!cls) return null;
+    var m = cls.match(/icon-layer2_([shdc])(10|[akqjt2-9])_p-c-d/i);
+    if (!m) return null;
+    var suit = m[1].toLowerCase();
+    var rank = m[2].toLowerCase();
+    rank = RANK_MAP[rank] || rank;
+    return rank + suit;
   }
-
-  // ── Extract ALL visible hero hole cards from the self-player seat ──
-  function extractCardsFromSeat(ct) {
-    var out = [];
-    if (!ct) return out;
-
-    function addCardsFromClass(cls) {
-      var cards = cardsFromClass(cls || '');
-      for (var i = 0; i < cards.length; i++) {
-        if (out.indexOf(cards[i]) === -1) out.push(cards[i]);
-        if (out.length >= 7) return;
-      }
-    }
-
-    // Do not depend on .cards-container-p. Goldrush/PokerBet uses nested card/icon classes.
-    var els = ct.querySelectorAll(
-      '.single-card-view-p, .single-cart-view-p, ' +
-      '[class*="single-card"], [class*="single-cart"], [class*="icon-layer2_"], ' +
-      'i, span, div'
-    );
-
-    for (var i = 0; i < els.length; i++) {
-      var el = els[i];
-
-      if (typeof el.className === 'string') {
-        addCardsFromClass(el.className);
-      }
-
-      var classAttr = el.getAttribute && el.getAttribute('class');
-      if (classAttr) {
-        addCardsFromClass(classAttr);
-      }
-
-      if (out.length >= 7) break;
-    }
-
-    console.log('[W4P][HERO_CARDS_EXTRACT]', out, 'count=' + out.length);
-    return out.slice(0, 7);
-  }
-
 
   // ── Table ID from URL ────────────────────────────────────────
   function getTableId() {
@@ -583,7 +284,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     if (m) return 'pb_' + m[1];
     m = url.match(/game[_-]?id[=\/](\d+)/i);
     if (m) return 'pb_' + m[1];
-    if (url.indexOf('skillgames') !== -1 || /187\d+/.test(url)) {
+    if (url.indexOf('skillgames') !== -1 || /187\d{3,}/.test(url) || url.indexOf('live-poker') !== -1) {
       var idm = url.match(/(\d{4,})/);
       return 'pb_' + (idm ? idm[1] : 'sg');
     }
@@ -651,69 +352,201 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
   }
 
   // ── Available actions (hero only — visible buttons = hero's turn) ────
+  // ── Action detection: layered, layout-agnostic ──────────────
+  // v23-hardened: discovers actions across 4 layers, zero dependency on
+  // a single CSS selector family. Survives GoldRush DOM changes.
+  
+  var ACTION_KEYWORDS = {
+    fold:         /(^|\s|\.|-)fold($|\s|\.|-)/i,
+    check:        /(^|\s|\.|-)check($|\s|\.|-)/i,
+    call:         /(^|\s|\.|-)call($|\s|\.|-)/i,
+    raise:        /(^|\s|\.|-)raise($|\s|\.|-)/i,
+    bet:          /(^|\s|\.|-)bet($|\s|\.|-)/i,
+    cashout:      /cash\s*out|\.cash_out/i,
+    allin:        /all\s*in|\.all_in/i,
+    show:         /(^|\s|\.|-)show($|\s|\.|-)/i,
+    run_it_twice: /run\s*it\s*twice|\.run_it_twice/i,
+    resume_hand:  /resume\s*hand|\.resume_hand/i,
+    back_to_game: /back\s*to\s*game|\.back_to_game/i
+  };
+
+  var _actionDetectionMeta = {
+    sourceCounts: { selector: 0, element: 0, text: 0, dataAttr: 0 },
+    lastTick: 0
+  };
+
+  function _isVisible(el) {
+    if (!el) return false;
+    var r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }
+
+  function _normalizeActionName(raw) {
+    // Map discovered names to canonical action names
+    var lower = (raw || '').trim().toLowerCase().replace(/\s+/g, '_');
+    var map = {
+      fold: 'fold', check: 'check', call: 'call', raise: 'raise', bet: 'bet',
+      cash_out: 'cashout', cashout: 'cashout',
+      all_in: 'allin', allin: 'allin',
+      show: 'show',
+      run_it_twice: 'run_it_twice',
+      resume_hand: 'resume_hand',
+      back_to_game: 'back_to_game'
+    };
+    return map[lower] || null;
+  }
+
+  function _matchActionText(text) {
+    if (!text) return null;
+    var clean = text.trim();
+    // Quick exact matches first
+    var direct = _normalizeActionName(clean);
+    if (direct) return direct;
+    // Regex matches
+    for (var name in ACTION_KEYWORDS) {
+      if (ACTION_KEYWORDS[name].test(clean)) return name;
+    }
+    return null;
+  }
+
   function getAvailableActions() {
     var heroSeat = document.querySelector('sg-poker-table-seat.self-player') || document.querySelector('.player-mini-container-p.self-player');
     if (!heroSeat) { _detectedBtns = {}; return []; }
     _detectedBtns = {};
     var avail = [];
+    var seenActions = {};
+    var meta = { selector: 0, element: 0, text: 0, dataAttr: 0 };
 
-    // Primary: scan ALL known selectors (including allin) + cache element refs
+    function _addAction(name, el, selector, source) {
+      if (seenActions[name]) return;
+      seenActions[name] = true;
+      avail.push(name);
+      meta[source] = (meta[source] || 0) + 1;
+      _detectedBtns[name] = {
+        el: el, selector: selector,
+        text: (el.textContent || '').trim().substring(0, 30),
+        source: source,
+        x: Math.round(el.getBoundingClientRect().x + el.getBoundingClientRect().width / 2),
+        y: Math.round(el.getBoundingClientRect().y + el.getBoundingClientRect().height / 2)
+      };
+    }
+
+    // ── Layer 1: Known BTN_SEL selectors (backwards compat) ──
     for (var name in BTN_SEL) {
       var btn = document.querySelector(BTN_SEL[name]);
-      var rect = btn ? btn.getBoundingClientRect() : null;
-      if (btn && rect && rect.width > 0 && rect.height > 0) {
-        avail.push(name);
-        _detectedBtns[name] = {
-          el: btn, selector: BTN_SEL[name],
-          text: (btn.textContent || '').trim().substring(0, 30),
-          x: Math.round(rect.x + rect.width / 2),
-          y: Math.round(rect.y + rect.height / 2)
-        };
+      if (_isVisible(btn)) {
+        _addAction(name, btn, BTN_SEL[name], 'selector');
       }
     }
 
-    // Also detect slider presets if slider is open
+    // Also detect slider presets
     detectSliderPresets();
 
-    // Fallback: scan ALL visible control elements by class
-    if (avail.length === 0) {
-      var actionMap = {fold:'fold', check:'check', call:'call', raise:'raise', bet:'bet',
-                       cashout:'cashout', show:'show', allin:'all_in'};
-      var candidates = document.querySelectorAll('[class*="fold"], [class*="check"], [class*="call"], [class*="raise"], [class*="bet-c"], [class*="cash_out"], [class*="all_in"]');
-      for (var i = 0; i < candidates.length; i++) {
-        var el = candidates[i];
-        if (el.offsetParent === null && el.offsetWidth === 0) continue;
-        var cls = el.className.toLowerCase();
-        for (var key in actionMap) {
-          var searchTerm = actionMap[key] || key;
-          if (cls.indexOf(searchTerm) !== -1 && avail.indexOf(key) === -1) {
-            avail.push(key);
-            var frect = el.getBoundingClientRect();
-            _detectedBtns[key] = {
-              el: el, selector: buildCssPath(el),
-              text: (el.textContent || '').trim().substring(0, 30),
-              x: Math.round(frect.x + frect.width / 2),
-              y: Math.round(frect.y + frect.height / 2)
-            };
-          }
-        }
-      }
-      if (avail.length > 0 && _n <= 5) {
-        console.log('[W4P] actions via fallback:', avail.join(','));
+    // ── Layer 2: visible <button> and [role="button"] elements ──
+    var btnElements = document.querySelectorAll('button, [role="button"], input[type="button"], input[type="submit"]');
+    for (var bi = 0; bi < btnElements.length; bi++) {
+      var bel = btnElements[bi];
+      if (!_isVisible(bel)) continue;
+      var btext = (bel.innerText || bel.value || '').trim();
+      if (!btext) continue;
+      var baction = _matchActionText(btext);
+      if (baction && !seenActions[baction]) {
+        _addAction(baction, bel, buildCssPath(bel), 'element');
       }
     }
 
-    // Log detected buttons on first few ticks for debugging
-    if (avail.length > 0 && _n <= 3) {
-      var btnList = [];
-      for (var bk in _detectedBtns) {
-        btnList.push(bk + '=' + _detectedBtns[bk].selector);
+    // ── Layer 3: visible elements with action text ──
+    if (avail.length === 0) {
+      var textCandidates = document.querySelectorAll('div, span, a, p, li, .btn, [class*="btn"], [class*="action"], [class*="control"]');
+      for (var ti = 0; ti < textCandidates.length; ti++) {
+        var tel = textCandidates[ti];
+        if (!_isVisible(tel)) continue;
+        var ttext = (tel.innerText || tel.textContent || '').trim();
+        if (!ttext || ttext.length > 50) continue;
+        var taction = _matchActionText(ttext);
+        if (taction && !seenActions[taction]) {
+          _addAction(taction, tel, buildCssPath(tel), 'text');
+        }
       }
-      console.log('[W4P] detected buttons: ' + btnList.join(' | '));
     }
+
+    // ── Layer 4: [data-action] attributes ──
+    var daElements = document.querySelectorAll('[data-action]');
+    for (var di = 0; di < daElements.length; di++) {
+      var del = daElements[di];
+      if (!_isVisible(del)) continue;
+      var dname = _normalizeActionName(del.getAttribute('data-action'));
+      if (dname && !seenActions[dname]) {
+        _addAction(dname, del, '[data-action="' + del.getAttribute('data-action') + '"]', 'dataAttr');
+      }
+    }
+
+    // ── Diagnostics (compact, every 10 ticks) ──
+    if (_n % 10 === 1 && avail.length > 0) {
+      var srcs = [];
+      for (var ak in _detectedBtns) {
+        srcs.push(ak + '=' + _detectedBtns[ak].source);
+      }
+      console.log('[W4P][DETECT] actions=' + avail.length + ' [' + avail.join(',') + '] sources=' + JSON.stringify(meta) + ' detail=' + srcs.join('|'));
+    }
+
+    // Update global meta
+    _actionDetectionMeta = {
+      sourceCounts: meta,
+      lastTick: _n,
+      actions: avail.slice()
+    };
 
     return avail;
   }
+
+  // ── ACTION AUDIT: window.__W4P_ACTION_AUDIT() ──────────────
+  window.__W4P_ACTION_AUDIT = function() {
+    var hero = document.querySelector('.self-player') || document.querySelector('.player-mini-container-p.self-player');
+    var heroName = hero ? ((hero.querySelector('p.single-win-item-sizes') || hero.querySelector('.player-name') || {}).innerText || '').trim() : null;
+    
+    console.log('═══ W4P ACTION AUDIT ═══');
+    console.log('heroName:', heroName || 'NONE');
+    console.log('heroSeat:', !!hero, hero ? hero.className : '');
+    console.log('tick:', _n, 'mode:', _mode);
+    console.log('detected actions:', _actionDetectionMeta.actions || []);
+    console.log('detection sources:', JSON.stringify(_actionDetectionMeta.sourceCounts));
+    console.log('last detection tick:', _actionDetectionMeta.lastTick);
+    
+    // Full BTN_SEL sweep
+    console.log('--- BTN_SEL scan ---');
+    for (var name in BTN_SEL) {
+      var el = document.querySelector(BTN_SEL[name]);
+      console.log('  ' + name + ': ' + BTN_SEL[name] + ' found=' + !!el + ' visible=' + _isVisible(el));
+    }
+    
+    // Visible buttons
+    console.log('--- Visible buttons ---');
+    var vb = document.querySelectorAll('button, [role="button"]');
+    for (var vbi = 0; vbi < vb.length; vbi++) {
+      if (_isVisible(vb[vbi])) {
+        console.log('  ' + vb[vbi].tagName + ' ' + vb[vbi].className + ' text="' + (vb[vbi].innerText || '').trim().slice(0, 40) + '"');
+      }
+    }
+    
+    // All .control-b-view-p elements
+    console.log('--- .control-b-view-p ---');
+    var cb = document.querySelectorAll('.control-b-view-p');
+    console.log('  count:', cb.length);
+    for (var cbi = 0; cbi < cb.length; cbi++) {
+      console.log('  ' + cb[cbi].className + ' text="' + (cb[cbi].innerText || '').trim().slice(0, 30) + '" visible=' + _isVisible(cb[cbi]));
+    }
+    
+    return {
+      heroName: heroName,
+      heroSeat: !!hero,
+      tick: _n,
+      mode: _mode,
+      actions: _actionDetectionMeta.actions,
+      sources: _actionDetectionMeta.sourceCounts
+    };
+  };
+
 
   // ── Button detection (exact selectors + state for remote) ───
   function detectButtons() {
@@ -900,16 +733,20 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 
     var tableId = getTableId();
     if (!tableId) {
-      if (_n <= 5 || _n % 30 === 0)
+      if (_n <= 5 || _n % 30 === 0) {
         console.log('[W4P] no tableId');
+        logFrameDiagnostics('no_table_id');
+      }
       return null;
     }
 
     var containers = document.querySelectorAll('sg-poker-table-seat');
     if (!containers.length) containers = document.querySelectorAll('.player-mini-container-p');
     if (!containers.length) {
-      if (_n <= 5 || _n % 30 === 0)
+      if (_n <= 5 || _n % 30 === 0) {
         console.log('[W4P] no seat containers');
+        logFrameDiagnostics('no_seat_containers');
+      }
       return null;
     }
 
@@ -976,12 +813,12 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     }
 
     // ── Scrape ALL seats ────────────────────────────────────────
-    _snapshot.seats.length = 0;  // zero-alloc: clear persistent array
+    var seats = [];
     var heroName = null;
 
     for (var i = 0; i < containers.length; i++) {
       var ct = containers[i];
-      var isHero = ct.classList.contains('self-player');  // canonical: ONLY reliable hero signal (see line 913 comment)
+      var isHero = ct.classList.contains('self-player') || !!ct.querySelector('.self-player');
 
       var posMatch = ct.className.match(/position-(\d+)/);
       var seatIdx = posMatch ? parseInt(posMatch[1]) : i;
@@ -997,15 +834,21 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       var sMatch = stackText.match(/([\d.,]+)/);
       var stackZar = sMatch ? parseFloat(sMatch[1].replace(',', '')) : 0;
 
-      // Hole cards — use robust extractor (no dependency on .cards-container-p)
-      var holeCards = isHero ? extractCardsFromSeat(ct) : [];
+      // Hole cards — try to parse for ALL seats (fallback hero detection)
+      var holeCards = [];
+      var cardsContainer = ct.querySelector('.carts-container-p');
+      var hcEls = (cardsContainer || ct).querySelectorAll('.single-cart-view-p');
+      for (var j = 0; j < hcEls.length; j++) {
+        var hc = parseCard(hcEls[j].className);
+        if (hc) holeCards.push(hc);
+      }
 
       // REMOVED: hole-cards fallback was marking villains as hero during showdown
       // when all players' cards are revealed face-up. The .self-player class is
       // the ONLY reliable hero signal — it's set by the poker client on the
       // player's own seat and never appears on villains even at showdown.
 
-      if (isHero) { heroName = name || _lastHeroName; if (name) { _lastHeroName = name; try { localStorage.setItem('w4p_hero_name', name); } catch(_) {} } }
+      if (isHero) heroName = name;
 
       // Status detection
       var sittingOut = ct.classList.contains('seat-out-v') || !!ct.querySelector('.seat-out-v');
@@ -1017,7 +860,7 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
       else if (isFolded) status = 'folded';
       else if (holeCards.length === 0 && street !== 'PREFLOP') status = 'folded';
 
-      _snapshot.seats.push({
+      seats.push({
         seat_index:        seatIdx,
         name:              name,
         stack_zar:         stackZar,
@@ -1045,47 +888,29 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         }
         console.log('[W4P] no hero | ' + containers.length + ' seats | ' + seatClasses.join(' | '));
       }
-      heroName = _heroFromUrl();
-      if (heroName) { _lastHeroName = heroName; console.log("[W4P] hero_from_url: " + heroName); }
-      else { return null; }
+      return null;
     }
 
-    // ── Zero-alloc: mutate persistent _snapshot object ──
-    _snapshot.table_id = tableId;
-    _snapshot.bot_id = heroName;
-    _snapshot.client_id = _clientId;
-    _snapshot.session_id = _sessionId;
-    // seats already set above via _snapshot.seats.push()
-    if (!_snapshot.board) _snapshot.board = {};
-    _snapshot.board.flop = boardCards.slice(0, 3);
-    _snapshot.board.turn = boardCards[3] || null;
-    _snapshot.board.river = boardCards[4] || null;
-    _snapshot.pot_zar = potZar;
-    _snapshot.dealer_seat = dealerSeat;
-    _snapshot.street = street;
-    _snapshot.variant = 'plo';
-    _snapshot.buttons = buttons;
-    _snapshot.available_actions = avail;
-    _snapshot.active_player = activePlayerName;
-    _snapshot.ts = new Date().toISOString();
-    _snapshot.source_key = 'w4p_inject';
-    _snapshot.frame_locked = true;
-    _snapshot.frame_url = location.href;
-    _snapshot.dirty = true;
-
-    // ── Freshness: auto-bump hand epoch on board change ──
-    var boardHash = (boardCards || []).join('');
-    if (boardHash && boardHash !== _lastBoardHash) {
-      _lastBoardHash = boardHash;
-      _handEpoch++;
-      console.log('[W4P][EPOCH] Board change detected — hand_epoch=' + _handEpoch);
-    }
-    // Always increment sequence ID per snapshot
-    _seqId++;
-    _snapshot.hand_epoch = _handEpoch;
-    _snapshot.sequence_id = _seqId;
-
-    return _snapshot;
+    return {
+      table_id:      tableId,
+      bot_id:        heroName,
+      session_id:    _sessionId,
+      seats:         seats,
+      board: {
+        flop:  boardCards.slice(0, 3),
+        turn:  boardCards[3] || null,
+        river: boardCards[4] || null
+      },
+      pot_zar:       potZar,
+      dealer_seat:   dealerSeat,
+      street:        street,
+      variant:       'plo',
+      buttons:       buttons,
+      available_actions: avail,
+      active_player: activePlayerName,
+      ts:            new Date().toISOString(),
+      source_key:    'w4p_inject'
+    };
   }
 
   // ── State hash for dedup ─────────────────────────────────────
@@ -1107,7 +932,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 
   // ── Snapshot response handler ────────────────────────────────
   function handleSnapshotResponse(data) {
-    _pollActive = false;  // Clear poll dedup guard
     if (data.ok) {
       if (data.seat_token) {
         if (!_seatToken) {
@@ -1152,57 +976,9 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
 
   // ── Send snapshot (via bridge → service worker) ──────────────
   function sendSnapshot(snap) {
-    // ── Guard: in-flight check ──
-    if (_snapshotInFlight) {
-      _pollActive = false;
-      return;
-    }
-
-    // ── Guard: minimum interval ──
-    var now = Date.now();
-    if (now < _nextSnapshotAllowedAt) {
-      _pollActive = false;
-      return;
-    }
-
-    // ── Guard: dedup — skip if state unchanged (forced send every 30s for heartbeat) ──
-    var hash = stateHash(snap);
-    if (hash !== '' && hash === _lastSnapshotHash && now - _lastSendTime < 30000) {
-      _pollActive = false;
-      return;
-    }
-
-    // ── Guard: reduced frequency when hero has no readable cards and not active ──
-    var hero = null;
-    for (var i = 0; i < snap.seats.length; i++) {
-      if (snap.seats[i].is_hero) { hero = snap.seats[i]; break; }
-    }
-    var hasCards = hero && hero.hole_cards && hero.hole_cards.length > 0;
-    if (!hasCards && !(hero && hero.is_active) && now - _lastSendTime < 10000 && _n > 5) {
-      _pollActive = false;
-      return;
-    }
-
-    _snapshotInFlight = true;
-    _lastSnapshotHash = hash;
-
     bridgeFetch('/snapshot', 'POST', snap, function(resp) {
-      _snapshotInFlight = false;
-      if (resp && resp.ok) {
-        _lastSendTime = Date.now();
-        _nextSnapshotAllowedAt = Date.now() + SNAPSHOT_INTERVAL_MS;
-        handleSnapshotResponse(resp.data);
-      } else {
-        _pollActive = false;  // Clear on error too
-        if (resp && resp.status === 429) {
-          _nextSnapshotAllowedAt = Date.now() + SNAPSHOT_BACKOFF_MS;
-          console.log('[W4P][SNAPSHOT] 429 — backoff ' + SNAPSHOT_BACKOFF_MS + 'ms');
-        } else {
-          _nextSnapshotAllowedAt = Date.now() + SNAPSHOT_INTERVAL_MS;
-        }
-        //console.log('[W4P] bridge error:', resp ? (resp.error || 'no response') : 'no response');
-        console.log('[W4P][SNAPSHOT] bridge FAIL:', resp ? (resp.error || 'no response') : 'no response');
-      }
+      if (resp && resp.ok) handleSnapshotResponse(resp.data);
+      else { var _ = resp; }
     });
   }
 
@@ -1663,9 +1439,9 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
         // Acknowledge immediately
         bridgeFetch('/commands/ack', 'POST', { token: _seatToken, command_id: resp.data.command.id });
       }
-      window._w4p_cmdTimer = setTimeout(pollCommands, CMD_MS[_mode] || 500);
     });
 
+    window._w4p_cmdTimer = setTimeout(pollCommands, CMD_MS[_mode] || 500);
   }
 
   // ── Auto-untick "Wait for Big Blind" ─────────────────────────
@@ -1703,11 +1479,8 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     }
   }
 
-  // ── Core tick logic (driven by MutationObserver + rAF primary, setTimeout fallback) ──
-  function processTick() {
-    if (_n === 0) console.log('[W4P][TICK_ENTER] first tick — frame validated, starting loop');
+  function tick() {
     _n++;
-    _lastTickTime = Date.now();
     if (stopNonPokerScrapeContext('tick')) return;
 
     var snap = buildSnapshot();
@@ -1742,35 +1515,11 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     // Try cashout BEFORE mode calculation (cashout button may appear at any time)
     tryCashout();
 
-    // ── State-change gate: prevent repeated HERO_TURN reactivation ──
-    // self-player is a STATE SOURCE, not an event trigger.
-    // Only change mode on a genuine state transition, not on every DOM tick.
-    var _isHeroTurnNow = avail.length > 0;
-    var _modeChanged = false;
-
-    if (_isHeroTurnNow && !_wasHeroTurn) {
-      _modeChanged = true;
-      if (_n <= 10 || _n % 20 === 0)
-        console.log('[W4P][STATE] IDLE/HAND_ACTIVE → HERO_TURN (avail=' + avail.join(',') + ')');
-    }
-    if (!_isHeroTurnNow && _wasHeroTurn) {
-      _modeChanged = true;
-      if (_n <= 10 || _n % 20 === 0)
-        console.log('[W4P][STATE] HERO_TURN → IDLE/HAND_ACTIVE');
-    }
-    _wasHeroTurn = _isHeroTurnNow;
-
     if (avail.length > 0) _mode = 'HERO_TURN';
     else if (snap.street !== 'PREFLOP') _mode = 'HAND_ACTIVE';
     else _mode = 'IDLE';
 
-    // ── Poll dedup guard: prevent concurrent sendSnapshot calls ──
-    if (_pollActive) {
-      if (_n % 50 === 0) console.log('[W4P][DEDUP] Skipped tick — poll already in flight');
-      window._w4p_timer = setTimeout(tick, pollMs);
-      return;
-    }
-    _pollActive = true;
+    // Send every tick — no dedup, no heartbeat gate
     _lastSendTime = Date.now();
     sendSnapshot(snap);
     sendToCollector(snap);
@@ -1785,62 +1534,19 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     window._w4p_timer = setTimeout(tick, pollMs);
   }
 
-  // ── Tick entry point (used by setTimeout fallback — primary driver is MutationObserver) ──
-  function tick() {
-    processTick();
-  }
-
-  // ── MutationObserver: DOM-driven primary tick scheduler ───────
-  function scheduleTick() {
-    if (_tickScheduled) return;
-    _tickScheduled = true;
-    requestAnimationFrame(function() {
-      _tickScheduled = false;
-      processTick();
-    });
-  }
-
-  function startObserver() {
-    if (_observer) return;
-    try {
-      _observer = new MutationObserver(function() {
-        scheduleTick();
-      });
-      _observer.observe(document.body, {
-        subtree: true,
-        childList: true,
-        attributes: true,
-        attributeFilter: ['class', 'style']
-      });
-      console.log('[W4P][OBSERVER] MutationObserver started — DOM-driven ticks active');
-    } catch (e) {
-      console.warn('[W4P][OBSERVER] MutationObserver failed — falling back to interval only:', e.message);
-      _observer = null;
-    }
-
-    // Fallback interval: catch anything the observer misses (500ms safety net)
-    window._w4p_fallback = setInterval(function() {
-      if (Date.now() - _lastTickTime > 500) {
-        scheduleTick();
-      }
-    }, 500);
-  }
-
   // ── Start ────────────────────────────────────────────────────
   untickWaitBB();
   window._w4p_bbTimer = setInterval(untickWaitBB, 5000);
 
-  var _buildTag = 'v22-stable-hardened+phase2';
-  var _buildTs  = '2026-06-12T00:00:00Z';
+  var _buildTag = 'v23-hardened';
+  var _buildTs  = '2026-04-26T02:30:00Z';
   console.log('[W4P] ═══════════════════════════════════════════════');
   console.log('[W4P] ' + _buildTag + ' | built=' + _buildTs + ' | session=' + _sessionId);
   console.log('[W4P] guards: dup-cmd, cooldown=' + _ACTION_COOLDOWN_MS + 'ms, preset-cd=' + _PRESET_COOLDOWN_MS + 'ms');
   console.log('[W4P] polling: hero=' + POLL_MS.HERO_TURN + 'ms cmd=' + CMD_MS.HERO_TURN + 'ms cashout-hyper=' + CASHOUT_POLL_MS + 'ms');
   console.log('[W4P] API: ' + API_BASE + ' | rollback: w4p.js.v22-stable.bak');
-  console.log('[W4P] Phase 2: MutationObserver + zero-alloc snapshot + heroSeatIndex cache');
   console.log('[W4P] ═══════════════════════════════════════════════');
   tick();
-  startObserver();  // Phase 2: primary tick driver (MutationObserver + rAF)
 
   // ── Public API for debugging ─────────────────────────────────
   window._w4p_buildSnapshot = buildSnapshot;
@@ -1875,8 +1581,6 @@ window.__W4P_BUILD_ID = "FRAME_GUARD_V2";
     clearTimeout(window._w4p_cmdTimer);
     clearInterval(window._w4p_bbTimer);
     if (_cashoutTimer) clearInterval(_cashoutTimer);
-    stopObserver();
     console.log('[W4P] stopped');
   };
-}
 })();

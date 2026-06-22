@@ -834,231 +834,90 @@ function getActionData(seat, actionName) {
 
 // -- Build seat box HTML with inline controls --
 
+// ============================================================================
+// buildSeatBoxHtml — render one seat (hero expanded/compact, opponent, empty)
+// ============================================================================
 function buildSeatBoxHtml(seat) {
+  if (!seat) {
+    return '<div class="seat-box empty">Empty</div>';
+  }
+
+  var sn = seat.seat_no || 0;
   var isHero = seat.is_self_player === true;
   var acts = seat.available_actions || [];
-  var sn = getSeatNo(seat);
+  var hasActions = Array.isArray(acts) && acts.length > 0;
+  
+  // Use correct field names from backend
+  var name = seat.name || seat.bot_id || 'Seat ' + sn;
+  var stack = seat.stack_zar != null ? 'R ' + seat.stack_zar.toFixed(2) : '';
+  var status = seat.status || '';
+  var isSittingOut = status === 'sitting_out';
 
-  // FORCE TEST: inject fake actions for UI layer testing
-  if (forceTestActive && isHero) {
-    acts = ['fold', 'check', 'call', 'raise'];
-    seat = Object.assign({}, seat, {
-      available_actions: acts,
-      buttons: {
-        actions: [{action:'fold'},{action:'check'},{action:'call'},{action:'raise',amount:2}],
-        presets: [],
-        slider: { min: 1, max: seat.stack_zar || 20, step: 0.5, current: 2 }
-      }
+  var classes = 'seat-box';
+  if (isHero) classes += ' hero';
+  if (hasActions) classes += ' active';
+  if (isSittingOut) classes += ' sitting-out';
+  if (!isHero && !seat.name && !seat.bot_id) classes += ' empty';
+
+  var actionsHtml = '';
+  if (hasActions) {
+    var btnMap = { fold: 'FOLD', check: 'CHECK', call: 'CALL', bet: 'BET', raise: 'RAISE' };
+    actionsHtml = '<div class="action-buttons">';
+    acts.forEach(function(a) {
+      actionsHtml += '<button class="act-btn" data-action="' + a + '">' + (btnMap[a] || a.toUpperCase()) + '</button>';
     });
+    actionsHtml += '</div><div class="turn-indicator">YOUR TURN</div>';
+  } else if (isHero) {
+    // Compact controls
+    actionsHtml = '<div class="compact-controls">' +
+      '<span class="kh-toggle" data-hero="' + name + '">KH</span>' +
+      '<span class="si-toggle" data-hero="' + name + '">SI</span>' +
+      '<span class="cf-toggle">C/F</span><span class="cc-toggle">C/C</span>' +
+      '<span class="co-toggle">CO</span><span class="ac-toggle">AC</span>' +
+      '</div>';
   }
 
-  var isActive = isHero && acts.length > 0;
-
-  var cls = 'seat-box'; if (seat.status === 'sitting_out' || (seat.sitting_out && !seat.is_dealer)) cls += ' sitting-out';
-  if (isHero) cls += ' hero';
-  if (isActive) cls += ' expanded';
-  if (khState[sn]) cls += ' kh-marked';
-  else if (isHero && preActionState[sn] === 'check_fold') cls += ' kh-auto';
-
-  var html = '<div class="' + cls + '">';
-
-  if (seat.is_dealer) html += '<div class="dealer-chip">D</div>';
-
-  if (seat.bet && seat.bet > 0) {
-    html += '<div class="seat-bet"><div class="chip-icon"></div><span>R ' + seat.bet + '</span></div>';
-  }
-
-  // Debug badge: show actions count
-  var actCount = acts.length;
-  var dbgCls = actCount > 0 ? 'dbg-badge has-acts' : 'dbg-badge no-acts';
-  html += '<div class="seat-label">Seat ' + sn + ' <span class="' + dbgCls + '">acts:' + actCount + '</span></div>';
-  html += '<div class="seat-name">' + esc(seat.name || 'Unknown') + '</div>';
-  html += '<div class="seat-stack"><span class="amount">R ' +
-    (seat.stack_zar != null ? seat.stack_zar.toFixed(2) : '0.00') + '</span></div>';
-
-  if (Array.isArray(seat.hole_cards) && seat.hole_cards.length > 0) {
-    html += '<div class="seat-cards-area"><div class="hole-cards-row">';
-    seat.hole_cards.forEach(function(c) { html += renderCardHtml(c); });
-    html += '</div></div>';
-  }
-
-  // ========== HERO SEAT CONTROLS ==========
-  if (isHero) {
-    // Compact controls: always visible (C/F, C/C, CO)
-    var curPa = preActionState[sn] || null;
-    var curCo = cashoutState[sn] || false;
-
-    html += '<div class="seat-compact">';
-    html += '<span class="sc-toggle' + (curPa === 'check_fold' ? ' active' : '') +
-      '" data-sc-preact="check_fold" data-sc-seat="' + sn + '">C/F</span>';
-    html += '<span class="sc-toggle' + (curPa === 'check_call' ? ' active' : '') +
-      '" data-sc-preact="check_call" data-sc-seat="' + sn + '">C/C</span>';
-    html += '<span class="sc-toggle co-toggle' + (curCo ? ' active' : '') +
-      '" data-sc-preact="cashout" data-sc-seat="' + sn + '">CO</span>';
-    var autoCcActive = globalAutoCcPreflop || autoCcPreflop[sn];
-    html += '<span class="sc-toggle autocc-toggle' + (autoCcPreflop[sn] ? ' active' : '') +
-      '" data-sc-preact="auto_cc_preflop" data-sc-seat="' + sn + '">AC</span>';
-    if (autoCcActive) html += '<span class="autocc-badge">AUTO C/C</span>';
-    html += '<span class="sc-toggle kh-toggle' + (khState[sn] ? ' active' : '') +
-      '" data-sc-preact="kh" data-sc-seat="' + sn + '">KH</span>';
-    if (khState[sn]) html += '<span class="kh-badge">KEEP</span>';
-    html += '</div>';
-
-    // Expanded: full action set when hero is current actor
-    if (isActive) {
-      var btns = seat.buttons || null;
-      var slider = btns && btns.slider ? btns.slider : null;
-      var hasRaise = acts.indexOf('raise') >= 0;
-      var hasBet = acts.indexOf('bet') >= 0;
-      var raiseWord = hasBet ? 'bet' : 'raise';
-
-      var sMin = slider ? slider.min : 1;
-      var sMax = slider ? slider.max : (seat.stack_zar || 9999);
-      var sStep = slider ? (slider.step || 1) : 1;
-      var sCur = seatAmounts[sn] != null ? seatAmounts[sn] : (slider ? (slider.current || sMin) : sMin);
-      if (sCur < sMin) sCur = sMin;
-      if (sCur > sMax) sCur = sMax;
-
-      html += '<div class="seat-actions">';
-      html += '<div class="sa-turn-label">YOUR TURN</div>';
-
-      // Row 1: FOLD, CHECK, CALL, BET/RAISE
-      html += '<div class="sa-row">';
-      var foldAvail = acts.indexOf('fold') >= 0;
-      html += '<button class="sa-btn fold" data-sa-cmd="fold" data-sa-seat="' + sn + '"' + (foldAvail ? '' : ' disabled') + '>FOLD</button>';
-      var checkAvail = acts.indexOf('check') >= 0;
-      html += '<button class="sa-btn check" data-sa-cmd="check" data-sa-seat="' + sn + '"' + (checkAvail ? '' : ' disabled') + '>CHECK</button>';
-      var callAvail = acts.indexOf('call') >= 0;
-      var callData = getActionData(seat, 'call');
-      var callLabel = callData && callData.amount != null ? 'CALL R' + callData.amount : 'CALL';
-      html += '<button class="sa-btn call" data-sa-cmd="call" data-sa-seat="' + sn + '"' + (callAvail ? '' : ' disabled') + '>' + callLabel + '</button>';
-      var brAvail = hasRaise || hasBet;
-      html += '<button class="sa-btn ' + raiseWord + '" data-sa-cmd="' + raiseWord + '" data-sa-seat="' + sn + '" data-sa-use-amount="1"' + (brAvail ? '' : ' disabled') + '>' + raiseWord.toUpperCase() + '</button>';
-      html += '</div>';
-
-      // Misc actions (cashout, show, run_it_twice, resume_hand, back_to_game)
-      var miscActions = ['cashout', 'show', 'run_it_twice', 'resume_hand', 'back_to_game'];
-      var hasMisc = false;
-      for (var mi = 0; mi < miscActions.length; mi++) {
-        if (acts.indexOf(miscActions[mi]) >= 0) { hasMisc = true; break; }
-      }
-      if (hasMisc) {
-        html += '<div class="sa-row">';
-        miscActions.forEach(function(a) {
-          if (acts.indexOf(a) >= 0) {
-            var label = a.replace(/_/g, ' ').toUpperCase();
-            html += '<button class="sa-btn misc" data-sa-cmd="' + a + '" data-sa-seat="' + sn + '">' + label + '</button>';
-          }
-        });
-        html += '</div>';
-      }
-
-      // Presets
-      html += '<div class="sa-presets">';
-      html += '<button class="sa-preset" data-sa-preset="min" data-sa-seat="' + sn + '">MIN</button>';
-      html += '<button class="sa-preset" data-sa-preset="half" data-sa-seat="' + sn + '">1/2</button>';
-      html += '<button class="sa-preset" data-sa-preset="pot" data-sa-seat="' + sn + '">POT</button>';
-      html += '<button class="sa-preset" data-sa-preset="max" data-sa-seat="' + sn + '">MAX</button>';
-      html += '</div>';
-
-      // Slider + amount + raise-go
-      html += '<div class="sa-sizing">';
-      html += '<input type="range" class="sa-slider" data-sa-slider="' + sn + '" min="' + sMin + '" max="' + sMax + '" step="' + sStep + '" value="' + sCur + '">';
-      html += '<input type="number" class="sa-amount" data-sa-amount="' + sn + '" min="' + sMin + '" max="' + sMax + '" value="' + sCur + '">';
-      html += '<button class="sa-raise-go" data-sa-cmd="' + raiseWord + '" data-sa-seat="' + sn + '" data-sa-use-amount="1">' + raiseWord.toUpperCase() + '</button>';
-      html += '</div>';
-
-      html += '</div>'; // .seat-actions
-    }
-  }
-
-  html += '</div>'; // .seat-box
-  return html;
+  return '<div class="' + classes + '" data-slot="' + sn + '" data-hero="' + isHero + '">' +
+    '<div class="player-name">' + name + '</div>' +
+    (stack ? '<div class="player-stack">' + stack + '</div>' : '') +
+    actionsHtml +
+    '</div>';
 }
-
-// -- Render seats --
 
 function renderSeats() {
   var container = document.getElementById('seats-container');
+  if (!container) return;
 
-  if (!slotsCreated) {
-    if (!container) return;
-    // Clear any existing children (rebuild on hot-reload)
-    container.innerHTML = '';
-    seatSlots = [];
-    for (var i = 1; i <= 9; i++) {
-      var slot = document.createElement('div');
-      slot.className = 'seat-slot';
-      slot.dataset.slot = i;
-      slot.dataset.empty = 'true';
-      container.appendChild(slot);
-      seatSlots[i] = slot;  // index by slot number 1-9
-    }
-    slotsCreated = true;
+  // CRITICAL: clear container before adding new seats
+  container.innerHTML = '';
+
+  // Read from the global lastTable (set by your poller)
+  var seats = (typeof lastTable !== 'undefined' && lastTable && Array.isArray(lastTable.seats))
+    ? lastTable.seats
+    : [];
+
+  // Ensure exactly 9 seats (backend should give 9, but safe)
+  while (seats.length < 9) {
+    seats.push({ seat_no: seats.length + 1, is_self_player: false, name: null });
   }
 
-  // Clear all slots before rebuilding — prevents stale cards
-  for (var si = 1; si <= 9; si++) {
-    var sl = seatSlots[si];
-    if (sl) { sl.innerHTML = ''; sl.dataset.empty = 'true'; sl.dataset.bot = ''; }
-  }
+  // Sort by seat_no to maintain grid order
+  seats.sort(function(a, b) { return (a.seat_no || 0) - (b.seat_no || 0); });
 
-  // Deduplicate by bot_id — only keep latest row per bot
-  var botMap = {};
-  heroIsActive = false;
-  if (lastTable && Array.isArray(lastTable.seats)) {
-    lastTable.seats.forEach(function(seat) {
-      if (seat.is_self_player && seat.available_actions && seat.available_actions.length > 0) {
-        heroIsActive = true;
-      }
-      if (!seat.name) return;
-      var bid = seat.bot_id || seat.name;
-      if (!bid) return; // only render trusted bot-owned seats
-      // Keep latest by last_seen (higher timestamp wins)
-      var existing = botMap[bid];
-      if (!existing || (seat.last_seen || 0) > (existing.last_seen || 0)) {
-        botMap[bid] = seat;
-      }
-    });
-  }
-
-  var botList = Object.keys(botMap);
-  console.log('[REMOTE][GRID] clearing slots=9 render_count=' + botList.length + ' bots=' + botList.join(','));
-
-  // Place each bot by remote_slot
-  var usedSlots = {};
-  botList.forEach(function(bid) {
-    var seat = botMap[bid];
-    var slotNum = Number(seat.seat_no || seat.seat_index);
-    if (!(slotNum >= 1 && slotNum <= 9)) return;
-    if (usedSlots[slotNum]) {
-      console.log('[REMOTE][GRID][WARN] duplicate slot=' + slotNum + ' bots=' + usedSlots[slotNum] + ',' + bid);
-    }
-    usedSlots[slotNum] = bid;
-    var slotEl = seatSlots[slotNum];
-    if (!slotEl) return;
-    slotEl.dataset.empty = 'false';
-    slotEl.dataset.bot = bid;
-    slotEl.innerHTML = buildSeatBoxHtml(seat);
-    var box = slotEl.querySelector('.seat-box');
-    if (box) box.classList.toggle('action-on', !!seat.action_on);
-    console.log('[REMOTE][GRID] bot=' + bid + ' remote_slot=' + slotNum + ' cell=slot-' + slotNum +
-      ' source_seat_no=' + seat.source_seat_no + ' source_visual_position=' + seat.source_visual_position);
+  seats.forEach(function(seat) {
+    var slotDiv = document.createElement('div');
+    slotDiv.className = 'seat-slot';
+    slotDiv.dataset.slot = seat.seat_no || '?';
+    var isEmpty = (!seat.name && !seat.bot_id && !seat.is_self_player);
+    slotDiv.dataset.empty = isEmpty ? 'true' : 'false';
+    slotDiv.innerHTML = buildSeatBoxHtml(seat);
+    container.appendChild(slotDiv);
   });
 
-  // Show empty placeholders for unused slots
-  for (var sn = 1; sn <= 9; sn++) {
-    if (!usedSlots[sn]) {
-      var slEl = seatSlots[sn];
-      if (slEl && slEl.dataset.empty === 'true') {
-        slEl.innerHTML = '<div class="seat-box empty">Slot ' + sn + '</div>';
-      }
-    }
-  }
+  // Optional: log bot count for debugging
+  var bots = seats.filter(function(s) { return s.name || s.bot_id; });
+  console.log('[REMOTE][GRID] seats=' + seats.length + ' bots=' + bots.length + (bots.length ? ' [' + bots.map(function(s){ return s.name || s.bot_id; }).join(',') + ']' : ''));
 }
-
-// -- Find hero seat --
-
 function findHero() {
   if (!lastTable || !Array.isArray(lastTable.seats)) return null;
   var fallback = null;

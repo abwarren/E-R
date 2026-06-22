@@ -1,4 +1,4 @@
-// W4P Injectable v22-stable-hardened - PLO Remote Table Control (hero-only: .self-player class ONLY, no fallbacks)
+// W4P Injectable v23-hardened - PLO Remote Table Control (hero-only: .self-player class ONLY, no fallbacks)
 // v19: remove .active gate — self-player + visible buttons = available_actions
 // v19.1-3: fix MAX flow, diagnostics, getBoundingClientRect consistency
 // v20: unified direct fetch — same file works as extension AND standalone (no bridge.js needed)
@@ -34,7 +34,7 @@
     var path = location.pathname || '';
 
     if (
-      host === '192.168.0.106' ||
+      host === '127.0.0.1' ||
       host === 'localhost' ||
       host === '127.0.0.1'
     ) {
@@ -95,9 +95,9 @@
   window._w4p_injected = false;
 
   // ── Config: Local Only — No external URLs ────────────────────
-  var API_BASE = 'http://192.168.0.106:4000/api';
+  var API_BASE = 'http://127.0.0.1:4000/api';
   var API_KEY  = '03622c896cfbeacdfc537e9434f9ddc5';
-  var SITE_BASE = 'http://192.168.0.106:4000';
+  var SITE_BASE = 'http://127.0.0.1:4000';
   var API_KEY  = '03622c896cfbeacdfc537e9434f9ddc5';
 
   function bridgeFetch(path, method, body, callback) {
@@ -352,69 +352,201 @@
   }
 
   // ── Available actions (hero only — visible buttons = hero's turn) ────
+  // ── Action detection: layered, layout-agnostic ──────────────
+  // v23-hardened: discovers actions across 4 layers, zero dependency on
+  // a single CSS selector family. Survives GoldRush DOM changes.
+  
+  var ACTION_KEYWORDS = {
+    fold:         /(^|\s|\.|-)fold($|\s|\.|-)/i,
+    check:        /(^|\s|\.|-)check($|\s|\.|-)/i,
+    call:         /(^|\s|\.|-)call($|\s|\.|-)/i,
+    raise:        /(^|\s|\.|-)raise($|\s|\.|-)/i,
+    bet:          /(^|\s|\.|-)bet($|\s|\.|-)/i,
+    cashout:      /cash\s*out|\.cash_out/i,
+    allin:        /all\s*in|\.all_in/i,
+    show:         /(^|\s|\.|-)show($|\s|\.|-)/i,
+    run_it_twice: /run\s*it\s*twice|\.run_it_twice/i,
+    resume_hand:  /resume\s*hand|\.resume_hand/i,
+    back_to_game: /back\s*to\s*game|\.back_to_game/i
+  };
+
+  var _actionDetectionMeta = {
+    sourceCounts: { selector: 0, element: 0, text: 0, dataAttr: 0 },
+    lastTick: 0
+  };
+
+  function _isVisible(el) {
+    if (!el) return false;
+    var r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }
+
+  function _normalizeActionName(raw) {
+    // Map discovered names to canonical action names
+    var lower = (raw || '').trim().toLowerCase().replace(/\s+/g, '_');
+    var map = {
+      fold: 'fold', check: 'check', call: 'call', raise: 'raise', bet: 'bet',
+      cash_out: 'cashout', cashout: 'cashout',
+      all_in: 'allin', allin: 'allin',
+      show: 'show',
+      run_it_twice: 'run_it_twice',
+      resume_hand: 'resume_hand',
+      back_to_game: 'back_to_game'
+    };
+    return map[lower] || null;
+  }
+
+  function _matchActionText(text) {
+    if (!text) return null;
+    var clean = text.trim();
+    // Quick exact matches first
+    var direct = _normalizeActionName(clean);
+    if (direct) return direct;
+    // Regex matches
+    for (var name in ACTION_KEYWORDS) {
+      if (ACTION_KEYWORDS[name].test(clean)) return name;
+    }
+    return null;
+  }
+
   function getAvailableActions() {
     var heroSeat = document.querySelector('sg-poker-table-seat.self-player') || document.querySelector('.player-mini-container-p.self-player');
     if (!heroSeat) { _detectedBtns = {}; return []; }
     _detectedBtns = {};
     var avail = [];
+    var seenActions = {};
+    var meta = { selector: 0, element: 0, text: 0, dataAttr: 0 };
 
-    // Primary: scan ALL known selectors (including allin) + cache element refs
+    function _addAction(name, el, selector, source) {
+      if (seenActions[name]) return;
+      seenActions[name] = true;
+      avail.push(name);
+      meta[source] = (meta[source] || 0) + 1;
+      _detectedBtns[name] = {
+        el: el, selector: selector,
+        text: (el.textContent || '').trim().substring(0, 30),
+        source: source,
+        x: Math.round(el.getBoundingClientRect().x + el.getBoundingClientRect().width / 2),
+        y: Math.round(el.getBoundingClientRect().y + el.getBoundingClientRect().height / 2)
+      };
+    }
+
+    // ── Layer 1: Known BTN_SEL selectors (backwards compat) ──
     for (var name in BTN_SEL) {
       var btn = document.querySelector(BTN_SEL[name]);
-      var rect = btn ? btn.getBoundingClientRect() : null;
-      if (btn && rect && rect.width > 0 && rect.height > 0) {
-        avail.push(name);
-        _detectedBtns[name] = {
-          el: btn, selector: BTN_SEL[name],
-          text: (btn.textContent || '').trim().substring(0, 30),
-          x: Math.round(rect.x + rect.width / 2),
-          y: Math.round(rect.y + rect.height / 2)
-        };
+      if (_isVisible(btn)) {
+        _addAction(name, btn, BTN_SEL[name], 'selector');
       }
     }
 
-    // Also detect slider presets if slider is open
+    // Also detect slider presets
     detectSliderPresets();
 
-    // Fallback: scan ALL visible control elements by class
-    if (avail.length === 0) {
-      var actionMap = {fold:'fold', check:'check', call:'call', raise:'raise', bet:'bet',
-                       cashout:'cashout', show:'show', allin:'all_in'};
-      var candidates = document.querySelectorAll('[class*="fold"], [class*="check"], [class*="call"], [class*="raise"], [class*="bet-c"], [class*="cash_out"], [class*="all_in"]');
-      for (var i = 0; i < candidates.length; i++) {
-        var el = candidates[i];
-        if (el.offsetParent === null && el.offsetWidth === 0) continue;
-        var cls = el.className.toLowerCase();
-        for (var key in actionMap) {
-          var searchTerm = actionMap[key] || key;
-          if (cls.indexOf(searchTerm) !== -1 && avail.indexOf(key) === -1) {
-            avail.push(key);
-            var frect = el.getBoundingClientRect();
-            _detectedBtns[key] = {
-              el: el, selector: buildCssPath(el),
-              text: (el.textContent || '').trim().substring(0, 30),
-              x: Math.round(frect.x + frect.width / 2),
-              y: Math.round(frect.y + frect.height / 2)
-            };
-          }
-        }
-      }
-      if (avail.length > 0 && _n <= 5) {
-        console.log('[W4P] actions via fallback:', avail.join(','));
+    // ── Layer 2: visible <button> and [role="button"] elements ──
+    var btnElements = document.querySelectorAll('button, [role="button"], input[type="button"], input[type="submit"]');
+    for (var bi = 0; bi < btnElements.length; bi++) {
+      var bel = btnElements[bi];
+      if (!_isVisible(bel)) continue;
+      var btext = (bel.innerText || bel.value || '').trim();
+      if (!btext) continue;
+      var baction = _matchActionText(btext);
+      if (baction && !seenActions[baction]) {
+        _addAction(baction, bel, buildCssPath(bel), 'element');
       }
     }
 
-    // Log detected buttons on first few ticks for debugging
-    if (avail.length > 0 && _n <= 3) {
-      var btnList = [];
-      for (var bk in _detectedBtns) {
-        btnList.push(bk + '=' + _detectedBtns[bk].selector);
+    // ── Layer 3: visible elements with action text ──
+    if (avail.length === 0) {
+      var textCandidates = document.querySelectorAll('div, span, a, p, li, .btn, [class*="btn"], [class*="action"], [class*="control"]');
+      for (var ti = 0; ti < textCandidates.length; ti++) {
+        var tel = textCandidates[ti];
+        if (!_isVisible(tel)) continue;
+        var ttext = (tel.innerText || tel.textContent || '').trim();
+        if (!ttext || ttext.length > 50) continue;
+        var taction = _matchActionText(ttext);
+        if (taction && !seenActions[taction]) {
+          _addAction(taction, tel, buildCssPath(tel), 'text');
+        }
       }
-      console.log('[W4P] detected buttons: ' + btnList.join(' | '));
     }
+
+    // ── Layer 4: [data-action] attributes ──
+    var daElements = document.querySelectorAll('[data-action]');
+    for (var di = 0; di < daElements.length; di++) {
+      var del = daElements[di];
+      if (!_isVisible(del)) continue;
+      var dname = _normalizeActionName(del.getAttribute('data-action'));
+      if (dname && !seenActions[dname]) {
+        _addAction(dname, del, '[data-action="' + del.getAttribute('data-action') + '"]', 'dataAttr');
+      }
+    }
+
+    // ── Diagnostics (compact, every 10 ticks) ──
+    if (_n % 10 === 1 && avail.length > 0) {
+      var srcs = [];
+      for (var ak in _detectedBtns) {
+        srcs.push(ak + '=' + _detectedBtns[ak].source);
+      }
+      console.log('[W4P][DETECT] actions=' + avail.length + ' [' + avail.join(',') + '] sources=' + JSON.stringify(meta) + ' detail=' + srcs.join('|'));
+    }
+
+    // Update global meta
+    _actionDetectionMeta = {
+      sourceCounts: meta,
+      lastTick: _n,
+      actions: avail.slice()
+    };
 
     return avail;
   }
+
+  // ── ACTION AUDIT: window.__W4P_ACTION_AUDIT() ──────────────
+  window.__W4P_ACTION_AUDIT = function() {
+    var hero = document.querySelector('.self-player') || document.querySelector('.player-mini-container-p.self-player');
+    var heroName = hero ? ((hero.querySelector('p.single-win-item-sizes') || hero.querySelector('.player-name') || {}).innerText || '').trim() : null;
+    
+    console.log('═══ W4P ACTION AUDIT ═══');
+    console.log('heroName:', heroName || 'NONE');
+    console.log('heroSeat:', !!hero, hero ? hero.className : '');
+    console.log('tick:', _n, 'mode:', _mode);
+    console.log('detected actions:', _actionDetectionMeta.actions || []);
+    console.log('detection sources:', JSON.stringify(_actionDetectionMeta.sourceCounts));
+    console.log('last detection tick:', _actionDetectionMeta.lastTick);
+    
+    // Full BTN_SEL sweep
+    console.log('--- BTN_SEL scan ---');
+    for (var name in BTN_SEL) {
+      var el = document.querySelector(BTN_SEL[name]);
+      console.log('  ' + name + ': ' + BTN_SEL[name] + ' found=' + !!el + ' visible=' + _isVisible(el));
+    }
+    
+    // Visible buttons
+    console.log('--- Visible buttons ---');
+    var vb = document.querySelectorAll('button, [role="button"]');
+    for (var vbi = 0; vbi < vb.length; vbi++) {
+      if (_isVisible(vb[vbi])) {
+        console.log('  ' + vb[vbi].tagName + ' ' + vb[vbi].className + ' text="' + (vb[vbi].innerText || '').trim().slice(0, 40) + '"');
+      }
+    }
+    
+    // All .control-b-view-p elements
+    console.log('--- .control-b-view-p ---');
+    var cb = document.querySelectorAll('.control-b-view-p');
+    console.log('  count:', cb.length);
+    for (var cbi = 0; cbi < cb.length; cbi++) {
+      console.log('  ' + cb[cbi].className + ' text="' + (cb[cbi].innerText || '').trim().slice(0, 30) + '" visible=' + _isVisible(cb[cbi]));
+    }
+    
+    return {
+      heroName: heroName,
+      heroSeat: !!hero,
+      tick: _n,
+      mode: _mode,
+      actions: _actionDetectionMeta.actions,
+      sources: _actionDetectionMeta.sourceCounts
+    };
+  };
+
 
   // ── Button detection (exact selectors + state for remote) ───
   function detectButtons() {
@@ -1406,7 +1538,7 @@
   untickWaitBB();
   window._w4p_bbTimer = setInterval(untickWaitBB, 5000);
 
-  var _buildTag = 'v22-stable-hardened';
+  var _buildTag = 'v23-hardened';
   var _buildTs  = '2026-04-26T02:30:00Z';
   console.log('[W4P] ═══════════════════════════════════════════════');
   console.log('[W4P] ' + _buildTag + ' | built=' + _buildTs + ' | session=' + _sessionId);
