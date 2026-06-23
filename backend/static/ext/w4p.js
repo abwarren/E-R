@@ -100,21 +100,38 @@
   var SITE_BASE = 'http://127.0.0.1:4000';
   var API_KEY  = '03622c896cfbeacdfc537e9434f9ddc5';
 
+  // ── Bridge relay: postMessage → bridge.js → background.js → fetch ──
+  var _reqId = 0;
+  var _callbacks = {};
+
+  // Listen for bridge.js responses (ISOLATED world → MAIN world)
+  window.addEventListener('message', function(e) {
+    if (!e.data || e.data.channel !== 'W4P_BRIDGE_RESPONSE') return;
+    var resp = e.data;
+    var cb = _callbacks[resp.reqId];
+    if (cb) {
+      delete _callbacks[resp.reqId];
+      cb(resp.response);
+    }
+  });
+
   function bridgeFetch(path, method, body, callback) {
-    var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
-    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
-    fetch(API_BASE + path, opts)
-      .then(function(r) { return r.json(); })
-      .then(function(data) { if (callback) callback({ ok: true, data: data }); })
-      .catch(function(e) { var _ = e; if (callback) callback({ ok: false, error: e.message }); });
+    _reqId++;
+    if (callback) _callbacks[_reqId] = callback;
+    window.postMessage({
+      channel: 'W4P_BRIDGE',
+      path: path, method: method, body: body,
+      apiKey: API_KEY, rawPath: false, reqId: _reqId
+    }, '*');
   }
   function bridgeFetchRaw(path, method, body, callback) {
-    var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
-    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
-    fetch(SITE_BASE + path, opts)
-      .then(function(r) { return r.json(); })
-      .then(function(data) { if (callback) callback({ ok: true, data: data }); })
-      .catch(function(e) { console.warn('[W4P] fetchRaw error:', path, e.message); if (callback) callback({ ok: false, error: e.message }); });
+    _reqId++;
+    if (callback) _callbacks[_reqId] = callback;
+    window.postMessage({
+      channel: 'W4P_BRIDGE',
+      path: path, method: method, body: body,
+      apiKey: API_KEY, rawPath: true, reqId: _reqId
+    }, '*');
   }
 
   function logFrameDiagnostics(reason) {
