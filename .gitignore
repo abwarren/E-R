@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual env
+venv/
+.venv/
+
+# Secrets
+.env
+*.pem
+*.key
+secret_key
+
+# Backups / broken artifacts
+*.bak
+*.bak.*
+*.broken.*
+*.current_broken.*
+
+# Credentials
+bot-credentials.json
+source/bot-credentials.json
+
+# Runtime
+*.db
+*.log
+logs/
+cache/
+uploads/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+node_modules/
+dist/
+build/
