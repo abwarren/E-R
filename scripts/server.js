@@ -113,7 +113,21 @@ app.post('/api/logout', createProxyMiddleware({ target: ENGINE_FLASK, changeOrig
 //   - GET  /api/table/latest   (poll for table state)
 //   - POST /api/commands/queue  (send poker actions)
 // All /api/* requests are proxied to the local backend on this machine.
+//
+// NOTE: /api-config.js is served directly by Express (NOT proxied) because
+// http-proxy-middleware strips the /api prefix, turning it into /-config.js.
 // =============================================================================
+app.get('/api-config.js', (_req, res) => {
+  res.sendFile(path.join(SOURCE_DIR, 'api-config.js'), {
+    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+  }, err => {
+    if (err) {
+      console.error('[serveApiConfig] Error:', err.message);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+});
+
 const proxyOptions = {
   target: BACKEND_API,
   changeOrigin: true,

@@ -63,6 +63,20 @@ app.get('/hand-export', (_req, res) => {
   });
 });
 
+// ── Frontend API config (served directly — NOT proxied) ────────────────────
+// Must be defined BEFORE the /api proxy because http-proxy-middleware strips
+// the /api prefix, turning /api-config.js into /-config.js (404).
+app.get('/api-config.js', (_req, res) => {
+  res.sendFile(path.join(SOURCE_DIR, 'api-config.js'), {
+    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+  }, err => {
+    if (err) {
+      console.error('[apiConfig] Error:', err.message);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+});
+
 // ── API proxy → local Flask (port 1080) ────────────────────────────────────
 // SSE passthrough for /api/stream/* and /api/results/*
 app.use('/api', createProxyMiddleware({
