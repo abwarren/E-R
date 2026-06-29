@@ -279,6 +279,15 @@ def w4p_script():
     resp.headers["Expires"] = "0"
     return resp
 
+@app.route("/api-config.js")
+def api_config_script():
+    """Serve centralized frontend API configuration."""
+    resp = send_from_directory("static", "api-config.js")
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
+
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 def _archive_hand(table):
@@ -1443,12 +1452,24 @@ def get_table(table_id):
         view = _table_view(table)
     return jsonify({'ok': True, 'table': view})
 
+# ── Endpoint: GET /api/latest ─────────────────────────────────────────────────
+# Alias for /api/table/latest — both routes share the same implementation.
+
+@app.route('/api/latest', methods=['GET'])
+def api_latest():
+    return _handle_table_latest()
+
+
 # ── Endpoint: GET /api/table/latest ───────────────────────────────────────────
 
 # ── Endpoint: GET /api/table/latest (LONG POLLING) ───────────────────────────
 
 @app.route('/api/table/latest', methods=['GET'])
 def table_latest():
+    return _handle_table_latest()
+
+
+def _handle_table_latest():
     global _last_good_view
 
     # Long polling support - wait for changes

@@ -3,7 +3,7 @@
 
   const VERSION = '2.1.0-engine-bridge';
   const STORAGE_KEY = "engineFlowToggles";
-  const BRIDGE_URL = 'http://127.0.0.1:4000/api/table/latest';
+  const BRIDGE_URL = (window.W4P_API && window.W4P_API.LATEST) || (window.location.origin + '/api/latest');
 
   const defaultState = {
     autoFill: true,

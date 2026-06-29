@@ -13,7 +13,7 @@
 <body>
   <div id="root"></div>
 
-
+<script src="/api-config.js"></script>
 <script>
 (function(){
   const MARKER = "W4P_ENGINE_LATEST_TABLE_LOADER";
@@ -62,7 +62,7 @@
   }
 
   async function loadLatestTable(){
-    const res = await fetch("/api/table/latest", {cache:"no-store"});
+    const res = await fetch((window.W4P_API && window.W4P_API.TABLE_LATEST) || "/api/table/latest", {cache:"no-store"});
     if (!res.ok) throw new Error("/api/table/latest HTTP " + res.status);
 
     const data = await res.json();
