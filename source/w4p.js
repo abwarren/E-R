@@ -1284,10 +1284,13 @@
       var ct = containers[i];
       var isHero = ct.classList.contains('self-player') || !!ct.querySelector(SEL.heroClass);
 
-      // ── Raw DOM position — ONLY from position-N class, NEVER fallback to i ──
-      // ⛔ DO NOT change null to i — caused seat collision regression (74acebe→cf328c7)
+      // ── Raw DOM position — from position-N class ─────────────
+      // ⛔ Normal (post-bootstrap): never fallback to i — relied on by collision rejection.
+      //    Bootstrap: if container lacks position-N class, use loop index temporarily.
+      //    The seat stability layer reassigns positions once the DOM stabilizes.
       var posMatch = ct.className.match(/position-(\\d+)/);
       var rawPosition = posMatch ? parseInt(posMatch[1]) : null;
+      if (rawPosition === null && !_bootstrapped) rawPosition = i + 1;
 
       // Player name
       var nameEl = ct.querySelector(SEL.playerName) || ct.querySelector(SEL.playerNameAlt);
