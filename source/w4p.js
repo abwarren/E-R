@@ -107,10 +107,66 @@
     return 'desktop';
   }
 
-  // ── Selector Registry (ADR-013) ────────────────────────────────
+  // ── Selector Registry (ADR-013/ADR-014) ────────────────────────
   // One parser. Multiple selector profiles.
-  // Only selector definitions differ between runtimes.
+  // Every runtime must expose the same capabilities — only selector strings differ.
   // Mobile selectors populated ONLY from verified runtime DOM capture.
+
+  // Required selectors — every runtime profile must provide these.
+  // If any required selector is null/missing, parsing is disabled for that runtime.
+  var REQUIRED_SELECTORS = [
+    'seatContainer', 'seatContainerAlt',
+    'heroClass', 'heroSeatAlt',
+    'playerName', 'playerNameAlt',
+    'stack', 'stackAlt',
+    'boardContainer', 'boardCard',
+    'potContainer',
+    'dealerIcon',
+    'holeCardsContainer',
+    'buttons'  // buttons object with fold/check/call/raise/bet sub-keys
+  ];
+
+  // Action button schema — every runtime must provide these action names
+  var REQUIRED_BUTTONS = ['fold', 'check', 'call', 'raise', 'bet'];
+
+  function validateSelectorRegistry(runtime) {
+    var profile = SELECTORS[runtime];
+    if (!profile) {
+      console.error('[W4P] FATAL: No selector profile for runtime=' + runtime);
+      return false;
+    }
+
+    var missing = [];
+    for (var i = 0; i < REQUIRED_SELECTORS.length; i++) {
+      var key = REQUIRED_SELECTORS[i];
+      if (profile[key] === null || profile[key] === undefined || profile[key] === '') {
+        missing.push(key);
+      }
+    }
+
+    // Validate button sub-keys
+    if (profile.buttons) {
+      for (var b = 0; b < REQUIRED_BUTTONS.length; b++) {
+        var bk = REQUIRED_BUTTONS[b];
+        if (!profile.buttons[bk]) {
+          missing.push('buttons.' + bk);
+        }
+      }
+    } else {
+      missing.push('buttons');
+    }
+
+    if (missing.length > 0) {
+      console.warn('[W4P] BLOCKED: Runtime=' + runtime + ' missing selectors: ' + missing.join(', '));
+      return false;
+    }
+
+    console.log('[W4P] Selector registry valid for runtime=' + runtime +
+      ' (' + REQUIRED_SELECTORS.length + ' selectors, ' +
+      Object.keys(profile.buttons || {}).length + ' buttons)');
+    return true;
+  }
+
   var SELECTORS = {
     desktop: {
       // Seat containers
@@ -147,7 +203,7 @@
       genericSlider:    'input[type="range"]',
       genericNumber:    'input[type="number"], input[type="text"]',
       // Table proof (frame discovery)
-      tableProof:       SEL.tableProof,
+      tableProof:       'sg-poker-table, sg-poker-table-seat, .player-mini-container-p, .control-b-view-p, .pot-w-view-p, .single-cart-view-p',
       // Action buttons
       buttons: {
         fold:          '.control-b-view-p.fold-c',
@@ -167,14 +223,44 @@
       // Populated from verified mobile DOM capture ONLY.
       // Never guessed. Never inferred from desktop.
       // Currently BLOCKED — awaiting live mobile runtime data.
+      seatContainer:    null,
+      seatContainerAlt: null,
+      heroClass:        null,
+      heroSeat:         null,
+      heroSeatAlt:      null,
+      playerName:       null,
+      playerNameAlt:    null,
+      stack:            null,
+      stackAlt:         null,
+      stackAlt2:        null,
+      boardContainer:   null,
+      boardCard:        null,
+      potContainer:     null,
+      potAlt:           null,
+      potAlt2:          null,
+      dealerIcon:       null,
+      holeCardsContainer: null,
+      holeCard:         null,
+      sittingOut:       null,
+      activeTurn:       null,
+      activeTurnAlt:    null,
+      bettingSlider:    null,
+      genericSlider:    null,
+      genericNumber:    null,
+      tableProof:       null,
+      buttons:          null
     }
   };
 
-  // Runtime selector profile
+  // Runtime selector profile + validation gate
   var RUNTIME = detectRuntime();
   var SEL = SELECTORS[RUNTIME];
-  console.log('[W4P] RUNTIME=' + RUNTIME + ' | bridge=postMessage | selectors=' +
-    (SEL.buttons ? Object.keys(SEL.buttons).length + '-buttons' : 'empty-mobile'));
+  var _registryValid = validateSelectorRegistry(RUNTIME);
+
+  console.log('[W4P] RUNTIME=' + RUNTIME +
+    ' | bridge=postMessage' +
+    ' | registry=' + (_registryValid ? 'VALID' : 'BLOCKED') +
+    ' | selectors=' + (SEL.buttons ? Object.keys(SEL.buttons).length + '-buttons' : 'empty'));
 
   // ── Bridge relay: postMessage → bridge.js → background.js → fetch ──
   var _reqId = 0;
@@ -1562,6 +1648,20 @@
 
   function tick() {
     _n++;
+
+    // ── Registry gate: if selectors are invalid, do not parse ──
+    if (!_registryValid) {
+      if (_n === 1) {
+        console.warn('[W4P] BLOCKED: Selector registry invalid for runtime=' + RUNTIME +
+          '. Parser disabled. Waiting for registry to be populated.');
+      }
+      if (_n % 100 === 0) {
+        console.log('[W4P] Still blocked — registry check #' + _n);
+      }
+      window._w4p_timer = setTimeout(tick, POLL_MS.NO_TABLE);
+      return;
+    }
+
     if (stopNonPokerScrapeContext('tick')) return;
 
     var snap = buildSnapshot();
@@ -1619,13 +1719,13 @@
   untickWaitBB();
   window._w4p_bbTimer = setInterval(untickWaitBB, 5000);
 
-  var _buildTag = 'v23-hardened';
+  var _buildTag = 'v23-hardened+selectors-validated';
   var _buildTs  = '2026-04-26T02:30:00Z';
   console.log('[W4P] ═══════════════════════════════════════════════');
   console.log('[W4P] ' + _buildTag + ' | built=' + _buildTs + ' | session=' + _sessionId);
   console.log('[W4P] guards: dup-cmd, cooldown=' + _ACTION_COOLDOWN_MS + 'ms, preset-cd=' + _PRESET_COOLDOWN_MS + 'ms');
   console.log('[W4P] polling: hero=' + POLL_MS.HERO_TURN + 'ms cmd=' + CMD_MS.HERO_TURN + 'ms cashout-hyper=' + CASHOUT_POLL_MS + 'ms');
-  console.log('[W4P] API: ' + API_BASE + ' | rollback: w4p.js.v22-stable.bak');
+  console.log('[W4P] API: ' + API_BASE + ' | registry=' + RUNTIME + '/' + (_registryValid ? 'valid' : 'BLOCKED') + ' | bridge=postMessage');
   console.log('[W4P] ═══════════════════════════════════════════════');
   tick();
 
