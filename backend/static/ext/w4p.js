@@ -1,7 +1,4 @@
-// W4P Injectable v24-bootstrap — PLO Remote Table Control (hero-only: .self-player class ONLY, no fallbacks)
-// v24: seat stability layer — identity→seat cache, debounce, collision rejection, table readiness gate
-//      No more seat_index fallback to loop index. No more seat collisions.
-//      Seats persist across polls and hand boundaries. Table must be fully initialized before scraping.
+// W4P Injectable v23-hardened - PLO Remote Table Control (hero-only: .self-player class ONLY, no fallbacks)
 // v19: remove .active gate — self-player + visible buttons = available_actions
 // v19.1-3: fix MAX flow, diagnostics, getBoundingClientRect consistency
 // v20: unified direct fetch — same file works as extension AND standalone (no bridge.js needed)
@@ -103,38 +100,21 @@
   var SITE_BASE = 'http://127.0.0.1:4000';
   var API_KEY  = '03622c896cfbeacdfc537e9434f9ddc5';
 
-  // ── Bridge relay: postMessage → bridge.js → background.js → fetch ──
-  var _reqId = 0;
-  var _callbacks = {};
-
-  // Listen for bridge.js responses (ISOLATED world → MAIN world)
-  window.addEventListener('message', function(e) {
-    if (!e.data || e.data.channel !== 'W4P_BRIDGE_RESPONSE') return;
-    var resp = e.data;
-    var cb = _callbacks[resp.reqId];
-    if (cb) {
-      delete _callbacks[resp.reqId];
-      cb(resp.response);
-    }
-  });
-
   function bridgeFetch(path, method, body, callback) {
-    _reqId++;
-    if (callback) _callbacks[_reqId] = callback;
-    window.postMessage({
-      channel: 'W4P_BRIDGE',
-      path: path, method: method, body: body,
-      apiKey: API_KEY, rawPath: false, reqId: _reqId
-    }, '*');
+    var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
+    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    fetch(API_BASE + path, opts)
+      .then(function(r) { return r.json(); })
+      .then(function(data) { if (callback) callback({ ok: true, data: data }); })
+      .catch(function(e) { var _ = e; if (callback) callback({ ok: false, error: e.message }); });
   }
   function bridgeFetchRaw(path, method, body, callback) {
-    _reqId++;
-    if (callback) _callbacks[_reqId] = callback;
-    window.postMessage({
-      channel: 'W4P_BRIDGE',
-      path: path, method: method, body: body,
-      apiKey: API_KEY, rawPath: true, reqId: _reqId
-    }, '*');
+    var opts = { method: method || 'GET', headers: { 'X-API-Key': API_KEY } };
+    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    fetch(SITE_BASE + path, opts)
+      .then(function(r) { return r.json(); })
+      .then(function(data) { if (callback) callback({ ok: true, data: data }); })
+      .catch(function(e) { console.warn('[W4P] fetchRaw error:', path, e.message); if (callback) callback({ ok: false, error: e.message }); });
   }
 
   function logFrameDiagnostics(reason) {
@@ -194,20 +174,6 @@
   var _cashoutPre = false;   // when true, hyper-poll for cashout DOM element
   var _cashoutTimer = null;
   var _lastBoardLen = 0;     // track board cards for new hand detection
-
-  // ── Seat stability layer ──────────────────────────────────────
-  // Identity→seat cache: playerName → stable_seat_index
-  // Persists across polls and hand boundaries.
-  var _seatCache = {};                   // { playerName: seat_index }
-  var _seatLastSeen = {};               // { playerName: timestamp_ms }
-  var _pendingCandidates = {};          // { playerName: { seat_index: N, count: M, since: ms } }
-  var _collisionsThisPoll = [];         // collision diagnostics
-  var _tableReadyState = false;         // all containers present AND have position-N
-  var _lastContainerCount = -1;         // for detecting count changes
-  var DEBOUNCE_COUNT = 3;              // polls required before accepting new assignment
-  var _bootstrapped = false;            // true after first successful snapshot
-  var SEAT_STALE_MS = 120000;           // 2 min — forget player if unseen this long
-  var _lastGoodSnapshot = null;         // preserved when DOM temporarily lacks containers
 
   // ── v22-hardened: duplicate command guard + action cooldowns ──
   var _lastCmdId = null;              // last executed command ID — reject duplicates
@@ -761,225 +727,6 @@
     return result;
   }
 
-  // ── Table readiness check — all seat containers present with position classes ──
-  function isTableReady() {
-    var containers = document.querySelectorAll('sg-poker-table-seat');
-    if (!containers.length) containers = document.querySelectorAll('.player-mini-container-p');
-    if (!containers.length) {
-      if (_tableReadyState) {
-        console.log('[W4P][SEAT] table readiness lost — ' + _lastContainerCount + '→0 containers');
-      }
-      _tableReadyState = false;
-      _lastContainerCount = 0;
-      return false;
-    }
-    var count = containers.length;
-    if (count !== _lastContainerCount) {
-      // Container count changed — table not stable yet
-      console.log('[W4P][SEAT] container count changed: ' + _lastContainerCount + '→' + count + ' — waiting for stability');
-      _lastContainerCount = count;
-      _tableReadyState = false;
-      return false;
-    }
-    // All containers must have position-N class
-    for (var i = 0; i < containers.length; i++) {
-      if (!containers[i].className.match(/position-(\d+)/)) {
-        if (_tableReadyState) {
-          console.log('[W4P][SEAT] position class missing on container ' + i + ' — freezing');
-        }
-        _tableReadyState = false;
-        return false;
-      }
-    }
-    if (!_tableReadyState) {
-      console.log('[W4P][SEAT] table ready — ' + count + ' containers with position classes');
-    }
-    _tableReadyState = true;
-    return true;
-  }
-
-  // ── Resolve stable seat index for a player ───────────────────
-  // Rules:
-  //   1. Known player with cached position → use cached position
-  //   2. Known player with NEW position from DOM → debounce (DEBOUNCE_COUNT polls)
-  //   3. New player with DOM position → debounce
-  //   4. Player/missing position → skip (do NOT invent a seat index)
-  //   5. Collision: two players at same seat → reject new, keep previous
-  // Returns { seat_index: N, isNew: bool, reason: str }
-  function resolveSeatIndex(name, rawPosition, containerEl, swapMap) {
-    var now = Date.now();
-    var result = { seat_index: null, isNew: false, confidence: 0, reason: '' };
-
-    // No name — anonymous seat, return raw position if available
-    if (!name) {
-      if (rawPosition !== null) {
-        result.seat_index = rawPosition;
-        result.reason = 'anonymous-seat';
-        result.confidence = 100;
-      } else {
-        result.reason = 'anonymous-no-position';
-      }
-      return result;
-    }
-
-    // Named player — use seat cache
-    _seatLastSeen[name] = now;
-
-    if (_seatCache.hasOwnProperty(name)) {
-      var cachedPos = _seatCache[name];
-
-      // If we have a fresh DOM position that differs from cache
-      if (rawPosition !== null && rawPosition !== cachedPos) {
-        // ── Atomic swap bypass: accept immediately, no debounce ──
-        if (swapMap && swapMap.hasOwnProperty(name) && swapMap[name] === rawPosition) {
-          // Both sides of swap are accepted atomically — skip collision check
-          // (the swap pre-scan already verified the 2-player constraint)
-          console.log('[W4P][SEAT][SWAP] ' + name + ': ' + cachedPos + '→' + rawPosition + ' atomic');
-          delete _seatCache[name];
-          _seatCache[name] = rawPosition;
-          delete _pendingCandidates[name];
-          result.seat_index = rawPosition;
-          result.reason = 'swap-atomically-accepted';
-          result.confidence = 100;
-          return result;
-        }
-
-        // Debounce: require DEBOUNCE_COUNT consecutive polls
-        var pc = _pendingCandidates[name];
-        if (!pc || pc.seat_index !== rawPosition) {
-          // New candidate or different candidate — reset counter
-          _pendingCandidates[name] = { seat_index: rawPosition, count: 1, since: now };
-          result.seat_index = cachedPos;  // keep old position during debounce
-          result.reason = 'pending-new-position';
-          result.confidence = 80;
-          return result;
-        }
-        pc.count++;
-        if (pc.count >= DEBOUNCE_COUNT) {
-          // Candidate confirmed — check for collision
-          var existing = null;
-          for (var otherName in _seatCache) {
-            if (otherName !== name && _seatCache[otherName] === rawPosition) {
-              existing = otherName;
-              break;
-            }
-          }
-          if (existing) {
-            // Collision: DON'T move — keep cached position
-            _collisionsThisPoll.push({
-              seat: rawPosition,
-              player1: existing,
-              player2: name,
-              action: 'rejected-new-comer',
-              reason: 'seat ' + rawPosition + ' occupied by ' + existing
-            });
-            delete _pendingCandidates[name];
-            result.seat_index = cachedPos;
-            result.reason = 'collision-rejected';
-            result.confidence = 90;
-            return result;
-          }
-          // Accept the move
-          console.log('[W4P][SEAT] ' + name + ' moved: ' + cachedPos + '→' + rawPosition + ' (debounced ' + pc.count + ' polls)');
-          delete _seatCache[name];
-          _seatCache[name] = rawPosition;
-          delete _pendingCandidates[name];
-          result.seat_index = rawPosition;
-          result.isNew = false;  // known player, new position
-          result.reason = 'move-confirmed';
-          result.confidence = 100;
-          return result;
-        }
-        // Still debouncing
-        result.seat_index = cachedPos;
-        result.reason = 'debouncing(' + pc.count + '/' + DEBOUNCE_COUNT + ')';
-        result.confidence = 85;
-        return result;
-      }
-
-      // No position or same position — keep cached
-      if (rawPosition !== null) {
-        // Same position confirmed — reset any pending
-        delete _pendingCandidates[name];
-      }
-      result.seat_index = cachedPos;
-      result.reason = 'cached';
-      result.confidence = 100;
-      return result;
-    }
-
-    // New player (not in cache yet)
-    if (rawPosition !== null) {
-      // Check collision with existing cached player
-      var occupant = null;
-      for (var on in _seatCache) {
-        if (_seatCache[on] === rawPosition) {
-          occupant = on;
-          break;
-        }
-      }
-      if (occupant) {
-        // Collision with an established player — debounce the new one
-        var pc2 = _pendingCandidates[name];
-        if (!pc2 || pc2.seat_index !== rawPosition) {
-          _pendingCandidates[name] = { seat_index: rawPosition, count: 1, since: now };
-          _collisionsThisPoll.push({
-            seat: rawPosition,
-            player1: occupant,
-            player2: name,
-            action: 'new-player-collision-debouncing',
-            reason: 'seat ' + rawPosition + ' occupied by ' + occupant
-          });
-          result.reason = 'new-player-collision';
-          return result;
-        }
-        // Keep debouncing — don't override the established player
-        pc2.count++;
-        result.reason = 'new-player-pending(' + pc2.count + '/' + DEBOUNCE_COUNT + ')';
-        return result;
-      }
-
-      // No collision — debounce the new assignment
-      var pc3 = _pendingCandidates[name];
-
-      // ── Bootstrap bypass: accept immediately before first snapshot ──
-      if (!_bootstrapped) {
-        // First table load — every player is new. Accept rawPosition immediately.
-        _seatCache[name] = rawPosition;
-        delete _pendingCandidates[name];
-        result.seat_index = rawPosition;
-        result.isNew = true;
-        result.reason = 'bootstrap-immediate';
-        result.confidence = 100;
-        return result;
-      }
-
-      if (!pc3 || pc3.seat_index !== rawPosition) {
-        _pendingCandidates[name] = { seat_index: rawPosition, count: 1, since: now };
-        result.reason = 'new-player-pending(1/' + DEBOUNCE_COUNT + ')';
-        return result;
-      }
-      pc3.count++;
-      if (pc3.count >= DEBOUNCE_COUNT) {
-        // Confirm — add to cache
-        _seatCache[name] = rawPosition;
-        delete _pendingCandidates[name];
-        console.log('[W4P][SEAT] new player: ' + name + '→' + rawPosition + ' (debounced ' + pc3.count + ' polls)');
-        result.seat_index = rawPosition;
-        result.isNew = true;
-        result.reason = 'new-player-confirmed';
-        result.confidence = 100;
-        return result;
-      }
-      result.reason = 'new-player-pending(' + pc3.count + '/' + DEBOUNCE_COUNT + ')';
-      return result;
-    }
-
-    // New player with no DOM position — skip
-    result.reason = 'new-player-no-position';
-    return result;
-  }
-
   // ── Build full snapshot — ALL seats ──────────────────────────
   function buildSnapshot() {
     if (stopNonPokerScrapeContext('buildSnapshot')) return null;
@@ -993,18 +740,9 @@
       return null;
     }
 
-    // ── Table readiness check ──────────────────────────────────
-    isTableReady();
     var containers = document.querySelectorAll('sg-poker-table-seat');
     if (!containers.length) containers = document.querySelectorAll('.player-mini-container-p');
-
     if (!containers.length) {
-      // No containers at all — preserve last good snapshot if available
-      if (_lastGoodSnapshot) {
-        console.log('[W4P][SEAT] no containers — returning preserved snapshot');
-        _lastGoodSnapshot.ts = new Date().toISOString();
-        return _lastGoodSnapshot;
-      }
       if (_n <= 5 || _n % 30 === 0) {
         console.log('[W4P] no seat containers');
         logFrameDiagnostics('no_seat_containers');
@@ -1074,77 +812,21 @@
       }
     }
 
-    // ── Scrape ALL seats (stability-aware) ──────────────────────
-    _collisionsThisPoll = [];
+    // ── Scrape ALL seats ────────────────────────────────────────
     var seats = [];
     var heroName = null;
-    var assignedPositions = {};  // position → name for collision detection within this poll
-
-    // ── Pre-scan: detect Alice⇄Bob seat swaps ──────────────────
-    // Collect all (name, DOM position) pairs where both are cached
-    // and the DOM position differs from cache.
-    var candidateMoves = {};  // name → { from: cachedPos, to: rawPosition }
-    for (var pi = 0; pi < containers.length; pi++) {
-      var pct = containers[pi];
-      var pname = (pct.querySelector('p.single-win-item-sizes') || pct.querySelector('.player-name') || {}).innerText;
-      pname = pname ? pname.trim() : null;
-      if (!pname || !_seatCache.hasOwnProperty(pname)) continue;
-      var pmatch = pct.className.match(/position-(\d+)/);
-      var ppos = pmatch ? parseInt(pmatch[1]) : null;
-      if (ppos === null) continue;
-      var pcached = _seatCache[pname];
-      if (ppos !== pcached) {
-        candidateMoves[pname] = { from: pcached, to: ppos };
-      }
-    }
-    // Detect exact 2-player swap: A→B and B→A, no other pending moves
-    var _swapMap = {};  // name → new position (atomically accepted)
-    var moveNames = Object.keys(candidateMoves);
-    if (moveNames.length === 2) {
-      var a = moveNames[0], b = moveNames[1];
-      if (candidateMoves[a].to === candidateMoves[b].from &&
-          candidateMoves[b].to === candidateMoves[a].from) {
-        _swapMap[a] = candidateMoves[a].to;
-        _swapMap[b] = candidateMoves[b].to;
-        console.log('[W4P][SEAT][SWAP] detected: ' + a + ' ' + candidateMoves[a].from + '⇄' + candidateMoves[b].from + ' ' + b + ' — accepted atomically');
-      }
-    }
 
     for (var i = 0; i < containers.length; i++) {
       var ct = containers[i];
       var isHero = ct.classList.contains('self-player') || !!ct.querySelector('.self-player');
 
-      // ── Raw DOM position — ONLY from position-N class, NEVER fallback to i ──
       var posMatch = ct.className.match(/position-(\d+)/);
-      var rawPosition = posMatch ? parseInt(posMatch[1]) : null;
+      var seatIdx = posMatch ? parseInt(posMatch[1]) : i;
 
       // Player name
       var nameEl = ct.querySelector('p.single-win-item-sizes') || ct.querySelector('.player-name');
       var name = nameEl ? (nameEl.innerText || nameEl.textContent || '').trim() : null;
       if (!name || name === '') name = null;
-
-      // ── Resolve stable seat index ──────────────────────────
-      var resolution = resolveSeatIndex(name, rawPosition, ct, _swapMap);
-      var seatIdx = resolution.seat_index;
-
-      // Skip if no stable position can be determined
-      if (seatIdx === null || seatIdx === undefined) continue;
-      if (seatIdx < 1 || seatIdx > 9) continue;
-
-      // Within-poll collision check: same position already assigned this poll
-      if (name && assignedPositions.hasOwnProperty(seatIdx) && assignedPositions[seatIdx] !== name) {
-        _collisionsThisPoll.push({
-          seat: seatIdx,
-          player1: assignedPositions[seatIdx],
-          player2: name,
-          action: 'within-poll-collision-skipped',
-          reason: 'position ' + seatIdx + ' already assigned to ' + assignedPositions[seatIdx]
-        });
-        continue;  // skip — don't double-assign
-      }
-      if (name) {
-        assignedPositions[seatIdx] = name;
-      }
 
       // Stack
       var stackEl = ct.querySelector('.player-text-info-p span b') || ct.querySelector('.player-text-info-p b') || ct.querySelector('.player-stack');
@@ -1152,7 +834,7 @@
       var sMatch = stackText.match(/([\d.,]+)/);
       var stackZar = sMatch ? parseFloat(sMatch[1].replace(',', '')) : 0;
 
-      // Hole cards
+      // Hole cards — try to parse for ALL seats (fallback hero detection)
       var holeCards = [];
       var cardsContainer = ct.querySelector('.carts-container-p');
       var hcEls = (cardsContainer || ct).querySelectorAll('.single-cart-view-p');
@@ -1161,12 +843,17 @@
         if (hc) holeCards.push(hc);
       }
 
+      // REMOVED: hole-cards fallback was marking villains as hero during showdown
+      // when all players' cards are revealed face-up. The .self-player class is
+      // the ONLY reliable hero signal — it's set by the poker client on the
+      // player's own seat and never appears on villains even at showdown.
+
       if (isHero) heroName = name;
 
       // Status detection
       var sittingOut = ct.classList.contains('seat-out-v') || !!ct.querySelector('.seat-out-v');
       var isFolded = ct.classList.contains('folded') || !!ct.querySelector('.folded');
-      var isActive = isHero && avail.length > 0;
+      var isActive = isHero && avail.length > 0;  // visible buttons = hero's turn
 
       var status = 'playing';
       if (sittingOut) status = 'sitting_out';
@@ -1189,22 +876,7 @@
       });
     }
 
-    // ── Prune stale cache entries ────────────────────────────────
-    var staleCutoff = Date.now() - SEAT_STALE_MS;
-    var staleNames = [];
-    for (var cn in _seatCache) {
-      if ((_seatLastSeen[cn] || 0) < staleCutoff) {
-        staleNames.push(cn);
-      }
-    }
-    for (var si = 0; si < staleNames.length; si++) {
-      console.log('[W4P][SEAT] pruning stale: ' + staleNames[si] + ' (unseen >' + SEAT_STALE_MS + 'ms)');
-      delete _seatCache[staleNames[si]];
-      delete _seatLastSeen[staleNames[si]];
-      delete _pendingCandidates[staleNames[si]];
-    }
-
-    // ── Must have found hero ─────────────────────────────────────
+    // Must have found hero
     if (!heroName) {
       if (_n <= 5 || _n % 30 === 0) {
         var seatClasses = [];
@@ -1219,20 +891,7 @@
       return null;
     }
 
-    // Hero must have a seat assignment — wait until table is ready
-    var heroFound = false;
-    for (var hi = 0; hi < seats.length; hi++) {
-      if (seats[hi].is_hero) { heroFound = true; break; }
-    }
-    if (!heroFound) {
-      if (_n <= 5) {
-        console.log('[W4P][SEAT] hero ' + heroName + ' has no seat assignment yet — waiting for table');
-      }
-      return null;
-    }
-
-    // ── Save as last good snapshot ──────────────────────────────
-    var snap = {
+    return {
       table_id:      tableId,
       bot_id:        heroName,
       session_id:    _sessionId,
@@ -1252,9 +911,6 @@
       ts:            new Date().toISOString(),
       source_key:    'w4p_inject'
     };
-    _lastGoodSnapshot = JSON.parse(JSON.stringify(snap));  // deep copy
-    _bootstrapped = true;  // bootstrap complete — enable normal debounce from now on
-    return snap;
   }
 
   // ── State hash for dedup ─────────────────────────────────────
@@ -1835,29 +1491,6 @@
       return;
     }
 
-    // ── Seat stability diagnostics ──────────────────────────────
-    var cacheSize = Object.keys(_seatCache).length;
-    var pendingCount = Object.keys(_pendingCandidates).length;
-    if (_collisionsThisPoll.length > 0) {
-      console.log('[W4P][SEAT][COLLISION]', JSON.stringify(_collisionsThisPoll));
-    }
-    if (_n <= 5 || _n % 10 === 0) {
-      console.log('[W4P][SEAT] poll=' + _n +
-        ' ready=' + _tableReadyState +
-        ' containers=' + snap.seats.length +
-        ' cache=' + cacheSize +
-        ' pending=' + pendingCount +
-        ' collisions=' + _collisionsThisPoll.length +
-        ' map=' + JSON.stringify(Object.keys(_seatCache).map(function(k) { return k + '→' + _seatCache[k]; })));
-    }
-    if (_n <= 5) {
-      for (var si = 0; si < snap.seats.length; si++) {
-        var ss = snap.seats[si];
-        console.log('[W4P][SEAT]  seat ' + ss.seat_index + ': ' + (ss.name || 'EMPTY') +
-          ' hero=' + ss.is_hero);
-      }
-    }
-
     // Adaptive polling mode
     var hero = null;
     for (var i = 0; i < snap.seats.length; i++) {
@@ -1905,8 +1538,8 @@
   untickWaitBB();
   window._w4p_bbTimer = setInterval(untickWaitBB, 5000);
 
-  var _buildTag = 'v24-bootstrap';
-  var _buildTs  = '2026-06-29T20:46:20Z';
+  var _buildTag = 'v23-hardened';
+  var _buildTs  = '2026-04-26T02:30:00Z';
   console.log('[W4P] ═══════════════════════════════════════════════');
   console.log('[W4P] ' + _buildTag + ' | built=' + _buildTs + ' | session=' + _sessionId);
   console.log('[W4P] guards: dup-cmd, cooldown=' + _ACTION_COOLDOWN_MS + 'ms, preset-cd=' + _PRESET_COOLDOWN_MS + 'ms');

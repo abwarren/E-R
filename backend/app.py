@@ -195,6 +195,7 @@ _last_good_view = None   # {"view": dict, "ts": float}
 _STALE_MAX_AGE  = 5.0    # seconds: max age before stale cache expires
 _STALE_TTL      = 5.0    # seconds: non-hero seats expire if not refreshed within this window
 _COLLECTOR_FILE_MAX_AGE = 60.0  # seconds: do not resurrect old saved hand files
+_TABLE_INACTIVE_TTL = 30  # seconds: mark table inactive if no snapshot received
 
 # ── Hand history (multi-hand ASCII log, FIFO last 20) ──────────────────────────
 _hand_history  = []   # list of ASCII hand strings, newest last, max 20
@@ -960,10 +961,10 @@ def _cleanup_loop():
                 if expired:
                     app.logger.info(f"[CLEANUP] Expired {expired} stale command(s)")
 
-                # Remove empty tables (no seats, last update > 5 min ago)
+                # Remove empty tables (no seats, last update > 60s ago)
                 stale_tables = [
                     tid for tid, t in _tables.items()
-                    if not t["seats"] and (now - t["last_ts"]) > 300
+                    if not t["seats"] and (now - t["last_ts"]) > 60
                 ]
                 for tid in stale_tables:
                     del _tables[tid]
@@ -1536,6 +1537,35 @@ def _handle_table_latest():
             })
 
         table = max(_tables.values(), key=lambda t: t['last_ts'])
+
+        # ── Staleness guard: if no snapshot for _TABLE_INACTIVE_TTL seconds,
+        #     return the empty waiting placeholder.  Prevents stale board/pot
+        #     data from persisting in the UI after snapshot ingestion stops.
+        table_age = now - table['last_ts']
+        if table_age > _TABLE_INACTIVE_TTL:
+            app.logger.info('[LATEST] Table %s inactive for %.0fs — returning waiting',
+                            table.get('table_id'), table_age)
+            return jsonify({
+                'ok': True,
+                'table': {
+                    'table_id': 'waiting',
+                    'street':   'WAITING',
+                    'pot_zar':  0,
+                    'board':    {'flop': [], 'turn': None, 'river': None},
+                    'seats': [
+                        {
+                            'seat_no': i, 'seat_index': i, 'name': None, 'stack_zar': 0,
+                            'hole_cards': [], 'status': 'empty',
+                            'is_dealer': False, 'is_hero': False,
+                            'last_seen': None, 'pending_cmd': None,
+                        }
+                        for i in range(1, 10)
+                    ],
+                    'collector_batch': _get_latest_collector_batch()
+                },
+                'long_poll': False
+            })
+
         view = _table_view(table)
 
         # Determine if this is a "good" view (has at least one occupied seat)
