@@ -1,53 +1,14 @@
-# Python
-__pycache__/
-*.py[cod]
-*.so
-*.egg-info/
-dist/
-build/
-
-# Virtual env
-venv/
-.venv/
-env/
-
-# Backups
-*.bak
-*.bak.*
-*.backup
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
+.env
+*.env
+backend/.env
+backend/data/secret_key
+data/secret_key
+data/*.db
+*.pem
+*.swp
+*.swo
+*.before
+tests/profiles/
+tests/logs/
+tests/reports/
 *.log
-logs/
-
-# State / runtime data
-state/state_snapshot.json
-backend/data/hand-collector/saved_hands/
-
-# Docker
-*.tar.gz
-
-# Secrets — NEVER commit
-*.pem                          # ✓ already present (line 39)
-*.key                          # ✓ already present (line 40)
-.env                           # ← ADD
-secret_key                     # ← ADD
-backend/data/secret_key        # ← ADD
-data/secret_key                # ← ADD
-
-# Backup artifacts from failed operations
-*.broken.*                     # ← ADD
-*.current_broken.*             # ← ADD
-
-# Runtime data
-state/state_snapshot.json      # ✓ already present (line 32)
-*.db                           # ← ADD (audit.db, auth.db, players.db)
-logs/                          # ✓ already present (line 29)
