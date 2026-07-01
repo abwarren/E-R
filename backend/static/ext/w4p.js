@@ -1,3 +1,19 @@
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  ⛔ DO NOT REMOVE SEAT STABILITY LAYER (lines ~361-690)                     ║
+// ║                                                                            ║
+// ║  Commit 74acebe (2026-07-01) removed this layer and regressed:             ║
+// ║  - seat_index fell back to loop index i, causing seat collisions           ║
+// ║  - multiple seats shared same position → players vanished from UI          ║
+// ║  - Fixed by cf328c7 (2026-07-01) — restored v24-bootstrap                  ║
+// ║                                                                            ║
+// ║  PROTECTED: _seatCache, resolveSeatIndex(), isTableReady(),                ║
+// ║  _lastGoodSnapshot, _bootstrapped, collision rejection, swap detection      ║
+// ║  See docs/audit-2026-07-01/SEATMAP_REGRESSION_AUDIT.md                     ║
+// ║                                                                            ║
+// ║  The selector registry (SEL.*, detectRuntime(), validateSelectorRegistry)   ║
+// ║  and seat stability layer MUST COEXIST. Neither replaces the other.         ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+//
 // W4P Injectable v24-bootstrap+selectors — PLO Remote Table Control (hero-only: .self-player class ONLY, no fallbacks)
 // v24: seat stability layer — identity→seat cache, debounce, collision rejection, table readiness gate
 //      No more seat_index fallback to loop index. No more seat collisions.
@@ -359,8 +375,10 @@
   var _lastBoardLen = 0;     // track board cards for new hand detection
 
   // ── Seat stability layer ──────────────────────────────────────
+  // ⛔ PROTECTED — DO NOT REMOVE (see file header for audit trail)
   // Identity→seat cache: playerName → stable_seat_index
   // Persists across polls and hand boundaries.
+  // Removing this block caused seat collisions (commit 74acebe → cf328c7)
   var _seatCache = {};                   // { playerName: seat_index }
   var _seatLastSeen = {};               // { playerName: timestamp_ms }
   var _pendingCandidates = {};          // { playerName: { seat_index: N, count: M, since: ms } }
@@ -1267,7 +1285,8 @@
       var isHero = ct.classList.contains('self-player') || !!ct.querySelector(SEL.heroClass);
 
       // ── Raw DOM position — ONLY from position-N class, NEVER fallback to i ──
-      var posMatch = ct.className.match(/position-(\d+)/);
+      // ⛔ DO NOT change null to i — caused seat collision regression (74acebe→cf328c7)
+      var posMatch = ct.className.match(/position-(\\d+)/);
       var rawPosition = posMatch ? parseInt(posMatch[1]) : null;
 
       // Player name
@@ -1278,6 +1297,12 @@
       // ── Resolve stable seat index ──────────────────────────
       var resolution = resolveSeatIndex(name, rawPosition, ct, _swapMap);
       var seatIdx = resolution.seat_index;
+
+      // ── Capture hero name BEFORE seat stability check ─────────
+      // ⛔ CRITICAL: hero identity must survive regardless of seat assignment status.
+      // If the hero seat is debouncing, we still need heroName for the snapshot.
+      // The seat itself may be skipped below, but heroName enables the snapshot.
+      if (isHero && name) heroName = name;
 
       // Skip if no stable position can be determined
       if (seatIdx === null || seatIdx === undefined) continue;
@@ -1313,7 +1338,7 @@
         if (hc) holeCards.push(hc);
       }
 
-      if (isHero) heroName = name;
+      // (heroName already captured above — before seat stability check)
 
       // Status detection
       var sittingOut = ct.classList.contains('seat-out-v') || !!ct.querySelector(SEL.sittingOut);
