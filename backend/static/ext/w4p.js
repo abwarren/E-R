@@ -21,7 +21,7 @@
   function hasPokerTableProof() {
     try {
       return !!document.querySelector(
-        'sg-poker-table, sg-poker-table-seat, .player-mini-container-p, .control-b-view-p, .pot-w-view-p, .single-cart-view-p'
+        SEL.tableProof
       );
     } catch (e) {
       return false;
@@ -99,6 +99,82 @@
   var API_KEY  = '03622c896cfbeacdfc537e9434f9ddc5';
   var SITE_BASE = 'http://127.0.0.1:4000';
   var API_KEY  = '03622c896cfbeacdfc537e9434f9ddc5';
+
+  // ── Runtime Detection — Desktop vs Mobile ──────────────────────
+  function detectRuntime() {
+    // Mobile: URL path contains /mobile
+    if (location.pathname.indexOf('/mobile') !== -1) return 'mobile';
+    return 'desktop';
+  }
+
+  // ── Selector Registry (ADR-013) ────────────────────────────────
+  // One parser. Multiple selector profiles.
+  // Only selector definitions differ between runtimes.
+  // Mobile selectors populated ONLY from verified runtime DOM capture.
+  var SELECTORS = {
+    desktop: {
+      // Seat containers
+      seatContainer:    'sg-poker-table-seat',
+      seatContainerAlt: '.player-mini-container-p',
+      // Hero
+      heroClass:        '.self-player',
+      heroSeat:         'sg-poker-table-seat.self-player',
+      heroSeatAlt:      '.player-mini-container-p.self-player',
+      // Player info
+      playerName:       'p.single-win-item-sizes',
+      playerNameAlt:    '.player-name',
+      stack:            '.player-text-info-p span b',
+      stackAlt:         '.player-text-info-p b',
+      stackAlt2:        '.player-stack',
+      // Board
+      boardContainer:   'sg-poker-board',
+      boardCard:        '.single-cart-view-p',
+      // Pot
+      potContainer:     '.pot-w-view-p',
+      potAlt:           '.pot-amount',
+      potAlt2:          '.total-pot',
+      // Dealer
+      dealerIcon:       '.dealer-icon-view',
+      // Hole cards
+      holeCardsContainer: '.carts-container-p',
+      holeCard:         '.single-cart-view-p',
+      // State
+      sittingOut:       '.seat-out-v',
+      activeTurn:       '.active-turn',
+      activeTurnAlt:    '.active-turn',
+      // Betting slider
+      bettingSlider:    'sg-poker-betting-slider input[type="range"]',
+      genericSlider:    'input[type="range"]',
+      genericNumber:    'input[type="number"], input[type="text"]',
+      // Table proof (frame discovery)
+      tableProof:       SEL.tableProof,
+      // Action buttons
+      buttons: {
+        fold:          '.control-b-view-p.fold-c',
+        check:         '.control-b-view-p.check-c',
+        call:          '.control-b-view-p.call-c',
+        raise:         '.control-b-view-p.raise-c',
+        bet:           '.control-b-view-p.bet-c',
+        cashout:       '.control-b-view-p.cash_out-c',
+        allin:         '.control-b-view-p.all_in-c',
+        show:          '.control-b-view-p.show-c',
+        run_it_twice:  '.control-b-view-p.run_it_twice-c',
+        resume_hand:   '.control-b-view-p.resume_hand-c',
+        back_to_game:  '.control-b-view-p.back_to_game-c'
+      }
+    },
+    mobile: {
+      // Populated from verified mobile DOM capture ONLY.
+      // Never guessed. Never inferred from desktop.
+      // Currently BLOCKED — awaiting live mobile runtime data.
+    }
+  };
+
+  // Runtime selector profile
+  var RUNTIME = detectRuntime();
+  var SEL = SELECTORS[RUNTIME];
+  console.log('[W4P] RUNTIME=' + RUNTIME + ' | bridge=postMessage | selectors=' +
+    (SEL.buttons ? Object.keys(SEL.buttons).length + '-buttons' : 'empty-mobile'));
 
   // ── Bridge relay: postMessage → bridge.js → background.js → fetch ──
   var _reqId = 0;
@@ -201,20 +277,8 @@
 
   var RANK_MAP = { 'a':'A', 'k':'K', 'q':'Q', 'j':'J', 't':'T', '10':'T' };
 
-  // ── Action button selectors (PokerBet / BetConstruct DOM) ───
-  var BTN_SEL = {
-    fold:         '.control-b-view-p.fold-c',
-    check:        '.control-b-view-p.check-c',
-    call:         '.control-b-view-p.call-c',
-    raise:        '.control-b-view-p.raise-c',
-    bet:          '.control-b-view-p.bet-c',
-    cashout:      '.control-b-view-p.cash_out-c',
-    allin:        '.control-b-view-p.all_in-c',
-    show:         '.control-b-view-p.show-c',
-    run_it_twice: '.control-b-view-p.run_it_twice-c',
-    resume_hand:  '.control-b-view-p.resume_hand-c',
-    back_to_game: '.control-b-view-p.back_to_game-c'
-  };
+  // ── Action button selectors — populated from SEL.buttons (ADR-013) ──
+  var BTN_SEL = SEL.buttons || {};
 
   // ── Detected buttons cache (populated each getAvailableActions call) ──
   var _detectedBtns = {};
@@ -305,7 +369,7 @@
       var idm = url.match(/(\d{4,})/);
       return 'pb_' + (idm ? idm[1] : 'sg');
     }
-    if (document.querySelector('.player-mini-container-p') || document.querySelector('sg-poker-table-seat')) {
+    if (document.querySelector(SEL.seatContainerAlt) || document.querySelector(SEL.seatContainer)) {
       var idm2 = url.match(/(\d{3,})/);
       return 'pb_' + (idm2 ? idm2[1] : '0');
     }
@@ -427,7 +491,7 @@
   }
 
   function getAvailableActions() {
-    var heroSeat = document.querySelector('sg-poker-table-seat.self-player') || document.querySelector('.player-mini-container-p.self-player');
+    var heroSeat = document.querySelector(SEL.heroSeat) || document.querySelector(SEL.heroSeatAlt);
     if (!heroSeat) { _detectedBtns = {}; return []; }
     _detectedBtns = {};
     var avail = [];
@@ -519,8 +583,8 @@
 
   // ── ACTION AUDIT: window.__W4P_ACTION_AUDIT() ──────────────
   window.__W4P_ACTION_AUDIT = function() {
-    var hero = document.querySelector('.self-player') || document.querySelector('.player-mini-container-p.self-player');
-    var heroName = hero ? ((hero.querySelector('p.single-win-item-sizes') || hero.querySelector('.player-name') || {}).innerText || '').trim() : null;
+    var hero = document.querySelector(SEL.heroClass) || document.querySelector(SEL.heroSeatAlt);
+    var heroName = hero ? ((hero.querySelector(SEL.playerName) || hero.querySelector(SEL.playerNameAlt) || {}).innerText || '').trim() : null;
     
     console.log('═══ W4P ACTION AUDIT ═══');
     console.log('heroName:', heroName || 'NONE');
@@ -583,7 +647,7 @@
         ' | inIframe=' + (window !== window.top) +
         ' | iframes=' + _iframes.length + (_iframeInfo.length > 0 ? ' ' + JSON.stringify(_iframeInfo) : ''));
     }
-    var heroSeat = document.querySelector('sg-poker-table-seat.self-player') || document.querySelector('.player-mini-container-p.self-player');
+    var heroSeat = document.querySelector(SEL.heroSeat) || document.querySelector(SEL.heroSeatAlt);
     // heroActive = self-player exists AND visible action buttons present (no .active class needed)
     var _heroActive = false;
     if (heroSeat) {
@@ -757,8 +821,8 @@
       return null;
     }
 
-    var containers = document.querySelectorAll('sg-poker-table-seat');
-    if (!containers.length) containers = document.querySelectorAll('.player-mini-container-p');
+    var containers = document.querySelectorAll(SEL.seatContainer);
+    if (!containers.length) containers = document.querySelectorAll(SEL.seatContainerAlt);
     if (!containers.length) {
       if (_n <= 5 || _n % 30 === 0) {
         console.log('[W4P] no seat containers');
@@ -768,21 +832,21 @@
     }
 
     // Dealer position
-    var dealerEl = document.querySelector('.dealer-icon-view');
+    var dealerEl = document.querySelector(SEL.dealerIcon);
     var dMatch = dealerEl ? dealerEl.className.match(/position-(\d+)/) : null;
     var dealerSeat = dMatch ? parseInt(dMatch[1]) : null;
 
     // Pot amount
-    var potEl = document.querySelector('.pot-w-view-p') || document.querySelector('.pot-amount') || document.querySelector('.total-pot');
+    var potEl = document.querySelector(SEL.potContainer) || document.querySelector(SEL.potAlt) || document.querySelector(SEL.potAlt2);
     var potText = potEl ? (potEl.innerText || potEl.textContent || '') : '';
     var pMatch = potText.match(/([\d.,]+)/);
     var potZar = pMatch ? parseFloat(pMatch[1].replace(',', '')) : 0;
 
     // Board cards (community cards only)
     var boardCards = [];
-    var boardEl = document.querySelector('sg-poker-board');
+    var boardEl = document.querySelector(SEL.boardContainer);
     if (boardEl) {
-      var bcEls = boardEl.querySelectorAll('.single-cart-view-p');
+      var bcEls = boardEl.querySelectorAll(SEL.boardCard);
       for (var i = 0; i < bcEls.length; i++) {
         if (bcEls[i].closest('sg-poker-table-seat') || bcEls[i].closest('.player-mini-container-p')) continue;
         var c = parseCard(bcEls[i].className);
@@ -792,10 +856,10 @@
     // Fallback ONLY if sg-poker-board doesn't exist (DOM structure changed)
     // Never fallback when boardEl exists — preflop legitimately has 0 cards
     if (!boardEl) {
-      var allCardEls = document.querySelectorAll('.single-cart-view-p');
+      var allCardEls = document.querySelectorAll(SEL.boardCard);
       boardCards = [];
       for (var i = 0; i < allCardEls.length; i++) {
-        if (allCardEls[i].closest('.player-mini-container-p') || allCardEls[i].closest('sg-poker-table-seat')) continue;
+        if (allCardEls[i].closest(SEL.seatContainerAlt) || allCardEls[i].closest(SEL.seatContainer)) continue;
         var c2 = parseCard(allCardEls[i].className);
         if (c2) boardCards.push(c2);
       }
@@ -820,9 +884,9 @@
     for (var ai = 0; ai < containers.length; ai++) {
       var act = containers[ai];
       var isActSelf = act.classList.contains('self-player');
-      var hasActClass = act.classList.contains('active') || !!act.querySelector('.active-turn');
+      var hasActClass = act.classList.contains('active') || !!act.querySelector(SEL.activeTurn);
       if (hasActClass || (isActSelf && avail.length > 0)) {
-        var anEl = act.querySelector('p.single-win-item-sizes') || act.querySelector('.player-name');
+        var anEl = act.querySelector(SEL.playerName) || act.querySelector(SEL.playerNameAlt);
         activePlayerName = anEl ? (anEl.innerText || anEl.textContent || '').trim() : null;
         if (!activePlayerName) activePlayerName = null;
         break;
@@ -835,26 +899,26 @@
 
     for (var i = 0; i < containers.length; i++) {
       var ct = containers[i];
-      var isHero = ct.classList.contains('self-player') || !!ct.querySelector('.self-player');
+      var isHero = ct.classList.contains('self-player') || !!ct.querySelector(SEL.heroClass);
 
       var posMatch = ct.className.match(/position-(\d+)/);
       var seatIdx = posMatch ? parseInt(posMatch[1]) : i;
 
       // Player name
-      var nameEl = ct.querySelector('p.single-win-item-sizes') || ct.querySelector('.player-name');
+      var nameEl = ct.querySelector(SEL.playerName) || ct.querySelector(SEL.playerNameAlt);
       var name = nameEl ? (nameEl.innerText || nameEl.textContent || '').trim() : null;
       if (!name || name === '') name = null;
 
       // Stack
-      var stackEl = ct.querySelector('.player-text-info-p span b') || ct.querySelector('.player-text-info-p b') || ct.querySelector('.player-stack');
+      var stackEl = ct.querySelector(SEL.stack) || ct.querySelector(SEL.stackAlt) || ct.querySelector(SEL.stackAlt2);
       var stackText = stackEl ? (stackEl.innerText || stackEl.textContent || '') : '';
       var sMatch = stackText.match(/([\d.,]+)/);
       var stackZar = sMatch ? parseFloat(sMatch[1].replace(',', '')) : 0;
 
       // Hole cards — try to parse for ALL seats (fallback hero detection)
       var holeCards = [];
-      var cardsContainer = ct.querySelector('.carts-container-p');
-      var hcEls = (cardsContainer || ct).querySelectorAll('.single-cart-view-p');
+      var cardsContainer = ct.querySelector(SEL.holeCardsContainer);
+      var hcEls = (cardsContainer || ct).querySelectorAll(SEL.holeCard);
       for (var j = 0; j < hcEls.length; j++) {
         var hc = parseCard(hcEls[j].className);
         if (hc) holeCards.push(hc);
@@ -868,7 +932,7 @@
       if (isHero) heroName = name;
 
       // Status detection
-      var sittingOut = ct.classList.contains('seat-out-v') || !!ct.querySelector('.seat-out-v');
+      var sittingOut = ct.classList.contains('seat-out-v') || !!ct.querySelector(SEL.sittingOut);
       var isFolded = ct.classList.contains('folded') || !!ct.querySelector('.folded');
       var isActive = isHero && avail.length > 0;  // visible buttons = hero's turn
 
@@ -899,7 +963,7 @@
         var seatClasses = [];
         for (var d = 0; d < containers.length; d++) {
           var dct = containers[d];
-          var dname = dct.querySelector('p.single-win-item-sizes') || dct.querySelector('.player-name');
+          var dname = dct.querySelector(SEL.playerName) || dct.querySelector(SEL.playerNameAlt);
           var dnameText = dname ? dname.textContent.trim() : 'EMPTY';
           seatClasses.push(dnameText + ':' + dct.className.replace(/\s+/g, '.'));
         }
