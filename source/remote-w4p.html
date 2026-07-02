@@ -189,6 +189,19 @@
     border-color: #ffd54f;
     box-shadow: 0 0 6px rgba(255,213,79,0.3), 0 2px 6px rgba(0,0,0,0.4);
   }
+  .seat-box.sitting-out {
+    opacity: 0.45;
+    border-color: #424242;
+    box-shadow: none;
+  }
+  .seat-box.sitting-out .seat-sitting-label {
+    display: block;
+    font-size: 0.6em;
+    color: #757575;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
 
   /* Debug badge */
   .dbg-badge {
@@ -812,7 +825,7 @@ function seatHash(seat) {
     seat.bet + '|' + seat.is_dealer + '|' + acts + '|' +
     (preActionState[sn] || '') + '|' + (cashoutState[sn] || false) +
     '|' + (autoCcPreflop[sn] || false) + '|' + globalAutoCcPreflop +
-    '|' + (seat.action_on || false);
+    '|' + (seat.action_on || false) + '|' + (seat.status || '');
 }
 
 // -- Action validation helpers --
@@ -858,6 +871,7 @@ function buildSeatBoxHtml(seat) {
   var cls = 'seat-box';
   if (isHero) cls += ' hero';
   if (isActive) cls += ' expanded';
+  if (seat.status === 'sitting_out') cls += ' sitting-out';
   if (khState[sn]) cls += ' kh-marked';
   else if (isHero && preActionState[sn] === 'check_fold') cls += ' kh-auto';
 
@@ -876,6 +890,11 @@ function buildSeatBoxHtml(seat) {
   html += '<div class="seat-name">' + esc(seat.name || 'Unknown') + '</div>';
   html += '<div class="seat-stack"><span class="amount">R ' +
     (seat.stack_zar != null ? seat.stack_zar.toFixed(2) : '0.00') + '</span></div>';
+
+  // Sitting-out label — render AFTER name+stack so it appears as a state badge
+  if (seat.status === 'sitting_out') {
+    html += '<div class="seat-sitting-label">SITTING OUT</div>';
+  }
 
   if (Array.isArray(seat.hole_cards) && seat.hole_cards.length > 0) {
     html += '<div class="seat-cards-area"><div class="hole-cards-row">';
@@ -998,7 +1017,9 @@ function renderSeats() {
   heroIsActive = false;  // recalculate each render
   if (lastTable && Array.isArray(lastTable.seats)) {
     lastTable.seats.forEach(function(seat) {
-      if (seat.name != null && seat.status !== "sitting_out") {
+      // Include sitting-out players — they hold their seat position.
+      // Sitting out is a player state, not a seat removal event.
+      if (seat.name != null) {
         var rawPos = seat.seat_no != null ? seat.seat_no : seat.seat_index;
         var pos = rawPos >= 1 ? rawPos - 1 : rawPos;  // map 1-9 → 0-8
         if (pos != null && pos >= 0 && pos < 9) posSeatMap[pos] = seat;
