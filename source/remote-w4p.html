@@ -345,6 +345,17 @@
   .sa-btn:not(:disabled):hover { filter: brightness(1.2); }
   .sa-btn:not(:disabled):active { transform: scale(0.95); }
 
+  /* Optimistic click feedback — flash on send */
+  @keyframes btn-flash {
+    0%   { filter: brightness(2.0); }
+    100% { filter: brightness(1.0); }
+  }
+  .sa-btn.sending {
+    animation: btn-flash 0.15s ease-out;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
   .sa-btn.fold    { background: #b82030; }
   .sa-btn.check   { background: #2d6a4f; }
   .sa-btn.call    { background: #1e5eb8; }
@@ -460,6 +471,11 @@
   }
   .emg-btn:disabled { opacity: 0.2; cursor: default; }
   .emg-btn:not(:disabled):hover { filter: brightness(1.15); }
+  .emg-btn.sending {
+    animation: btn-flash 0.15s ease-out;
+    opacity: 0.5;
+    pointer-events: none;
+  }
   .emg-btn.fold  { background: #b82030; }
   .emg-btn.check { background: #2d6a4f; }
   .emg-btn.call  { background: #1e5eb8; }
@@ -659,11 +675,13 @@ function logCmd(seatNo, cmd, amount, ok, detail) {
   while (log.children.length > 60) log.removeChild(log.firstChild);
 }
 
-// -- Adaptive poll scheduler (250ms active / 750ms idle) --
+// -- Long-poll scheduler (server push, 25s timeout) --
 
 function schedulePoll() {
   if (pollTimer) clearTimeout(pollTimer);
-  pollTimer = setTimeout(fetchTable, heroIsActive ? POLL_ACTIVE_MS : POLL_IDLE_MS);
+  // Long-poll: fetchTable holds connection open until data changes or 25s timeout.
+  // No client-side timer needed — server controls the wakeup cadence.
+  fetchTable();
 }
 
 // -- rAF render batching (dedup multiple renders per frame) --
@@ -684,7 +702,13 @@ function fetchTable() {
   fetchInFlight = true;
   var dot = document.getElementById('conn-dot');
   var label = document.getElementById('conn-label');
-  fetch(API + '/table/latest')
+  // Long-poll: hold connection open until new data or 25s timeout.
+  // Extracts last_ts from previous response so backend can wake immediately on new snapshot.
+  var lastTs = 0;
+  if (_lastTableJSON) {
+    try { var prev = JSON.parse(_lastTableJSON); lastTs = prev.last_updated || 0; } catch(e) {}
+  }
+  fetch(API + '/table/latest?timeout=25&last_ts=' + lastTs)
     .then(function(r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
@@ -1180,6 +1204,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saBtn && !saBtn.disabled) {
       var sn = Number(saBtn.dataset.saSeat);
       var cmd = saBtn.dataset.saCmd;
+      // Optimistic feedback — button reacts INSTANTLY, poll cycle replaces with real state
+      saBtn.classList.add('sending');
+      saBtn.disabled = true;
       if (saBtn.dataset.saUseAmount) {
         var amEl = document.querySelector('[data-sa-amount="' + sn + '"]');
         var amt = amEl ? Number(amEl.value) : null;
@@ -1212,6 +1239,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (emgBtn && !emgBtn.disabled) {
       var esn = Number(emgBtn.dataset.emgSeat);
       var ecmd = emgBtn.dataset.emgCmd;
+      emgBtn.classList.add('sending');
+      emgBtn.disabled = true;
       if (emgBtn.dataset.emgUseAmount) {
         var eam = document.getElementById('emg-amount');
         sendCmd(esn, ecmd, eam ? Number(eam.value) : null);
