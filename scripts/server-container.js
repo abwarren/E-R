@@ -5,8 +5,9 @@
  * on port 1080 (same container). The Flask backend's equity_routes.py
  * handles forwarding equity jobs to the engine container at ENGINE_URL.
  *
- * Unlike the bare-metal server.js, this does NOT serve engine UI or
- * directly proxy equity routes — those are handled by the engine container.
+ * Unlike the bare-metal server.js, this does NOT directly proxy
+ * equity routes — those are handled by the engine container.
+ * Engine UI is served via /ENGINEENGINE volume mount.
  */
 
 const express = require('express');
@@ -62,6 +63,31 @@ app.get('/hand-export', (_req, res) => {
     }
   });
 });
+
+// ── Engine UI: /engine -> ENGINEENGINE volume mount ───────────────────────
+const ENGINE_STATIC_CONTAINER = '/ENGINEENGINE/source/static';
+
+app.get('/engine', (_req, res) => {
+  res.sendFile(path.join(ENGINE_STATIC_CONTAINER, 'engine-index.html'), {
+    headers: { 'Cache-Control': 'no-cache' },
+  }, err => {
+    if (err) {
+      console.error('[serveEngine] Error:', err.message);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+});
+app.get('/engine/', (_req, res) => {
+  res.sendFile(path.join(ENGINE_STATIC_CONTAINER, 'engine-index.html'), {
+    headers: { 'Cache-Control': 'no-cache' },
+  }, err => {
+    if (err) {
+      console.error('[serveEngine] Error:', err.message);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+});
+app.use('/engine/', express.static(ENGINE_STATIC_CONTAINER, { maxAge: 0 }));
 
 // ── Frontend API config (served directly — NOT proxied) ────────────────────
 // Must be defined BEFORE the /api proxy because http-proxy-middleware strips

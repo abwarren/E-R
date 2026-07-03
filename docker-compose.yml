@@ -49,6 +49,7 @@ services:
     volumes:
       - remote-state:/app/state
       - remote-logs:/app/logs
+      - ../ENGINEENGINE:/ENGINEENGINE:ro  # Engine static files for /engine route
     depends_on:
       engine:
         condition: service_healthy
