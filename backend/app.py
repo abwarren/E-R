@@ -1510,7 +1510,7 @@ def get_table(table_id):
         if table_id == 'latest':
             if not _tables:
                 return jsonify({'ok': False, 'error': 'No active tables'}), 404
-            table = max(_tables.values(), key=lambda t: t['last_ts'])
+            table = _dedup_latest_by_table()
         else:
             # _tables keyed by (table_id, bot_id) — find all matching entries
             candidates = [t for (tid, _bid), t in _tables.items() if tid == table_id]
@@ -1531,6 +1531,16 @@ def _find_table_for_bot(bot_id):
         if bid == bot_id:
             return t
     return None
+
+
+def _dedup_latest_by_table():
+    """Return the most recent table per unique table_id.
+    Prevents oscillation when multiple bots share a table_id."""
+    best = {}
+    for (tid, _bid), t in _tables.items():
+        if tid not in best or t['last_ts'] > best[tid]['last_ts']:
+            best[tid] = t
+    return max(best.values(), key=lambda t: t['last_ts']) if best else None
 
 
 @app.route('/api/latest', methods=['GET'])
@@ -1565,8 +1575,8 @@ def _handle_table_latest():
         while (time.time() - start_time) < timeout:
             with _store_lock:
                 table = _find_table_for_bot(bot_id) if bot_id else None
-                if not table and _tables:
-                    table = max(_tables.values(), key=lambda t: t['last_ts'])
+                if not table:
+                    table = _dedup_latest_by_table()
                 if table:
                     # New data available!
                     if table['last_ts'] > last_ts_seen:
@@ -1620,7 +1630,7 @@ def _handle_table_latest():
 
         table = _find_table_for_bot(bot_id) if bot_id else None
         if not table:
-            table = max(_tables.values(), key=lambda t: t['last_ts'])
+            table = _dedup_latest_by_table()
 
         # ── Staleness guard: if no snapshot for _TABLE_INACTIVE_TTL seconds,
         #     return the empty waiting placeholder.  Prevents stale board/pot
