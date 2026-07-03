@@ -833,6 +833,7 @@ def _sync_hero_cards_to_collector(table_id, table):
 def _table_view(table):
     view = {
         "table_id":      table["table_id"],
+        "hand_id":       table.get("hand_id"),  # ADR-001
         "variant":       table["variant"],
         "street":        table["street"],
         "pot_zar":       table["pot_zar"],
@@ -1129,6 +1130,19 @@ def post_snapshot():
             table["hand_key"] = hand_key if hand_changed else table.get("hand_key")
 
         if hand_changed:
+            # ── Multi-bot guard: only the SAME bot's street regression is a
+            #     real hand change. A different bot behind the current street
+            #     is interleaved state from another game context.
+            incoming_street_guard = payload.get("street") or "PREFLOP"
+            if (incoming_street_guard != table.get("street")
+                    and bot_id != table.get("last_street_bot")):
+                app.logger.info('[HAND_ID] Skipping reset: diff bot behind '
+                                '(bot=%s in=%s cur=%s last_bot=%s)',
+                                bot_id, incoming_street_guard,
+                                table.get("street"), table.get("last_street_bot"))
+                hand_changed = False
+
+        if hand_changed:
             if table.get("hand_id"):
                 _archive_hand(table)
             table["hand_id"] = incoming_hand_id or str(uuid.uuid4())
@@ -1160,11 +1174,17 @@ def post_snapshot():
             table["hand_id"] = incoming_hand_id or str(uuid.uuid4())
             app.logger.info('[HAND_ID] Initial hand %s table=%s', table["hand_id"][:8], table_id)
 
-        table["street"]      = payload.get("street")
-        table["pot_zar"]     = payload.get("pot_zar")
-        table["board"]       = payload.get("board", {"flop": [], "turn": None, "river": None})
+        # ── Merge hardening: only overwrite structural fields when the
+        #     incoming bot is active (has available_actions). An inactive
+        #     bot's street/board/pot/dealer may be from a different game
+        #     context and would regress the active bot's view.
+        hero_active = bool(payload.get('available_actions'))
+        if hero_active:
+            table["street"]      = payload.get("street")
+            table["board"]       = payload.get("board", {"flop": [], "turn": None, "river": None})
+            table["pot_zar"]     = payload.get("pot_zar")
+            table["dealer_seat"] = payload.get("dealer_seat")
         table["variant"]     = payload.get("variant", "plo")
-        table["dealer_seat"] = payload.get("dealer_seat")
 
         new_seats    = {}
         hero_seat_no = None
