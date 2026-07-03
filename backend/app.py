@@ -1606,19 +1606,31 @@ def _find_table_for_bot(bot_id):
 FRESHNESS_WINDOW = 30        # seconds — must be recent to be a "live" candidate
 # STREET_RANK now defined at module level (line ~204) as part of Phase A authority model
 
+# Authority reason priority for selection tiebreaking.
+# When entries have equal freshness + street rank, prefer the bot with higher
+# authority signal: poker_actions (actively playing) > street_advanced (observer
+# in live hand) > cards_and_pot/board_present > never authoritative.
+_AUTH_REASON_RANK = {
+    "poker_actions": 3,
+    "street_advanced": 2,
+    "cards_and_pot": 1,
+    "board_present": 1,
+}
+
 
 def _entry_score(t, now):
     """Score an entry for comparison. Higher = better.
 
-    Priority: freshness > street rank > last_ts > deterministic tiebreak.
+    Priority: freshness > street rank > authority reason > last_ts > tiebreak.
 
-    Returns a 4-tuple where each component is compared in order.
+    Returns a 5-tuple where each component is compared in order.
     """
     is_recent = 1 if (now - t.get("last_ts", 0)) < FRESHNESS_WINDOW else 0
     street_rank = STREET_RANK.get(t.get("street", "PREFLOP"), 0)
+    reason_rank = _AUTH_REASON_RANK.get(t.get("_last_auth_reason"), 0)
     last_ts = t.get("last_ts", 0)
     tiebreak = hash(t.get("bot_id", "")) % 1000000
-    return (is_recent, street_rank, last_ts, tiebreak)
+    return (is_recent, street_rank, reason_rank, last_ts, tiebreak)
 
 
 def _select_best_table(table_id=None):
