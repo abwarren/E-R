@@ -1,8 +1,7 @@
 # PROJECT BASELINE — W4P PLO Poker Platform
 
 **Last Updated:** 2026-07-03
-**Current Status:** RELEASED (w4p-api-selection-v1, live validation pending)
-**Previous Status:** w4p-seat-stability-v1 (CONDITIONAL RELEASE)
+**Current Status:** CONDITIONAL RELEASE (w4p-api-selection-v1, live validation pending)
 
 ## Repository
 

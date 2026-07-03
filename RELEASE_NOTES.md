@@ -99,15 +99,40 @@ git revert ed293b9
 
 ## Live Validation
 
-Pending — requires 20-30 minute observation with 2+ bots connected:
+**Status:** PENDING — CONDITIONAL RELEASE
+
+Requires 20-30 minute observation with 2+ bots connected to a live table.
+
+### Session Metrics to Record
+
+| Metric | Target |
+|--------|--------|
+| Number of bots connected | ≥ 2 |
+| Duration | ≥ 20 minutes |
+| Number of hands observed | Record |
+| Number of selector changes | Record |
+| Number of street transitions | Record |
+
+### Acceptance Criteria
 
 - [ ] No Remote UI flicker
-- [ ] No Engine textarea overwriting
-- [ ] No street oscillation
-- [ ] No board oscillation
-- [ ] No dealer oscillation
-- [ ] No seat collisions
-- [ ] No hand collisions
+- [ ] No Engine textarea overwriting (hand context)
+- [ ] No street oscillation (PREFLOP↔FLOP↔TURN↔RIVER)
+- [ ] No board oscillation (cards appear/disappear)
+- [ ] No dealer oscillation (D chip jumping)
+- [ ] No seat identity drift (players moving seats)
+- [ ] No API alternation between bot perspectives
+- [ ] `?bot_id=` override still returns correct bot's view
+
+### Audit Trail
+
+```
+ed293b9 — implementation (2026-07-03)
+21939bc — documentation (2026-07-03)
+______ — live validation (pending)
+```
+
+After successful live validation, update status to **VERIFIED**.
 
 ---
 
