@@ -1231,13 +1231,14 @@ def post_snapshot():
                 "status":                 s.get("status", "empty"),
                 "is_dealer":              s.get("is_dealer", False),
                 "is_hero":                s.get("is_hero", False),
+                "is_active":              s.get("is_active", False),
                 "available_actions":      s.get("available_actions", []), # per-seat actions
                 "last_seen":              ts,
             }
             if s.get("is_hero"):
                 hero_seat_no = seat_no
 
-            app.logger.info(f'[W4P][SNAPSHOT] table={table_id} name={s.get("name")} seat_no={seat_no} seat_index={incoming_seat_index} is_hero={s.get("is_hero")} bot_id={bot_id} action_on={s.get("action_on")}')
+            app.logger.info(f'[W4P][SNAPSHOT] table={table_id} name={s.get("name")} seat_no={seat_no} seat_index={incoming_seat_index} is_hero={s.get("is_hero")} is_active={s.get("is_active")} avail={s.get("available_actions")} street={payload.get("street")} hand={payload.get("hand_epoch","")} bot_id={bot_id}')
 
         # Merge seats: protect other bots' identity (is_hero, name) but allow
         # observed hole_cards through — any bot can legitimately see all players'
