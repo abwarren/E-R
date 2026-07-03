@@ -687,12 +687,12 @@
     }
 
     // ── Diagnostics (compact, every 10 ticks) ──
-    if (_n % 10 === 1 && avail.length > 0) {
+    if (_n % 50 === 1 && avail.length > 0) {
       var srcs = [];
       for (var ak in _detectedBtns) {
         srcs.push(ak + '=' + _detectedBtns[ak].source);
       }
-      console.log('[W4P][DETECT] actions=' + avail.length + ' [' + avail.join(',') + '] sources=' + JSON.stringify(meta) + ' detail=' + srcs.join('|'));
+      console.log('[W4P] actions=' + avail.length + ' [' + avail.join(',') + ']');
     }
 
     // Update global meta
@@ -812,20 +812,11 @@
       });
     }
 
-    // Log every tick (compact)
-    var _foundNames = _validation.filter(function(v){return v.found;}).map(function(v){return v.name+(v.visible?'[V]':'[H]')+(v.disabled?'[D]':'');});
-    console.log('[W4P][VALID] hero=' + (heroSeat?'Y':'N') + ' active=' + _heroActive +
-      ' | selectors: ' + (_foundNames.length > 0 ? _foundNames.join(',') : 'NONE') +
-      ' | .control-b-view-p=' + _allCtrl.length);
-
-    // Full dump every 10 ticks (or when any selector found)
-    if (_n % 10 === 1 || _foundNames.length > 0) {
-      console.log('[W4P][VALID-FULL]', JSON.stringify({
-        tick: _n, heroSeat: !!heroSeat, heroActive: _heroActive,
-        heroClasses: heroSeat ? heroSeat.className.substring(0, 100) : null,
-        selectors: _validation,
-        rawControls: _ctrlDump
-      }));
+    // Summary every 50 ticks only (reduces console noise)
+    if (_n % 50 === 1) {
+      var _foundNames = _validation.filter(function(v){return v.found;}).map(function(v){return v.name+(v.visible?'[V]':'[H]')+(v.disabled?'[D]':'');});
+      console.log('[W4P] tick=' + _n + ' hero=' + (heroSeat?'Y':'N') + ' active=' + _heroActive +
+        ' | ' + (_foundNames.length > 0 ? _foundNames.join(',') : 'NONE'));
     }
 
     // Store on window for console inspection: _w4p_lastValidation
@@ -908,9 +899,9 @@
       };
     }
 
-    // ── DIAGNOSTIC: log when we actually detect buttons ──
-    if (result.actions.length > 0) {
-      console.log('[W4P][DIAG] DETECTED BUTTONS:', JSON.stringify(result.actions.map(function(a) { return a.action + '(' + (a.amount || '-') + ')'; })));
+    // ── DIAGNOSTIC: log every 50 ticks only ──
+    if (result.actions.length > 0 && _n % 50 === 1) {
+      console.log('[W4P] buttons: ' + result.actions.map(function(a) { return a.action; }).join(','));
     }
 
     // Pipe diagnostics through API (can't see Chrome console remotely)
@@ -1224,10 +1215,6 @@
 
     var buttons = detectButtons();
     var avail = buttons.actions.map(function(a) { return a.action; });
-
-    // ── STEP 2 DIAG: Log detected buttons EVERY tick ──
-    console.log('[W4P][DIAG] DETECTED BUTTONS:', JSON.stringify(buttons.actions.map(function(a){return a.action;})));
-    console.log('[W4P][DIAG] available_actions:', JSON.stringify(avail));
 
     // ── Detect active seat (whose turn to act) from PokerBet DOM ──
     // self-player with visible action buttons = hero's turn (primary signal)

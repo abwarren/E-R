@@ -26,13 +26,15 @@ w4p-selector-registry-v1
   ↓
 w4p-seat-stability-v1 (94a6cfc)
   ↓
-w4p-api-selection-v1 (ed293b9)  ← current
-  ↓ (pending)
-w4p-engine-proxy-v1
-  ↓ (pending)
-w4p-mobile-selector-v1
+w4p-api-selection-v1 (ed293b9)
+  ↓
+w4p-architecture-baseline-v1  ← current (investigation freeze, zero code changes)
   ↓ (planned)
-ADR-001 Phase 2 — hand_id partitioning
+Phase A: Fix authority (is_authoritative_snapshot)
+  ↓ (planned)
+Phase B: Complete hand_id propagation
+  ↓ (planned)
+Phase C: Partition state by (table_id, hand_id)
 ```
 
 ## Runtime Locations
@@ -48,6 +50,16 @@ ADR-001 Phase 2 — hand_id partitioning
 | Extension source | `source/w4p.js` (reference copy) | — |
 | Extension loaded | `backend/static/ext/w4p.js` (browser loads this) | — |
 | Engine poller | `source/engine_flow_controls.js` | — |
+
+## Open Investigations
+
+| ID | Subject | Status |
+|----|---------|--------|
+| Seat-Hand-Collision | Multi-bot state oscillation (15 reports, root causes identified) | **COMPLETE** — see `investigation/seat-hand-collision-2026-07-03/` |
+| ADR-001 Phase 1 | hand_id echo from extension | Design complete; extension-side implementation pending |
+| ADR-001 Phase 2 | Partition runtime state by (table_id, hand_id) | Design complete; implementation pending |
+| TODO-001 | Transient name disappearance — preserve identity when `name=null` | Not started |
+| TODO-003 | Event Store SQL schema | Design phase |
 
 ## Protection Levels
 
@@ -67,6 +79,8 @@ any code change approval.*
 | `ARCHITECTURE_BASELINE.md` | Architectural reference |
 | `PROJECT_BASELINE.md` | This file |
 | `RELEASE_MANIFEST.md` | Release process template |
+| `RUNTIME_OWNERSHIP.md` | Canonical field ownership — who creates/modifies/consumes every runtime field |
+| `investigation/seat-hand-collision-2026-07-03/AUTHORITY_MODEL.md` | Authority model — `is_authoritative_snapshot()` specification |
 
 ### 🟠 Level 2 — Production Runtime
 
@@ -122,6 +136,101 @@ These may NOT be modified without explicit user request:
 | `RELEASE_MANIFEST.md` | Release process template |
 
 Feature work must not change process documentation.
+
+### Engineering Rule: Single Field Ownership
+
+*No runtime field may have more than one authoritative owner.*
+
+Every field MUST answer:
+- Who creates it?
+- Who may modify it?
+- Who consumes it?
+- Under what conditions may it change?
+
+If the answer is not in `RUNTIME_OWNERSHIP.md`, the change is not ready for implementation.
+
+`is_authoritative_snapshot()` is the ONLY function that determines structural field authority.
+No code anywhere else may contain `if available_actions:` or `if hero_active:` to decide
+structural ownership. Everything calls `is_authoritative_snapshot()` or consumes the
+result already computed by the backend.
+
+### Engineering Rule: Ralph Loop (Implementation & QA Cycle)
+
+The Ralph Loop is the mandatory, evidence-driven implementation and verification cycle for all runtime changes.
+
+**Workflow:**
+
+```
+Stage 1: Architecture Approved
+  ↓
+Stage 2: Implementation
+  ↓
+Stage 3: Independent QA
+  ↓
+QA Verdict ── PASS ──→ Release Candidate
+  │                        ↓
+  │                    Deployment
+  │                        ↓
+  │                    Live Validation
+  │                        ↓
+  │                    Rollback Verified
+  │                        ↓
+  │                    Release Freeze
+  │
+  └── FAIL ──→ Evidence Package
+                   • Runtime logs
+                   • Screenshots
+                   • Diff
+                   • Exact file/function/line
+                   • Root cause
+                   • Proposed correction
+                     ↓
+               Implementation Engineer
+                     ↓
+               Fix ONLY approved issues
+                     ↓
+               Full QA Re-run (all tests, not only affected tests)
+                     ↓
+               QA Verdict (loop restarts)
+```
+
+**Permanent Rules:**
+
+1. QA decisions are evidence-based, never opinion-based.
+2. Every FAIL includes: reproduction steps, runtime evidence, expected vs actual behavior, exact source location, severity.
+3. Every FAIL triggers a full regression suite, not just the affected tests.
+4. The implementation engineer cannot override QA.
+5. QA cannot implement production fixes.
+6. No partial PASS. No conditional PASS. No "ship now, fix later."
+7. Every release must satisfy all runtime invariants (I1–I4).
+8. Every release must have a documented rollback.
+9. Rollback must be verified before release freeze.
+10. Live runtime validation is required before release closure.
+
+**Exit Condition:**
+
+The Ralph Loop terminates only when all three are true:
+
+- QA Verdict = PASS
+- Live Validation = PASS
+- Rollback Verified = PASS
+
+Otherwise the loop repeats.
+
+Future directives may simply say: "Follow the Ralph Loop."
+
+### Implementation Roadmap
+
+```
+Phase A: Fix authority (is_authoritative_snapshot)  ← NEXT
+  ↓  Live validation
+Phase B: Complete hand_id propagation (ADR-001 Phase 1)
+  ↓  Live validation
+Phase C: Partition state by (table_id, hand_id) (ADR-001 Phase 2)
+```
+
+Each phase is its own tagged release with rollback capability.
+Phases are sequential — never parallel.
 
 ## Current Known Limitations
 
