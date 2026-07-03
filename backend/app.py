@@ -909,6 +909,10 @@ def _table_view(table):
         "state_version": table["state_version"],
         "last_updated":  table["last_ts"],
         "seats":         _build_seats_list(table),
+        "authority":     {
+            "source_bot": table.get("last_street_bot"),
+            "reason":     table.get("_last_auth_reason"),
+        },
         "collector_batch": _get_latest_collector_batch(),
     }
     _hands, board_cards = _collector_cards_from_batch(view.get("collector_batch"))
@@ -1257,6 +1261,7 @@ def post_snapshot():
             table["pot_zar"]         = payload.get("pot_zar")
             table["dealer_seat"]     = payload.get("dealer_seat")
             table["last_street_bot"] = bot_id   # enables multi-bot guard (line ~1208)
+            table["_last_auth_reason"] = reason
             app.logger.info('[AUTH] %s authoritative — reason=%s street=%s',
                             bot_id or 'unknown', reason,
                             payload.get('street', '?'))
