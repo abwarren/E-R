@@ -443,10 +443,17 @@ def generate_seat_token(table_id, seat_no):
     return hmac.new(N4P_SEAT_SECRET.encode('utf-8'), msg, hashlib.sha256).hexdigest()
 
 
-def get_or_create_table(table_id):
-    if table_id not in _tables:
-        _tables[table_id] = {
+def _table_key(table_id, bot_id=None):
+    """Stable key for _tables dict — isolates per-bot state."""
+    return (table_id, bot_id or '__observer__')
+
+
+def get_or_create_table(table_id, bot_id=None):
+    key = _table_key(table_id, bot_id)
+    if key not in _tables:
+        _tables[key] = {
             "table_id":      table_id,
+            "bot_id":        bot_id or '__observer__',
             "hand_key":      None,
             "hand_id":       None,  # ADR-001: UUID identifying the current hand
             "state_version": 0,
@@ -461,7 +468,7 @@ def get_or_create_table(table_id):
             "board":         {"flop": [], "turn": None, "river": None},
             "dealer_seat":   None,
         }
-    return _tables[table_id]
+    return _tables[key]
 
 
 def update_bot_seat_mapping(bot_id, table_id, seat_no):
@@ -779,13 +786,17 @@ def _sync_collector_batch_to_table(table_id):
         latest = max(candidates, key=lambda f: f.stat().st_mtime)
         batch_content = latest.read_text(encoding='utf-8').strip()
 
-        if table_id in _tables:
-            current_batch = _tables[table_id].get("raw_batch")
-            if current_batch != batch_content:
-                _tables[table_id]["raw_batch"] = batch_content
-                app.logger.debug(f'[V2] Updated raw_batch for table={table_id}')
-                return True
-        return False
+        # _tables keyed by (table_id, bot_id) — update all matching entries
+        updated = False
+        for (tid, _bid), t in _tables.items():
+            if tid == table_id:
+                current_batch = t.get("raw_batch")
+                if current_batch != batch_content:
+                    t["raw_batch"] = batch_content
+                    updated = True
+        if updated:
+            app.logger.debug(f'[V2] Updated raw_batch for table={table_id}')
+        return updated
     except Exception as e:
         app.logger.warning(f'[V2] Could not sync collector batch: {e}')
         return False
@@ -861,14 +872,14 @@ def _table_view(table):
 def _serialise_state():
     """Return a JSON-safe snapshot of _tables (seats only — no lock held here)."""
     result = {
-        tid: {
+        f"{tid}|{bid}": {
             **{k: v for k, v in t.items() if k != "seats"},
             "seats": {
                 str(sno): seat
                 for sno, seat in t["seats"].items()
             }
         }
-        for tid, t in _tables.items()
+        for (tid, bid), t in _tables.items()
     }
     # Persist bot->seat ownership so cross-bot merge works after restart
     result["__bot_state__"] = {
@@ -898,7 +909,12 @@ def _load_state():
             app.logger.info(f"[PERSIST] Restored {len(_seat_bots)} bot->seat mapping(s)")
         for tid, t in raw.items():
             t["seats"] = {int(k): v for k, v in t.get("seats", {}).items()}
-            _tables[tid] = t
+            parts = tid.split("|", 1)
+            if len(parts) == 2:
+                _tables[(parts[0], parts[1])] = t
+            else:
+                # Backward compat: old format (plain table_id, no bot_id)
+                _tables[(tid, "__observer__")] = t
         app.logger.info(f"[PERSIST] Loaded {len(_tables)} table(s) from {STATE_FILE}")
     except Exception as e:
         app.logger.warning(f"[PERSIST] Could not load state: {e}")
@@ -965,12 +981,12 @@ def _cleanup_loop():
 
                 # Remove empty tables (no seats, last update > 60s ago)
                 stale_tables = [
-                    tid for tid, t in _tables.items()
+                    tkey for tkey, t in _tables.items()
                     if not t["seats"] and (now - t["last_ts"]) > 60
                 ]
-                for tid in stale_tables:
-                    del _tables[tid]
-                    app.logger.info(f"[CLEANUP] Removed empty table {tid}")
+                for tkey in stale_tables:
+                    del _tables[tkey]
+                    app.logger.info(f"[CLEANUP] Removed empty table {tkey}")
 
         except Exception as e:
             app.logger.warning(f"[CLEANUP] Error: {e}")
@@ -1002,7 +1018,7 @@ def sse_stream():
     def generate():
         try:
             with _store_lock:
-                for tid, table in _tables.items():
+                for (_tid, _bid), table in _tables.items():
                     initial = _table_view(table)
                     yield f"data: {json.dumps(initial, default=str)}\n\n"
             while True:
@@ -1098,7 +1114,7 @@ def post_snapshot():
     response_hand_id = None  # ADR-001: captured inside lock, used in response
 
     with _store_lock:
-        table = get_or_create_table(table_id)
+        table = get_or_create_table(table_id, bot_id)
 
         if ts < table["last_ts"]:
             return jsonify({'ok': True, 'ignored': 'stale'}), 200
@@ -1352,8 +1368,9 @@ def post_snapshot():
     # Push to SSE clients immediately
     try:
         with _store_lock:
-            if table_id in _tables:
-                sse_notify(_table_view(_tables[table_id]))
+            tkey = _table_key(table_id, bot_id)
+            if tkey in _tables:
+                sse_notify(_table_view(_tables[tkey]))
     except Exception:
         pass
 
@@ -1441,7 +1458,12 @@ def queue_command():
     token = generate_seat_token(table_id, seat_no)
 
     with _store_lock:
-        table = _tables.get(table_id)
+        # _tables keyed by (table_id, bot_id) — find any matching entry
+        table = None
+        for (tid, _bid), t in _tables.items():
+            if tid == table_id:
+                table = t
+                break
         if not table:
             return jsonify({'ok': False, 'error': 'Table not found'}), 404
         if int(seat_no) not in table["seats"]:
@@ -1490,14 +1512,26 @@ def get_table(table_id):
                 return jsonify({'ok': False, 'error': 'No active tables'}), 404
             table = max(_tables.values(), key=lambda t: t['last_ts'])
         else:
-            table = _tables.get(table_id)
-            if not table:
+            # _tables keyed by (table_id, bot_id) — find all matching entries
+            candidates = [t for (tid, _bid), t in _tables.items() if tid == table_id]
+            if not candidates:
                 return jsonify({'ok': False, 'error': 'Table not found'}), 404
+            table = max(candidates, key=lambda t: t['last_ts'])
         view = _table_view(table)
     return jsonify({'ok': True, 'table': view})
 
 # ── Endpoint: GET /api/latest ─────────────────────────────────────────────────
 # Alias for /api/table/latest — both routes share the same implementation.
+
+def _find_table_for_bot(bot_id):
+    """Find the table owned by a specific bot, or None."""
+    if not bot_id:
+        return None
+    for (tid, bid), t in _tables.items():
+        if bid == bot_id:
+            return t
+    return None
+
 
 @app.route('/api/latest', methods=['GET'])
 def api_latest():
@@ -1516,6 +1550,8 @@ def table_latest():
 def _handle_table_latest():
     global _last_good_view
 
+    bot_id = request.args.get('bot_id')
+
     # Long polling support - wait for changes
     timeout = int(request.args.get('timeout', 0))  # 0 = no wait (backward compatible)
     max_timeout = 25  # Max 25 seconds
@@ -1528,8 +1564,10 @@ def _handle_table_latest():
         # Wait for new data or timeout
         while (time.time() - start_time) < timeout:
             with _store_lock:
-                if _tables:
+                table = _find_table_for_bot(bot_id) if bot_id else None
+                if not table and _tables:
                     table = max(_tables.values(), key=lambda t: t['last_ts'])
+                if table:
                     # New data available!
                     if table['last_ts'] > last_ts_seen:
                         view = _table_view(table)
@@ -1546,6 +1584,7 @@ def _handle_table_latest():
 
     with _store_lock:
         if not _tables:
+            # No tables at all — use last-known-good if recent enough
             # No tables at all — use last-known-good if recent enough
             if _last_good_view and (now - _last_good_view['ts']) < _STALE_MAX_AGE:
                 age_ms = int((now - _last_good_view['ts']) * 1000)
@@ -1579,7 +1618,9 @@ def _handle_table_latest():
                 'long_poll': False
             })
 
-        table = max(_tables.values(), key=lambda t: t['last_ts'])
+        table = _find_table_for_bot(bot_id) if bot_id else None
+        if not table:
+            table = max(_tables.values(), key=lambda t: t['last_ts'])
 
         # ── Staleness guard: if no snapshot for _TABLE_INACTIVE_TTL seconds,
         #     return the empty waiting placeholder.  Prevents stale board/pot
@@ -2128,7 +2169,7 @@ def remote_status():
         
         # Build table details with seat info
         table_details = []
-        for table_id, table in _tables.items():
+        for (table_id, bot_id), table in _tables.items():
             seats_info = []
             for seat_no, seat in table.get('seats', {}).items():
                 seat_token = seat.get('token', '')
@@ -2216,7 +2257,7 @@ def collector_status():
         tables_data = []
         now = time.time()
         
-        for table_id, table in _tables.items():
+        for (table_id, bot_id), table in _tables.items():
             last_update = table.get('last_ts', 0)
             age_seconds = now - last_update if last_update else 0
             
@@ -2226,6 +2267,7 @@ def collector_status():
             
             tables_data.append({
                 'table_id': table_id,
+                'bot_id': bot_id,
                 'last_update': last_update,
                 'age_seconds': round(age_seconds, 1),
                 'street': table.get('street', 'UNKNOWN'),

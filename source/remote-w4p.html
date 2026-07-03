@@ -998,8 +998,30 @@ function buildSeatBoxHtml(seat) {
 
 // -- Render seats --
 
+var __DIAG = { seq: 0, lastSeatState: {}, renderCount: 0, history: [] };
+
+function diagState(snapshotSeq, reason, seatNo, prev, next) {
+  var changed = [];
+  if (prev && next) {
+    var keys = ['name','status','is_active','stack_zar','bet','is_self_player','is_dealer'];
+    for (var k = 0; k < keys.length; k++) {
+      if (prev[keys[k]] !== next[keys[k]]) changed.push(keys[k] + ':' + prev[keys[k]] + '>' + next[keys[k]]);
+    }
+    var prevActs = (prev.available_actions||[]).join(','), nextActs = (next.available_actions||[]).join(',');
+    if (prevActs !== nextActs) changed.push('actions:' + prevActs + '>' + nextActs);
+  }
+  var entry = { ts: Date.now(), seq: snapshotSeq, seat: seatNo, reason: reason, changed: changed.join(';') || '(none)', hash: next ? (next._hash || '?') : '?' };
+  __DIAG.history.push(entry);
+  if (__DIAG.history.length > 500) __DIAG.history.shift();
+  __DIAG.seq = snapshotSeq;
+  if (changed.length > 0 || reason === 'RENDER') {
+    console.log('[REMOTE][DIAG] seq=' + snapshotSeq + ' seat=' + seatNo + ' reason=' + reason + ' changed=[' + (changed.join(', ') || 'none') + ']');
+  }
+}
+
 function renderSeats() {
   var container = document.getElementById('seats-container');
+  __DIAG.renderCount++;
 
   if (!slotsCreated) {
     if (!container) return;  // DOM not ready yet
@@ -1060,16 +1082,26 @@ function renderSeats() {
     }
     // ---- Diff-based render ----
     var hash = seat ? seatHash(seat) : 'empty';
-    if (renderedSeats[pos] === hash) continue;
+    var sn = seat ? getSeatNo(seat) : pos;
+    var prevState = __DIAG.lastSeatState[sn] || null;
+    var nextState = seat ? { name: seat.name, status: seat.status, is_active: seat.is_active, stack_zar: seat.stack_zar, bet: seat.bet, is_self_player: seat.is_self_player, is_dealer: seat.is_dealer, available_actions: seat.available_actions, _hash: hash } : null;
+    if (renderedSeats[pos] === hash) {
+      diagState(__DIAG.seq, 'SKIP', sn, prevState, nextState);
+      continue;
+    }
 
     var slot = seatSlots[pos];  // use cached ref
     if (!slot) continue;  // guard: skip if DOM not ready
     if (seat) {
+      diagState(__DIAG.seq, 'RENDER', sn, prevState, nextState);
+      __DIAG.lastSeatState[sn] = nextState;
       slot.style.display = '';
       slot.innerHTML = buildSeatBoxHtml(seat);
       // Apply action-on CSS class without changing seat ownership
       slot.querySelector('.seat-box').classList.toggle('action-on', !!seat.action_on);
     } else {
+      diagState(__DIAG.seq, 'HIDE', sn, prevState, nextState);
+      __DIAG.lastSeatState[sn] = null;
       slot.style.display = 'none';
       slot.innerHTML = '';
     }
@@ -1569,6 +1601,17 @@ function render() {
   renderEmergencyPanel();
   applyGlobalCFToNewSeats();
   fireAutoCcPreflop();
+  // Diagnostic flush — post render summary every 10 cycles
+  if (__DIAG.renderCount % 10 === 0 && __DIAG.history.length > 0) {
+    var recent = __DIAG.history.slice(-20);
+    var renders = recent.filter(function(e){return e.reason==='RENDER'}).length;
+    var skips = recent.filter(function(e){return e.reason==='SKIP'}).length;
+    var changed = recent.filter(function(e){return e.changed!=='(none)'});
+    fetch('/diag/render', {method:'POST',body:JSON.stringify({
+      seq: __DIAG.seq, renderCount: __DIAG.renderCount, renders: renders, skips: skips,
+      lastChanges: changed.slice(-5).map(function(e){return e.seat+':'+e.reason+':'+e.changed;})
+    }),headers:{'Content-Type':'application/json'}}).catch(function(){});
+  }
 }
 
 // -- Init & poll --
