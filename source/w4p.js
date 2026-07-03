@@ -374,6 +374,7 @@
   var _cashoutPre = false;   // when true, hyper-poll for cashout DOM element
   var _cashoutTimer = null;
   var _lastBoardLen = 0;     // track board cards for new hand detection
+  var _lastStreet = null;    // track street for pre-action clearing
 
   // ── Seat stability layer ──────────────────────────────────────
   // ⛔ PROTECTED — DO NOT REMOVE (see file header for audit trail)
@@ -2054,16 +2055,18 @@
     // Track board transitions (for pre-action reset only)
     var boardLen = snap.board.flop.length + (snap.board.turn ? 1 : 0) + (snap.board.river ? 1 : 0);
     if (boardLen === 0 && _lastBoardLen > 0) {
-      // New hand — clear pre-actions but NOT cashout preselect
+      // New hand — clear pre-actions
       _preAction = null;
     }
-    // Street transition: clear check_call pre-action when leaving preflop
-    // (C/C ALL PREFLOP is preflop-only; stale pre-action must not fire on flop)
-    if (_preAction === 'check_call' && snap.street && snap.street !== 'PREFLOP') {
-      console.log('[W4P] Clearing stale check_call pre-action — street=' + snap.street);
+    // Street transition: clear ALL pre-actions on any street change.
+    // Pre-actions (C/F, C/C) are only valid for the current street.
+    // Shuffle→Preflop→Flop→Turn→River each clear any prior pre-action.
+    if (snap.street && _lastStreet && snap.street !== _lastStreet) {
+      console.log('[W4P] Street changed ' + _lastStreet + '→' + snap.street + ' — clearing pre-action');
       _preAction = null;
     }
     _lastBoardLen = boardLen;
+    _lastStreet = snap.street;
 
     // Try cashout BEFORE mode calculation (cashout button may appear at any time)
     tryCashout();
