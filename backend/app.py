@@ -448,6 +448,7 @@ def get_or_create_table(table_id):
         _tables[table_id] = {
             "table_id":      table_id,
             "hand_key":      None,
+            "hand_id":       None,  # ADR-001: UUID identifying the current hand
             "state_version": 0,
             "last_ts":       0,
             "seats":         {},
@@ -1093,6 +1094,7 @@ def post_snapshot():
 
     ts = time.time()
     cashout_cmd = None   # built outside lock, queued inside
+    response_hand_id = None  # ADR-001: captured inside lock, used in response
 
     with _store_lock:
         table = get_or_create_table(table_id)
@@ -1100,47 +1102,63 @@ def post_snapshot():
         if ts < table["last_ts"]:
             return jsonify({'ok': True, 'ignored': 'stale'}), 200
 
-        hand_key = make_hand_key(payload)
-        new_deal = _detect_new_deal(payload, table)
+        # ── ADR-001: Hand identification ──────────────────────────────────
+        # Phase 1: Accept hand_id from extension (echo), generate if absent.
+        # The extension stores the hand_id from the first POST response and
+        # echoes it in all subsequent snapshots for the same hand.
+        incoming_hand_id = payload.get('hand_id')
+        current_hand_id = table.get('hand_id')
 
-        # Only reset on:
-        #  1. Genuine new deal (street regression / board clearing)
-        #  2. First real snapshot arriving after "implicit" placeholder
-        # Subsequent snapshots from other bots for the same hand merge without reset.
-        is_first_real = (
-            hand_key != "implicit"
-            and not str(table.get("hand_key", "")).startswith(f"{table_id}:cards:")
-        )
-        if new_deal or is_first_real:
-            if table["hand_key"] != hand_key:
-                if table["hand_key"] is not None:
-                    _archive_hand(table)
-                table["hand_key"] = hand_key
+        # Determine whether the hand has changed
+        if incoming_hand_id and current_hand_id and incoming_hand_id != current_hand_id:
+            # Extension explicitly signals a NEW hand
+            hand_changed = True
+            app.logger.info('[HAND_ID] Extension reports new hand: %s -> %s',
+                            current_hand_id[:8], incoming_hand_id[:8])
+        elif incoming_hand_id:
+            hand_changed = False
+        else:
+            # Legacy: no hand_id from extension — fall back to heuristics
+            hand_key = make_hand_key(payload)
+            new_deal = _detect_new_deal(payload, table)
+            is_first_real = (
+                hand_key not in (None, "implicit", f"{table_id}:implicit")
+                and not str(table.get("hand_key", "")).startswith(f"{table_id}:cards:")
+            )
+            hand_changed = new_deal or is_first_real
+            table["hand_key"] = hand_key if hand_changed else table.get("hand_key")
+
+        if hand_changed:
+            if table.get("hand_id"):
+                _archive_hand(table)
+            table["hand_id"] = incoming_hand_id or str(uuid.uuid4())
+            table["hand_key"] = make_hand_key(payload) if not incoming_hand_id else None
             table["seat_map"]     = {}
             table["seats"]        = {}
             table["next_seat_no"] = 1
-            table["raw_batch"]    = None  # V2: Clear stale batch on hand reset
-            # Clear cached hero cards for this table (cards change per hand)
+            table["raw_batch"]    = None
+            # Clear cached hero cards
             stale_keys = [k for k in _hero_cards if k[0] == table_id]
             for k in stale_keys:
                 del _hero_cards[k]
-            # Reset collector accumulator — stale hands from previous deal
-            # must not leak into the new deal.
+            # Reset collector accumulator
             with _coll_lock:
                 _coll_accumulated_hands = []
                 _coll_board = None
                 _coll_last_written = ""
                 _coll_deal_file = None
                 _coll_last_update = 0
-            # NOTE: _seat_bots is NOT cleared — bot identity persists across hands.
-            # Flush pending commands + cashout state on hand reset
+            # NOTE: _seat_bots is NOT cleared
             for sn in range(1, 10):
                 t = generate_seat_token(table_id, sn)
                 if t in _command_queue:
                     _command_queue[t] = None
                 if t in _cashout_state:
                     del _cashout_state[t]
-            app.logger.info(f'[V2] Hand reset: cleared batch/commands/cashout table={table_id}')
+            app.logger.info('[HAND_ID] New hand %s table=%s', table["hand_id"][:8], table_id)
+        elif not table.get("hand_id"):
+            table["hand_id"] = incoming_hand_id or str(uuid.uuid4())
+            app.logger.info('[HAND_ID] Initial hand %s table=%s', table["hand_id"][:8], table_id)
 
         table["street"]      = payload.get("street")
         table["pot_zar"]     = payload.get("pot_zar")
@@ -1305,6 +1323,9 @@ def post_snapshot():
                 _command_queue[token]              = cashout_cmd
                 _cashout_state[token]['requested'] = False
 
+        # ── ADR-001: Capture hand_id for response (still inside first lock) ──
+        response_hand_id = table.get("hand_id")
+
     # Log outside lock
     if cashout_cmd:
         app.logger.info(f"[CASHOUT] Auto-queued table={table_id} seat_no={hero_seat_no}")
@@ -1330,6 +1351,7 @@ def post_snapshot():
         'seat_index':      hero_seat.get('seat_index', hero_seat_no) if hero_seat else None,
         'table_id':        table_id,
         'player_name':     hero_seat.get('name') if hero_seat else None,
+        'hand_id':         response_hand_id,  # ADR-001: extension echoes this back
     })
 
 # ── Endpoint 2: GET /api/commands/pending ─────────────────────────────────────

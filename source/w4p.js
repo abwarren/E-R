@@ -364,6 +364,7 @@
 
   var _mode = 'IDLE';
   var _seatToken = null;
+  var _handId = null;           // ADR-001: echoed from backend, sent in snapshots
   var _preAction = null;    // 'check_fold' | 'check_call' | null
   var _lastHash = null;
   var _lastSendTime = 0;
@@ -1416,6 +1417,7 @@
       table_id:      tableId,
       bot_id:        heroName,
       session_id:    _sessionId,
+      hand_id:       _handId,       // ADR-001: echoed from backend
       seats:         seats,
       board: {
         flop:  boardCards.slice(0, 3),
@@ -1465,6 +1467,9 @@
         } else {
           _seatToken = data.seat_token;
         }
+      }
+      if (data.hand_id) {
+        _handId = data.hand_id;
       }
     } else {
       console.log('[W4P] API error:', data.error);
