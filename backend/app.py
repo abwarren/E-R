@@ -898,6 +898,29 @@ def _sync_hero_cards_to_collector(table_id, table):
 
 
 def _table_view(table):
+    seats = _build_seats_list(table)
+
+    # Phase D: Merge hero hole_cards from sibling bot entries.
+    # The selected table view may only have one bot's hero cards.
+    # Scan all siblings for the same table to populate every hero's
+    # hole_cards so the engine textarea sees all hands for equity.
+    table_id = table.get("table_id")
+    sibling_hero_cards = {}  # seat_no → hole_cards
+    for (tid, bid), t in _tables.items():
+        if tid != table_id or bid == table.get("bot_id"):
+            continue
+        for sno, seat in t.get("seats", {}).items():
+            hc = seat.get("hole_cards", [])
+            if hc and len(hc) > 0 and seat.get("is_hero"):
+                sibling_hero_cards[sno] = hc
+                break  # one hero per bot entry
+
+    for seat in seats:
+        sno = seat.get("seat_no")
+        if sno in sibling_hero_cards and not seat.get("hole_cards"):
+            seat["hole_cards"] = sibling_hero_cards[sno]
+            seat["cards_source"] = "sibling_merge"
+
     view = {
         "table_id":      table["table_id"],
         "hand_id":       table.get("hand_id"),  # ADR-001
@@ -908,7 +931,7 @@ def _table_view(table):
         "board":         table["board"],
         "state_version": table["state_version"],
         "last_updated":  table["last_ts"],
-        "seats":         _build_seats_list(table),
+        "seats":         seats,
         "authority":     {
             "source_bot": table.get("last_street_bot"),
             "reason":     table.get("_last_auth_reason"),
