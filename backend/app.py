@@ -1105,13 +1105,36 @@ def _find_sibling_hand_id(table_id):
     this prevents generating a divergent hand_id. Returns the hand_id of the
     most recently updated sibling entry, or None if no siblings exist.
     """
-    best_ts = 0
+    best_ts = -1
     best_hand_id = None
     for (tid, _bid), t in _tables.items():
-        if tid == table_id and t.get("hand_id") and t["last_ts"] > best_ts:
+        if tid == table_id and t.get("hand_id") and t["last_ts"] >= best_ts:
             best_ts = t["last_ts"]
             best_hand_id = t["hand_id"]
     return best_hand_id
+
+
+def _cascade_hand_id(table_id, new_hand_id, triggering_bot=None):
+    """Cascade a new hand_id to all sibling entries for the same table.
+
+    When one bot detects a new hand (street regression, hand_id change),
+    propagate the hand_id to all other bots at the same table so they
+    converge on a single hand_id. The triggering bot's entry is excluded
+    (it already has the new hand_id).
+
+    This is Phase C: hand-level state partitioning without changing the
+    _tables key structure.
+    """
+    cascaded = 0
+    for (tid, bid), t in _tables.items():
+        if tid == table_id and bid != triggering_bot and t.get("hand_id") != new_hand_id:
+            old = t.get("hand_id", "NONE")[:8] if t.get("hand_id") else "NONE"
+            t["hand_id"] = new_hand_id
+            t["hand_key"] = None  # clear legacy key, hand_id is canonical
+            cascaded += 1
+            app.logger.info('[HAND_ID] Cascaded %s → %s for %s (old=%s)',
+                            new_hand_id[:8], bid, table_id, old)
+    return cascaded
 
 @app.route('/api/snapshot', methods=['POST'])
 @limiter.limit("600 per minute")   # 10/sec — supports 5 heroes at 2s intervals with burst headroom
@@ -1261,6 +1284,8 @@ def post_snapshot():
                 if t in _cashout_state:
                     del _cashout_state[t]
             app.logger.info('[HAND_ID] New hand %s table=%s', table["hand_id"][:8], table_id)
+            # Phase C: cascade new hand_id to all sibling bots at same table
+            _cascade_hand_id(table_id, table["hand_id"], bot_id)
         elif not table.get("hand_id"):
             table["hand_id"] = incoming_hand_id or _find_sibling_hand_id(table_id) or str(uuid.uuid4())
             app.logger.info('[HAND_ID] Initial hand %s table=%s', table["hand_id"][:8], table_id)
