@@ -1510,7 +1510,7 @@ def get_table(table_id):
         if table_id == 'latest':
             if not _tables:
                 return jsonify({'ok': False, 'error': 'No active tables'}), 404
-            table = _dedup_latest_by_table()
+            table = _select_best_table()
         else:
             # _tables keyed by (table_id, bot_id) — find all matching entries
             candidates = [t for (tid, _bid), t in _tables.items() if tid == table_id]
@@ -1533,14 +1533,68 @@ def _find_table_for_bot(bot_id):
     return None
 
 
-def _dedup_latest_by_table():
-    """Return the most recent table per unique table_id.
-    Prevents oscillation when multiple bots share a table_id."""
-    best = {}
-    for (tid, _bid), t in _tables.items():
-        if tid not in best or t['last_ts'] > best[tid]['last_ts']:
-            best[tid] = t
-    return max(best.values(), key=lambda t: t['last_ts']) if best else None
+# ── API Selection: Multi-criteria scoring for /api/latest ───────────────────
+# When multiple bot entries exist for the same table_id, select the best one
+# using a deterministic total order: freshness > street rank > last_ts > hash.
+# See ADR-002 for full rationale.
+
+FRESHNESS_WINDOW = 30        # seconds — must be recent to be a "live" candidate
+STREET_RANK = {"PREFLOP": 0, "FLOP": 1, "TURN": 2, "RIVER": 3}
+
+
+def _entry_score(t, now):
+    """Score an entry for comparison. Higher = better.
+
+    Priority: freshness > street rank > last_ts > deterministic tiebreak.
+
+    Returns a 4-tuple where each component is compared in order.
+    """
+    is_recent = 1 if (now - t.get("last_ts", 0)) < FRESHNESS_WINDOW else 0
+    street_rank = STREET_RANK.get(t.get("street", "PREFLOP"), 0)
+    last_ts = t.get("last_ts", 0)
+    tiebreak = hash(t.get("bot_id", "")) % 1000000
+    return (is_recent, street_rank, last_ts, tiebreak)
+
+
+def _select_best_table(table_id=None):
+    """Return the best entry for the given table_id.
+
+    When called without table_id (default /api/latest path):
+    selects the best entry per unique table_id, returns overall best.
+
+    When called with a specific table_id:
+    selects the best entry for that table only.
+
+    Selection priority (higher wins):
+    1. FRESHNESS — entry must be recent (< FRESHNESS_WINDOW seconds)
+    2. STREET RANK — RIVER > TURN > FLOP > PREFLOP
+    3. LAST_TS — most recently updated
+    4. HASH(bot_id) — deterministic tiebreak
+    """
+    now = time.time()
+
+    if table_id:
+        candidates = [(t, bid) for (tid, bid), t in _tables.items()
+                       if tid == table_id]
+    else:
+        best_per_table = {}
+        for (tid, bid), t in _tables.items():
+            score = _entry_score(t, now)
+            if tid not in best_per_table or score > _entry_score(best_per_table[tid][0], now):
+                best_per_table[tid] = (t, bid)
+        candidates = list(best_per_table.values())
+
+    if not candidates:
+        return None
+
+    # Prefer recent entries. Fall back to all if none are recent
+    # (system-wide outage — better stale data than nothing).
+    recent = [(t, bid) for t, bid in candidates
+              if (now - t.get("last_ts", 0)) < FRESHNESS_WINDOW]
+
+    pool = recent if recent else candidates
+    pool.sort(key=lambda x: _entry_score(x[0], now), reverse=True)
+    return pool[0][0]
 
 
 @app.route('/api/latest', methods=['GET'])
@@ -1576,7 +1630,7 @@ def _handle_table_latest():
             with _store_lock:
                 table = _find_table_for_bot(bot_id) if bot_id else None
                 if not table:
-                    table = _dedup_latest_by_table()
+                    table = _select_best_table()
                 if table:
                     # New data available!
                     if table['last_ts'] > last_ts_seen:
@@ -1630,7 +1684,7 @@ def _handle_table_latest():
 
         table = _find_table_for_bot(bot_id) if bot_id else None
         if not table:
-            table = _dedup_latest_by_table()
+            table = _select_best_table()
 
         # ── Staleness guard: if no snapshot for _TABLE_INACTIVE_TTL seconds,
         #     return the empty waiting placeholder.  Prevents stale board/pot
