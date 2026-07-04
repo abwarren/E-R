@@ -28,6 +28,81 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from buffer import push_snapshot, extract_hands_and_board, should_accept_snapshot, detect_board_change, bump_hand_epoch, get_hand_epoch
+from typing import NotRequired, TypedDict
+
+# ── TypedDict schema definitions (data contract for critical DTOs) ──────────────
+
+class SeatData(TypedDict, total=False):
+    seat_no: int
+    seat_index: int
+    name: str | None
+    is_hero: bool
+    is_active: bool
+    hole_cards: list[str]
+    stack_zar: float
+    bet_zar: float
+    last_seen: float | None
+    status: str
+    is_dealer: bool
+    pending_cmd: dict | None
+    cards_source: str | None
+
+class BoardState(TypedDict, total=False):
+    flop: list[str]
+    turn: str | None
+    river: str | None
+
+class SnapshotPayload(TypedDict, total=False):
+    table_id: str
+    bot_id: str
+    session_id: str
+    hand_id: str
+    snapshot_seq: int
+    seats: list[dict]
+    board: BoardState
+    street: str
+    pot_zar: float
+    variant: str
+    buttons: list[str]
+    available_actions: list[str]
+    needs_action: bool
+    active_player: str
+    ts: str
+    source_key: str
+    observer: bool
+
+class TableEntry(TypedDict, total=False):
+    table_id: str
+    bot_id: str
+    hand_id: str | None
+    snapshot_seq: int | None
+    variant: str
+    street: str
+    pot_zar: float
+    dealer_seat: int | None
+    board: BoardState
+    state_version: int
+    last_ts: float
+    seats: dict[int, SeatData]
+    needs_action: bool
+    _last_auth_reason: str | None
+    last_street_bot: str | None
+    available_actions: list[str]
+
+class TableView(TypedDict, total=False):
+    table_id: str
+    hand_id: str | None
+    snapshot_seq: int | None
+    variant: str
+    street: str
+    pot_zar: float
+    dealer_seat: int | None
+    board: BoardState
+    state_version: int
+    last_updated: float
+    seats: list[SeatData]
+    authority: dict
+    collector_batch: dict | None
 
 # ── PID lock file ─────────────────────────────────────────────────────────────
 
@@ -91,12 +166,35 @@ app.logger.setLevel(logging.INFO)
 
 # Rate limiter — 1 snapshot per second per IP
 # Install: pip install flask-limiter --break-system-packages
+SNAPSHOT_RATE_LIMIT = os.getenv('SNAPSHOT_RATE_LIMIT', '1500 per minute')
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
     default_limits=[],          # no global limit; apply per route
     storage_uri="memory://",
 )
+
+
+# ── Global error handlers ──────────────────────────────────────────────────
+# Ensures API routes return JSON rather than HTML on error conditions.
+
+@app.errorhandler(429)
+def _ratelimit_handler(e):
+    app.logger.warning('[RATE] Rate limit exceeded: %s', e)
+    return jsonify(ok=False, error='rate_limit', retry_after=getattr(e, 'retry_after', None)), 429
+
+@app.errorhandler(500)
+def _server_error(e):
+    app.logger.exception('[SERVER] Unhandled 500: %s', e)
+    return jsonify(ok=False, error='internal'), 500
+
+@app.errorhandler(404)
+def _not_found(e):
+    return jsonify(ok=False, error='not_found'), 404
+
+@app.errorhandler(503)
+def _service_unavailable(e):
+    return jsonify(ok=False, error='service_unavailable'), 503
 
 
 # ── Auth & Session Management ──────────────────────────────────────────────────
@@ -426,7 +524,7 @@ def _detect_new_deal(payload, table):
     return False
 
 
-def is_authoritative_snapshot(snapshot):
+def is_authoritative_snapshot(snapshot) -> tuple[bool, str | None]:
     """
     Return True if this snapshot's structural fields (street, board, pot,
     dealer) should be trusted and written to the per-bot table entry.
@@ -664,7 +762,7 @@ def _apply_collector_hands_to_seats(table, seats):
     return seats
 
 
-def _build_seats_list(table):
+def _build_seats_list(table) -> list[SeatData]:
     out = []
     # Always build exactly 9 seats for 9-max tables
     max_seats = 9
@@ -899,7 +997,7 @@ def _sync_hero_cards_to_collector(table_id, table):
         _coll_source = f'hero_merge_{table_id}'
 
 
-def _table_view(table):
+def _table_view(table) -> TableView:
     seats = _build_seats_list(table)
 
     # Phase D: Merge hero hole_cards from sibling bot entries.
@@ -996,6 +1094,7 @@ def _serialise_state():
 def _load_state():
     """Load persisted state from disk into _tables on startup."""
     if not STATE_FILE.exists():
+        app.logger.info("[PERSIST] No state file found at %s — starting fresh", STATE_FILE.name)
         return
     try:
         raw = json.loads(STATE_FILE.read_text(encoding='utf-8'))
@@ -1017,7 +1116,9 @@ def _load_state():
             else:
                 # Backward compat: old format (plain table_id, no bot_id)
                 _tables[(tid, "__observer__")] = t
-        app.logger.info(f"[PERSIST] Loaded {len(_tables)} table(s) from {STATE_FILE}")
+        app.logger.info(f"[PERSIST] Loaded {len(_tables)} table(s) from {STATE_FILE.name} "
+                        f"({STATE_FILE.stat().st_size / 1024:.0f} KB, "
+                        f"last modified {datetime.fromtimestamp(STATE_FILE.stat().st_mtime).isoformat()})")
     except Exception as e:
         app.logger.warning(f"[PERSIST] Could not load state: {e}")
 
@@ -1179,7 +1280,7 @@ def _cascade_hand_id(table_id, new_hand_id, triggering_bot=None):
     return cascaded
 
 @app.route('/api/snapshot', methods=['POST'])
-@limiter.limit("600 per minute")   # 10/sec — supports 5 heroes at 2s intervals with burst headroom
+@limiter.limit(SNAPSHOT_RATE_LIMIT)   # env SNAPSHOT_RATE_LIMIT, default 1500/min
 def post_snapshot():
     api_key = request.headers.get('X-API-Key')
     valid_api_keys = {TRACKER_API_KEY}
@@ -1708,7 +1809,7 @@ FRESHNESS_WINDOW = 30              # seconds — must be recent to be a "live" c
 _ACTIVE_CACHE_TTL = 60             # seconds — how long to retain last active bot
 _last_active_bot = {}              # table_id → table_entry (cached for stickiness)
 
-def _find_active_bot(table_id=None):
+def _find_active_bot(table_id=None) -> dict | None:
     """Return the table entry for the bot that currently needs action.
 
     Selection rule (in order):
@@ -1972,7 +2073,7 @@ def list_tables():
     with _store_lock:
         tables = sorted(
             [_table_view(t) for t in _tables.values()],
-            key=lambda t: t['last_updated'],
+            key=lambda t: t.get('last_updated', 0),
             reverse=True,
         )
     return jsonify({'ok': True, 'tables': tables})

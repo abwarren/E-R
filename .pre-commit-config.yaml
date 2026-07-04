@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+      - id: detect-private-key
+
+  - repo: local
+    hooks:
+      - id: no-pycache
+        name: no pycache files
+        entry: bash -c '! git ls-files "backend/__pycache__/*" | grep -q .'
+        language: system
+        always_run: false
+        pass_filenames: false
+        stages: [commit]
+
+      - id: flake8-critical
+        name: flake8 (critical errors)
+        entry: flake8
+        args: ['--select=E9,F63,F7,F82', 'backend/app.py', 'backend/buffer.py']
+        language: system
+        files: '^backend/.*\.py$'
+        types: [python]
