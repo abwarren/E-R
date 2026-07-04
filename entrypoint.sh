@@ -6,6 +6,10 @@
 
 set -e
 
+# Stale lock cleanup — Flask writes /tmp/w4p_backend.lock on start, but
+# Docker restart (SIGKILL) bypasses the atexit cleanup handler.
+rm -f /tmp/w4p_backend.lock
+
 echo "[entrypoint] Starting REMOTEREMOTE backend (Flask :1080)..."
 cd /app/backend
 python app.py &
