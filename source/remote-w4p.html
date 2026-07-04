@@ -570,7 +570,7 @@
   <button class="global-autocc-btn" id="global-autocc-btn" onclick="toggleGlobalAutoCC()">AUTO C/C PREFLOP — ALL</button>
   <button class="global-autocc-btn" id="global-cf-btn" onclick="toggleGlobalAutoCF()" style="border-color:#4caf50;">SELECT ALL AUTO C/F</button>
   <button class="global-autocc-btn" id="execute-kh-btn" onclick="executeKH()" style="border-color:#e91e63;">EXECUTE KH</button>
-  <button class="global-autocc-btn" id="sit-in-all-btn" onclick="sitInAll()" style="border-color:#1a9a6c;">SIT IN ALL</button>
+  <button class="global-autocc-btn" id="sit-in-all-btn" onclick="toggleGlobalAutoSitIn()" style="border-color:#1a9a6c;">AUTO SIT-IN</button>
 </div>
 
 <div class="main-area">
@@ -615,6 +615,8 @@ var cashoutState = {};     // seatNo -> true | false
 var autoCcPreflop = {};    // seatNo -> true (per-player AUTO C/C PREFLOP)
 var globalAutoCcPreflop = false; // global AUTO C/C PREFLOP — persists across hands
 var globalAutoCF = false;        // master SELECT ALL AUTO C/F — new players default to C/F when on
+var globalAutoSitIn = false;     // master AUTO SIT-IN — continuously seat in sitting-out players
+var _autoSitInPending = {};      // seatNo -> timestamp (debounce per seat)
 var globalCFExcluded = {};       // seats manually unticked while globalAutoCF is on
 var khState = {};                // seatNo -> true (KH = Keep Hand, manual input required)
 var autoCcLastSent = {};         // seatNo -> timestamp (throttle re-sends to every 3s)
@@ -1460,43 +1462,35 @@ function executeKH() {
   renderedSeats = {}; lastEmgHash = null; render();
 }
 
-// -- SIT IN ALL: iterate all active tables, sit back in on any sitting-out hero --
-function sitInAll() {
+// -- Auto Sit-In All toggle --
+function toggleGlobalAutoSitIn() {
+  globalAutoSitIn = !globalAutoSitIn;
   var btn = document.getElementById('sit-in-all-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'SITTING IN...'; }
-  fetch(API + '/tables')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data.ok || !data.tables) { console.log('[SIT_IN_ALL] No tables list'); return; }
-      var total = 0, sittingOut = 0, sent = 0;
-      data.tables.forEach(function(t) {
-        if (!t.seats) return;
-        t.seats.forEach(function(seat) {
-          total++;
-          if (seat.is_self_player && seat.status === 'sitting_out') {
-            sittingOut++;
-            fetch(API + '/commands/queue', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                table_id: t.table_id,
-                seat_no: seat.seat_no,
-                command_type: 'back_to_game'
-              })
-            })
-              .then(function() { console.log('[SIT_IN_ALL] sent back_to_game table=' + t.table_id + ' seat=' + seat.seat_no); })
-              .catch(function(e) { console.log('[SIT_IN_ALL] FAIL table=' + t.table_id + ' seat=' + seat.seat_no, e); });
-            sent++;
-          }
-        });
-      });
-      console.log('[SIT_IN_ALL] done: inspected=' + total + ' sitting_out=' + sittingOut + ' commands_sent=' + sent);
-      if (btn) { btn.disabled = false; btn.textContent = 'SIT IN ALL'; btn.classList.add('active'); setTimeout(function() { btn.classList.remove('active'); }, 1500); }
-    })
-    .catch(function(e) {
-      console.log('[SIT_IN_ALL] error:', e);
-      if (btn) { btn.disabled = false; btn.textContent = 'SIT IN ALL'; }
-    });
+  if (btn) btn.classList.toggle('active-si', globalAutoSitIn);
+  if (globalAutoSitIn) {
+    _autoSitInPending = {};
+    console.log('[AUTO_SIT_IN] monitoring enabled');
+  } else {
+    console.log('[AUTO_SIT_IN] monitoring disabled');
+  }
+  renderedSeats = {}; lastEmgHash = null; render();
+}
+
+// -- Auto Sit-In monitor: continuously seat in sitting-out players --
+function fireAutoSitIn() {
+  if (!globalAutoSitIn || !lastTable || !Array.isArray(lastTable.seats)) return;
+  var now = Date.now();
+  lastTable.seats.forEach(function(seat) {
+    if (!seat.is_self_player) return;
+    var isSittingOut = seat.status === 'sitting_out' || (seat.sitting_out && !seat.is_dealer);
+    if (!isSittingOut) return;
+    var sn = getSeatNo(seat);
+    if (!sn) return;
+    if (_autoSitInPending[sn] && now - _autoSitInPending[sn] < 5000) return;
+    _autoSitInPending[sn] = now;
+    console.log('[AUTO_SIT_IN] sit-in seat=' + sn);
+    sendCmd(sn, 'back_to_game');
+  });
 }
 
 function toggleGlobalAutoCC() {

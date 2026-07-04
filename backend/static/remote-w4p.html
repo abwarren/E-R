@@ -555,7 +555,7 @@
   <button class="global-autocc-btn" id="global-autocc-btn" onclick="toggleGlobalAutoCC()">AUTO C/C PREFLOP — ALL</button>
   <button class="global-autocc-btn" id="global-cf-btn" onclick="toggleGlobalAutoCF()" style="border-color:#4caf50;">SELECT ALL AUTO C/F</button>
   <button class="global-autocc-btn" id="execute-kh-btn" onclick="executeKH()" style="border-color:#e91e63;">EXECUTE KH</button>
-  <button class="global-autocc-btn" id="sit-in-all-btn" onclick="sitInAll()" style="border-color:#2196f3;">SIT-IN ALL</button>
+  <button class="global-autocc-btn" id="sit-in-all-btn" onclick="toggleGlobalAutoSitIn()" style="border-color:#2196f3;">AUTO SIT-IN</button>
 </div>
 
 <div class="main-area">
@@ -605,6 +605,8 @@ var cashoutState = {};     // seatNo -> true | false
 var autoCcPreflop = {};    // seatNo -> true (per-player AUTO C/C PREFLOP)
 var globalAutoCcPreflop = false; // global AUTO C/C PREFLOP — persists across hands
 var globalAutoCF = false;        // master SELECT ALL AUTO C/F — new players default to C/F when on
+var globalAutoSitIn = false;     // master AUTO SIT-IN — continuously seat in sitting-out players
+var _autoSitInPending = {};      // seatNo -> timestamp (debounce per seat)
 var globalCFExcluded = {};       // seats manually unticked while globalAutoCF is on
 var khState = {};                // seatNo -> true (KH = Keep Hand, manual input required)
 var autoCcLastSent = {};         // seatNo -> timestamp (throttle re-sends to every 3s)
@@ -1327,8 +1329,6 @@ function handlePreAction(seatNo, type) {
   render();
 }
 
-// -- Preset handler --
-
 function applyPreset(seatNo, preset, prefix) {
   if (!lastTable) return;
   var hero = null;
@@ -1428,32 +1428,35 @@ function executeKH() {
   renderedSeats = {}; lastEmgHash = null; render();
 }
 
-// -- Sit-In All: toggle all sitting-out players back in --
-function sitInAll() {
-  if (!lastTable || !Array.isArray(lastTable.seats)) return;
-  var sitOutSeats = [];
-  lastTable.seats.forEach(function(seat) {
-    if (!seat.name || seat.name === 'Empty') return;
-    if (seat.status === 'sitting_out') {
-      var sn = getSeatNo(seat);
-      sitOutSeats.push(sn);
-    }
-  });
-  if (sitOutSeats.length === 0) {
-    console.log('[SIT-IN-ALL] No sitting-out players found');
-    return;
-  }
-  console.log('[SIT-IN-ALL] Sending sit_out toggle to ' + sitOutSeats.length + ' seats: ' + sitOutSeats.join(','));
-  // Stagger sends 300ms apart so PokerBet DOM can process each
-  sitOutSeats.forEach(function(sn, i) {
-    setTimeout(function() {
-      sendCmd(sn, 'sit_out');
-      console.log('[SIT-IN-ALL] Queued seat=' + sn);
-    }, i * 300);
-  });
+// -- Auto Sit-In All toggle --
+function toggleGlobalAutoSitIn() {
+  globalAutoSitIn = !globalAutoSitIn;
   var btn = document.getElementById('sit-in-all-btn');
-  if (btn) { btn.classList.add('active-si'); setTimeout(function() { btn.classList.remove('active-si'); }, 3000); }
+  if (btn) btn.classList.toggle('active-si', globalAutoSitIn);
+  if (globalAutoSitIn) {
+    _autoSitInPending = {};
+    console.log('[AUTO_SIT_IN] monitoring enabled');
+  } else {
+    console.log('[AUTO_SIT_IN] monitoring disabled');
+  }
   renderedSeats = {}; lastEmgHash = null; render();
+}
+
+// -- Auto Sit-In monitor: continuously seat in sitting-out players --
+function fireAutoSitIn() {
+  if (!globalAutoSitIn || !lastTable || !Array.isArray(lastTable.seats)) return;
+  var now = Date.now();
+  lastTable.seats.forEach(function(seat) {
+    if (!seat.is_self_player) return;
+    var isSittingOut = seat.status === 'sitting_out' || (seat.sitting_out && !seat.is_dealer);
+    if (!isSittingOut) return;
+    var sn = getSeatNo(seat);
+    if (!sn) return;
+    if (_autoSitInPending[sn] && now - _autoSitInPending[sn] < 5000) return;
+    _autoSitInPending[sn] = now;
+    console.log('[AUTO_SIT_IN] sit-in seat=' + sn);
+    sendCmd(sn, 'back_to_game');
+  });
 }
 
 function toggleGlobalAutoCC() {
@@ -1719,6 +1722,7 @@ function render() {
   applyGlobalCFToNewSeats();
   fireAutoCcPreflop();
   fireKHBattle();
+  fireAutoSitIn();
 }
 
 // -- Init & poll --
