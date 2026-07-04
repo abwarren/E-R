@@ -301,6 +301,7 @@
   .sc-toggle.active { background: rgba(76,175,80,0.25); border-color: #4caf50; color: #4caf50; }
   .sc-toggle.co-toggle.active { background: rgba(244,67,54,0.25); border-color: #f44336; color: #f44336; }
   .sc-toggle.autocc-toggle.active { background: rgba(255,193,7,0.25); border-color: #ffc107; color: #ffc107; }
+  .seat-compact.inactive .sc-toggle { opacity: 0.35; cursor: default; border-color: rgba(255,255,255,0.06); background: transparent; }
   .global-autocc-bar { display:flex; align-items:center; gap:8px; padding:4px 12px; background:#1a1a2e; border-bottom:1px solid #333; }
   .global-autocc-btn { padding:3px 10px; border:1px solid #555; border-radius:4px; background:transparent; color:#888; font-size:11px; font-weight:700; cursor:pointer; }
   .global-autocc-btn.active { background:rgba(255,193,7,0.25); border-color:#ffc107; color:#ffc107; }
@@ -904,11 +905,11 @@ function buildSeatBoxHtml(seat) {
 
   // ========== HERO SEAT CONTROLS ==========
   if (isHero) {
-    // Compact controls: always visible (C/F, C/C, CO)
+    // Compact controls: always visible (C/F, C/C, CO), dimmed when not active
     var curPa = preActionState[sn] || null;
     var curCo = cashoutState[sn] || false;
 
-    html += '<div class="seat-compact">';
+    html += '<div class="seat-compact' + (isActive ? '' : ' inactive') + '">';
     html += '<span class="sc-toggle' + (curPa === 'check_fold' ? ' active' : '') +
       '" data-sc-preact="check_fold" data-sc-seat="' + sn + '">C/F</span>';
     html += '<span class="sc-toggle' + (curPa === 'check_call' ? ' active' : '') +
