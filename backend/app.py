@@ -1055,6 +1055,40 @@ def _table_view(table) -> TableView:
         },
         "collector_batch": _get_latest_collector_batch(),
     }
+
+    # Authority merge: the selected bot may lag on structural state
+    # (street, board, pot, dealer_seat). Scan siblings for the highest
+    # authority — the bot with advanced street or visible board wins.
+    if table_id:
+        best_street = view["street"]
+        best_street_rank = STREET_RANK.get(best_street, -1)
+        best_board = view["board"]
+        best_pot = view["pot_zar"]
+        best_dealer = view["dealer_seat"]
+        for (tid, bid), t in _tables.items():
+            if tid != table_id:
+                continue
+            s = t.get("street", "PREFLOP")
+            sr = STREET_RANK.get(s, -1)
+            if sr > best_street_rank:
+                best_street = s
+                best_street_rank = sr
+                best_board = t.get("board", best_board)
+                best_pot = t.get("pot_zar", best_pot)
+                best_dealer = t.get("dealer_seat", best_dealer)
+            elif sr == best_street_rank:
+                # At same street: prefer entry with visible board cards
+                b = t.get("board", {})
+                has_board = bool(b.get("flop")) if isinstance(b, dict) else False
+                cur_has_board = bool(best_board.get("flop")) if isinstance(best_board, dict) else False
+                if has_board and not cur_has_board:
+                    best_board = b
+                    best_pot = t.get("pot_zar", best_pot)
+        if best_street_rank > STREET_RANK.get(view["street"], -1):
+            view["street"] = best_street
+            view["board"] = best_board
+            view["pot_zar"] = best_pot
+            view["dealer_seat"] = best_dealer
     _hands, board_cards = _collector_cards_from_batch(view.get("collector_batch"))
     if board_cards:
         view["board"] = {
