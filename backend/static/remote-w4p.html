@@ -613,8 +613,9 @@ var autoCcLastSent = {};         // seatNo -> timestamp (throttle re-sends to ev
 var lastBoardKey = null;
 var lastStreet = null;
 var khBattleArmed = false;
-var khBattleSeats = {};   // seatNo → true (KH seats in raise-max battle)
-var khBattleCoSeat = null; // the KH seat that also has CO (cashout on all-in)
+var khBattleSeats = {};   // seatNo → true (KH seats in current battle)
+var khBattleCoSeat = null; // seatNo → true (CO seat — won't raise, will cashout)
+var _khResumeSeat = null;  // seatNo → the non-CO KH player who auto-clicks Resume
 var khBattleRaiseLast = 0; // timestamp of last raise_max sent (throttle)
 
 // Per-seat raise amounts
@@ -1409,7 +1410,14 @@ function executeKH() {
   if (khCount >= 2) {
     khBattleArmed = true;
     khBattleRaiseLast = 0;
-    console.log('[KH_BATTLE] BATTLE STARTED: ' + khCount + ' KH seats, ' + coCount + ' CO, ' + cfCount + ' auto-C/F');
+    // Identify the non-CO KH player for Resume auto-click
+    _khResumeSeat = null;
+    Object.keys(khBattleSeats).forEach(function(sn) {
+      if (Number(sn) !== Number(khBattleCoSeat)) {
+        _khResumeSeat = Number(sn);
+      }
+    });
+    console.log('[KH_BATTLE] BATTLE STARTED: ' + khCount + ' KH seats, ' + coCount + ' CO, ' + cfCount + ' auto-C/F' + (_khResumeSeat ? ' resume_seat=' + _khResumeSeat : ''));
   } else if (khCount === 1) {
     khBattleArmed = false;
     // Single KH: just check/fold that seat too, same as others
@@ -1547,6 +1555,7 @@ function checkNewHand() {
     khBattleArmed = false;
     khBattleSeats = {};
     khBattleCoSeat = null;
+    _khResumeSeat = null;
     _khBattleLastAction = {};
     // Reset global button CSS
     var accBtn = document.getElementById('global-autocc-btn');
@@ -1629,6 +1638,24 @@ function fireKHBattle() {
   // CO seat: cashout_pre already sent at battle start (line ~1369).
   // w4p.js hyper-polls for .cash_out-c until it appears and fires.
   // No re-arm needed — single shot is correct.
+
+  // ── Resume watcher: auto-click Resume for the non-CO KH player ──
+  if (_khResumeSeat != null && lastTable && Array.isArray(lastTable.seats)) {
+    var rs = Number(_khResumeSeat);
+    lastTable.seats.forEach(function(seat) {
+      if (Number(getSeatNo(seat)) !== rs) return;
+      var acts = seat.available_actions || [];
+      var hasResume = acts.indexOf('back_to_game') !== -1 || acts.indexOf('resume_hand') !== -1;
+      if (hasResume) {
+        var last = _khBattleLastAction[rs] || 0;
+        if (now - last > 1000) {
+          _khBattleLastAction[rs] = now;
+          sendCmd(rs, 'back_to_game');
+          console.log('[KH_BATTLE] resume seat=' + rs + ' — auto-clicked Resume');
+        }
+      }
+    });
+  }
 }
 
 
