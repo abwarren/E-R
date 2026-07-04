@@ -1,0 +1,5640 @@
+[
+  {
+    "sample_num": 1,
+    "timestamp": 1783114565.5687535,
+    "timestamp_iso": "2026-07-03T23:36:05.568758",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29309,
+      "last_updated": 1783114565.5018997,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "44b2bae5b6c0",
+    "field_hash": "888ff50e3ec9",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 2,
+    "timestamp": 1783114565.7811253,
+    "timestamp_iso": "2026-07-03T23:36:05.781132",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27685,
+      "last_updated": 1783114565.658662,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "b746dbe57430",
+    "field_hash": "9133ebd2ebe5",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 3,
+    "timestamp": 1783114565.9825637,
+    "timestamp_iso": "2026-07-03T23:36:05.982569",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29830,
+      "last_updated": 1783114565.8439124,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "91f57fbda6c6",
+    "field_hash": "2c4290e7aa73",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 4,
+    "timestamp": 1783114566.1917868,
+    "timestamp_iso": "2026-07-03T23:36:06.191792",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29311,
+      "last_updated": 1783114566.1037407,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "ef9b33dab02e",
+    "field_hash": "bdaac564a301",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 5,
+    "timestamp": 1783114566.3762107,
+    "timestamp_iso": "2026-07-03T23:36:06.376217",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27687,
+      "last_updated": 1783114566.2593784,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "3da81fe1b128",
+    "field_hash": "42fee2763b12",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 6,
+    "timestamp": 1783114566.5641754,
+    "timestamp_iso": "2026-07-03T23:36:06.564178",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29832,
+      "last_updated": 1783114566.4475513,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "64ec43f62846",
+    "field_hash": "8b5580f6bbd5",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 7,
+    "timestamp": 1783114566.7752867,
+    "timestamp_iso": "2026-07-03T23:36:06.775291",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29313,
+      "last_updated": 1783114566.7053196,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "1d507221e512",
+    "field_hash": "83f6ed59bf72",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 8,
+    "timestamp": 1783114566.9868212,
+    "timestamp_iso": "2026-07-03T23:36:06.986826",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27689,
+      "last_updated": 1783114566.861855,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "2f6d5846ffa2",
+    "field_hash": "1f70bbb1796c",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 9,
+    "timestamp": 1783114567.1597464,
+    "timestamp_iso": "2026-07-03T23:36:07.159750",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29834,
+      "last_updated": 1783114567.0491817,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "ea0ecbe8b2bc",
+    "field_hash": "4bf368354076",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 10,
+    "timestamp": 1783114567.3681943,
+    "timestamp_iso": "2026-07-03T23:36:07.368199",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29315,
+      "last_updated": 1783114567.305086,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "daaa105733c2",
+    "field_hash": "000aff76c3f1",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 11,
+    "timestamp": 1783114567.5709043,
+    "timestamp_iso": "2026-07-03T23:36:07.570909",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27691,
+      "last_updated": 1783114567.4628353,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "6ac9e3dcef1b",
+    "field_hash": "f75b99a1251d",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 12,
+    "timestamp": 1783114567.760703,
+    "timestamp_iso": "2026-07-03T23:36:07.760706",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29836,
+      "last_updated": 1783114567.6517146,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "778dee0802c9",
+    "field_hash": "79d597294397",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 13,
+    "timestamp": 1783114567.9840086,
+    "timestamp_iso": "2026-07-03T23:36:07.984015",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29317,
+      "last_updated": 1783114567.9156234,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "dc9715c4d4de",
+    "field_hash": "c0930cf58024",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 14,
+    "timestamp": 1783114568.1915581,
+    "timestamp_iso": "2026-07-03T23:36:08.191563",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27693,
+      "last_updated": 1783114568.0680072,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "91938b784a42",
+    "field_hash": "2946dcbbced7",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 15,
+    "timestamp": 1783114568.3650937,
+    "timestamp_iso": "2026-07-03T23:36:08.365097",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29838,
+      "last_updated": 1783114568.258389,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "976cd09ff34b",
+    "field_hash": "f0d79bdbbdbd",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 16,
+    "timestamp": 1783114568.5870667,
+    "timestamp_iso": "2026-07-03T23:36:08.587075",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29319,
+      "last_updated": 1783114568.5154636,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "f652b5e4c6a4",
+    "field_hash": "1d91c9d2284a",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 17,
+    "timestamp": 1783114568.7878234,
+    "timestamp_iso": "2026-07-03T23:36:08.787829",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27695,
+      "last_updated": 1783114568.6710494,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "ad9d890e5a6a",
+    "field_hash": "22693dfc3c5c",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 18,
+    "timestamp": 1783114568.9767125,
+    "timestamp_iso": "2026-07-03T23:36:08.976715",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29840,
+      "last_updated": 1783114568.861582,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "29b62ca613b5",
+    "field_hash": "b2f17f7873ff",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 19,
+    "timestamp": 1783114569.1893234,
+    "timestamp_iso": "2026-07-03T23:36:09.189330",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29321,
+      "last_updated": 1783114569.1134183,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "56fe232088dd",
+    "field_hash": "20849eb94631",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 20,
+    "timestamp": 1783114569.3830183,
+    "timestamp_iso": "2026-07-03T23:36:09.383023",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27697,
+      "last_updated": 1783114569.2714937,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "c9d932a558e7",
+    "field_hash": "8714d16d9c31",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 21,
+    "timestamp": 1783114569.5750513,
+    "timestamp_iso": "2026-07-03T23:36:09.575056",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29842,
+      "last_updated": 1783114569.4575682,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "97a09c14cf8e",
+    "field_hash": "265de8d611e8",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 22,
+    "timestamp": 1783114569.7759416,
+    "timestamp_iso": "2026-07-03T23:36:09.775946",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29323,
+      "last_updated": 1783114569.7164762,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "d21c05f53d4f",
+    "field_hash": "32d384ccdad8",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 23,
+    "timestamp": 1783114570.005752,
+    "timestamp_iso": "2026-07-03T23:36:10.005757",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27699,
+      "last_updated": 1783114569.877398,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "0ca7d752b9cc",
+    "field_hash": "c433d4bfe015",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 24,
+    "timestamp": 1783114570.1775203,
+    "timestamp_iso": "2026-07-03T23:36:10.177527",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29844,
+      "last_updated": 1783114570.0608628,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "8e345f9878e7",
+    "field_hash": "ebe39a193a19",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 25,
+    "timestamp": 1783114570.3678594,
+    "timestamp_iso": "2026-07-03T23:36:10.367864",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29325,
+      "last_updated": 1783114570.319554,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "7c85d9f43a14",
+    "field_hash": "1031fb84621d",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 26,
+    "timestamp": 1783114570.5838997,
+    "timestamp_iso": "2026-07-03T23:36:10.583907",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27701,
+      "last_updated": 1783114570.479833,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "3a4794265647",
+    "field_hash": "2149c1ce033e",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 27,
+    "timestamp": 1783114570.7775927,
+    "timestamp_iso": "2026-07-03T23:36:10.777598",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29846,
+      "last_updated": 1783114570.662052,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "8026c62e18a7",
+    "field_hash": "63b320b93586",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 28,
+    "timestamp": 1783114570.9885225,
+    "timestamp_iso": "2026-07-03T23:36:10.988528",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29327,
+      "last_updated": 1783114570.9232464,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "737cedc54eb2",
+    "field_hash": "4c86ceef133e",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 29,
+    "timestamp": 1783114571.1903858,
+    "timestamp_iso": "2026-07-03T23:36:11.190392",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27703,
+      "last_updated": 1783114571.0776975,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "1144c5271d7f",
+    "field_hash": "71409d2ac7e0",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 30,
+    "timestamp": 1783114571.3765626,
+    "timestamp_iso": "2026-07-03T23:36:11.376568",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29848,
+      "last_updated": 1783114571.2659404,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "988ec0247b2c",
+    "field_hash": "eff51fd6c022",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 31,
+    "timestamp": 1783114571.5765386,
+    "timestamp_iso": "2026-07-03T23:36:11.576542",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29329,
+      "last_updated": 1783114571.526959,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "633477c6642d",
+    "field_hash": "eb5b09ecf530",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 32,
+    "timestamp": 1783114571.8011992,
+    "timestamp_iso": "2026-07-03T23:36:11.801206",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27705,
+      "last_updated": 1783114571.680184,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "424538433147",
+    "field_hash": "df42f65cbf1b",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 33,
+    "timestamp": 1783114571.9811902,
+    "timestamp_iso": "2026-07-03T23:36:11.981193",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29850,
+      "last_updated": 1783114571.8709254,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "cc67f77d1357",
+    "field_hash": "3e6041e38e38",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 34,
+    "timestamp": 1783114572.1883166,
+    "timestamp_iso": "2026-07-03T23:36:12.188323",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29331,
+      "last_updated": 1783114572.1295733,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "0bde9cf31710",
+    "field_hash": "95e29d192df5",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 35,
+    "timestamp": 1783114572.4042525,
+    "timestamp_iso": "2026-07-03T23:36:12.404260",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27707,
+      "last_updated": 1783114572.2864392,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "66a8a4a802d5",
+    "field_hash": "6ab5c63c0f15",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 36,
+    "timestamp": 1783114572.5765254,
+    "timestamp_iso": "2026-07-03T23:36:12.576529",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29852,
+      "last_updated": 1783114572.4682705,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "25e51053b8cd",
+    "field_hash": "bbc7ac8e7844",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 37,
+    "timestamp": 1783114572.778397,
+    "timestamp_iso": "2026-07-03T23:36:12.778401",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29333,
+      "last_updated": 1783114572.7305236,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "3e36d214bf33",
+    "field_hash": "444fbf9c5cac",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 38,
+    "timestamp": 1783114572.9958622,
+    "timestamp_iso": "2026-07-03T23:36:12.995869",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27709,
+      "last_updated": 1783114572.8863387,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "f7e12c61be20",
+    "field_hash": "0ff58217a11c",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 39,
+    "timestamp": 1783114573.1746135,
+    "timestamp_iso": "2026-07-03T23:36:13.174618",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29854,
+      "last_updated": 1783114573.0754626,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "bc5e4ce2fcb5",
+    "field_hash": "b9b77147b94d",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 40,
+    "timestamp": 1783114573.3762841,
+    "timestamp_iso": "2026-07-03T23:36:13.376289",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29335,
+      "last_updated": 1783114573.3317301,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "c44b61c21d0f",
+    "field_hash": "dadde6c194a7",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 41,
+    "timestamp": 1783114573.5873606,
+    "timestamp_iso": "2026-07-03T23:36:13.587366",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27711,
+      "last_updated": 1783114573.4921615,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "550cdd55de16",
+    "field_hash": "9aa62c2d9b8c",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 42,
+    "timestamp": 1783114573.7878342,
+    "timestamp_iso": "2026-07-03T23:36:13.787838",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29856,
+      "last_updated": 1783114573.6814933,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "329bfa5fb5aa",
+    "field_hash": "630e7deb0fae",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 43,
+    "timestamp": 1783114574.0252664,
+    "timestamp_iso": "2026-07-03T23:36:14.025272",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29337,
+      "last_updated": 1783114573.938511,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "ccf80ba694c9",
+    "field_hash": "9be7cd3f79b2",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 44,
+    "timestamp": 1783114574.1689508,
+    "timestamp_iso": "2026-07-03T23:36:14.168952",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27713,
+      "last_updated": 1783114574.1073267,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "0bcad65c3348",
+    "field_hash": "8f5b107eff64",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 45,
+    "timestamp": 1783114574.368581,
+    "timestamp_iso": "2026-07-03T23:36:14.368584",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29858,
+      "last_updated": 1783114574.2789793,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "171e2414719a",
+    "field_hash": "e550d1165f93",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 46,
+    "timestamp": 1783114574.5828767,
+    "timestamp_iso": "2026-07-03T23:36:14.582881",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29339,
+      "last_updated": 1783114574.5376348,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "20d4a8bf2aef",
+    "field_hash": "a0664c9c532d",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 47,
+    "timestamp": 1783114574.7843885,
+    "timestamp_iso": "2026-07-03T23:36:14.784394",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27715,
+      "last_updated": 1783114574.6995926,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "c849e4db237c",
+    "field_hash": "9645d4bdbea1",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 48,
+    "timestamp": 1783114574.9934876,
+    "timestamp_iso": "2026-07-03T23:36:14.993494",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29860,
+      "last_updated": 1783114574.8812559,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "07d2376b6e8c",
+    "field_hash": "55b69a7284c0",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 49,
+    "timestamp": 1783114575.189141,
+    "timestamp_iso": "2026-07-03T23:36:15.189146",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29341,
+      "last_updated": 1783114575.1436613,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "3f6f4362746c",
+    "field_hash": "499fbf27b267",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 50,
+    "timestamp": 1783114575.3898108,
+    "timestamp_iso": "2026-07-03T23:36:15.389816",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27717,
+      "last_updated": 1783114575.299718,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "daab42e9a7f3",
+    "field_hash": "d5149fb96ea8",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 51,
+    "timestamp": 1783114575.5833342,
+    "timestamp_iso": "2026-07-03T23:36:15.583339",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29862,
+      "last_updated": 1783114575.4803162,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "f8e369bfdacc",
+    "field_hash": "04a16ff90885",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 52,
+    "timestamp": 1783114575.7801082,
+    "timestamp_iso": "2026-07-03T23:36:15.780115",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29343,
+      "last_updated": 1783114575.7420576,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "39f352413da2",
+    "field_hash": "802052a793d1",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 53,
+    "timestamp": 1783114575.986466,
+    "timestamp_iso": "2026-07-03T23:36:15.986471",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27719,
+      "last_updated": 1783114575.902747,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "1a9cf25caa39",
+    "field_hash": "b6ff92d50a68",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 54,
+    "timestamp": 1783114576.1860158,
+    "timestamp_iso": "2026-07-03T23:36:16.186019",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29864,
+      "last_updated": 1783114576.0856442,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "e13fd7395722",
+    "field_hash": "374bfb479400",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 55,
+    "timestamp": 1783114576.39221,
+    "timestamp_iso": "2026-07-03T23:36:16.392215",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29345,
+      "last_updated": 1783114576.3492262,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "cd5145b05edf",
+    "field_hash": "6e980836136b",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 56,
+    "timestamp": 1783114576.598144,
+    "timestamp_iso": "2026-07-03T23:36:16.598150",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27721,
+      "last_updated": 1783114576.5122242,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "e037b830e65d",
+    "field_hash": "413ef0f84969",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 57,
+    "timestamp": 1783114576.795795,
+    "timestamp_iso": "2026-07-03T23:36:16.795800",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29866,
+      "last_updated": 1783114576.7046149,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "45503a8b8cd3",
+    "field_hash": "c0f3a432397f",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 58,
+    "timestamp": 1783114576.994666,
+    "timestamp_iso": "2026-07-03T23:36:16.994672",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29347,
+      "last_updated": 1783114576.946568,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "e24d34168e73",
+    "field_hash": "39e756e86098",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 59,
+    "timestamp": 1783114577.1966996,
+    "timestamp_iso": "2026-07-03T23:36:17.196703",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27723,
+      "last_updated": 1783114577.1080537,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "086d2dc88a99",
+    "field_hash": "195a17140d37",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 60,
+    "timestamp": 1783114577.3863316,
+    "timestamp_iso": "2026-07-03T23:36:17.386335",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29868,
+      "last_updated": 1783114577.2907476,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "5f7441dfa939",
+    "field_hash": "375e8b1d7f19",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 61,
+    "timestamp": 1783114577.5971465,
+    "timestamp_iso": "2026-07-03T23:36:17.597153",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26685,
+      "last_updated": 1783114577.4909325,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "88d47ee4b63f",
+    "field_hash": "0bc2dd1e04d3",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 62,
+    "timestamp": 1783114577.8380337,
+    "timestamp_iso": "2026-07-03T23:36:17.838037",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27725,
+      "last_updated": 1783114577.7284782,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "52cd39139798",
+    "field_hash": "2884b3c58878",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 63,
+    "timestamp": 1783114577.9856958,
+    "timestamp_iso": "2026-07-03T23:36:17.985700",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29870,
+      "last_updated": 1783114577.9269435,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "45bf2854f6a6",
+    "field_hash": "9fda8a2f9dd0",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 64,
+    "timestamp": 1783114578.1927788,
+    "timestamp_iso": "2026-07-03T23:36:18.192783",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26687,
+      "last_updated": 1783114578.0934193,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "19b65b9ba6dd",
+    "field_hash": "5d5527cc3b1b",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 65,
+    "timestamp": 1783114578.393471,
+    "timestamp_iso": "2026-07-03T23:36:18.393476",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27727,
+      "last_updated": 1783114578.3185568,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "3556bbc2d30f",
+    "field_hash": "e9691316e877",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 66,
+    "timestamp": 1783114578.6390817,
+    "timestamp_iso": "2026-07-03T23:36:18.639090",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29872,
+      "last_updated": 1783114578.5398884,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "6e475eb4b987",
+    "field_hash": "b9f1deec52f8",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 67,
+    "timestamp": 1783114578.8082314,
+    "timestamp_iso": "2026-07-03T23:36:18.808239",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26689,
+      "last_updated": 1783114578.6952875,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "92ea4977270f",
+    "field_hash": "6a865522172c",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 68,
+    "timestamp": 1783114578.9914355,
+    "timestamp_iso": "2026-07-03T23:36:18.991442",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27729,
+      "last_updated": 1783114578.9223132,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "670bf1464fcb",
+    "field_hash": "efd4c5bbb5d8",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 69,
+    "timestamp": 1783114579.2058334,
+    "timestamp_iso": "2026-07-03T23:36:19.205838",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29874,
+      "last_updated": 1783114579.13342,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "1af8893cbc7d",
+    "field_hash": "fe8a2ca0002f",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 70,
+    "timestamp": 1783114579.396478,
+    "timestamp_iso": "2026-07-03T23:36:19.396483",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26691,
+      "last_updated": 1783114579.3030245,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "d7f5b630df8b",
+    "field_hash": "872f33d9e89b",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 71,
+    "timestamp": 1783114579.5902638,
+    "timestamp_iso": "2026-07-03T23:36:19.590269",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27731,
+      "last_updated": 1783114579.523446,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "b0bf077d8e31",
+    "field_hash": "99dc174cc8c8",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 72,
+    "timestamp": 1783114579.7862923,
+    "timestamp_iso": "2026-07-03T23:36:19.786296",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29876,
+      "last_updated": 1783114579.737744,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "d05dd6ade9f7",
+    "field_hash": "88c49c2a4e0a",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 73,
+    "timestamp": 1783114579.9951618,
+    "timestamp_iso": "2026-07-03T23:36:19.995166",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26693,
+      "last_updated": 1783114579.900331,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "20baa15c8848",
+    "field_hash": "1bd59d164352",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 74,
+    "timestamp": 1783114580.1933184,
+    "timestamp_iso": "2026-07-03T23:36:20.193322",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27733,
+      "last_updated": 1783114580.126252,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "e7ebceec4536",
+    "field_hash": "1bccfa20b54b",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 75,
+    "timestamp": 1783114580.4223006,
+    "timestamp_iso": "2026-07-03T23:36:20.422305",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29878,
+      "last_updated": 1783114580.3419487,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "7658c4cc6d03",
+    "field_hash": "f675ba913f80",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 76,
+    "timestamp": 1783114580.5990481,
+    "timestamp_iso": "2026-07-03T23:36:20.599054",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26695,
+      "last_updated": 1783114580.5053835,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "6394748ae972",
+    "field_hash": "9c107693f54e",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 77,
+    "timestamp": 1783114580.824047,
+    "timestamp_iso": "2026-07-03T23:36:20.824053",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27735,
+      "last_updated": 1783114580.7320423,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "3e809b465c9d",
+    "field_hash": "8d1ca68014f4",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 78,
+    "timestamp": 1783114581.015829,
+    "timestamp_iso": "2026-07-03T23:36:21.015836",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29880,
+      "last_updated": 1783114580.9383233,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "94be0b1f80e3",
+    "field_hash": "c0ca47ace9a7",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 79,
+    "timestamp": 1783114581.19319,
+    "timestamp_iso": "2026-07-03T23:36:21.193192",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26697,
+      "last_updated": 1783114581.1124063,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "63c86088ae83",
+    "field_hash": "2e68915d28cb",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 80,
+    "timestamp": 1783114581.3997035,
+    "timestamp_iso": "2026-07-03T23:36:21.399710",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27737,
+      "last_updated": 1783114581.3319018,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "22aa1df51033",
+    "field_hash": "a315d7f7a722",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 81,
+    "timestamp": 1783114581.6016705,
+    "timestamp_iso": "2026-07-03T23:36:21.601675",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29882,
+      "last_updated": 1783114581.5433342,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "eb51fb356905",
+    "field_hash": "ec09bd2b22d8",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 82,
+    "timestamp": 1783114581.8006117,
+    "timestamp_iso": "2026-07-03T23:36:21.800618",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26699,
+      "last_updated": 1783114581.7262654,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "2c44f8626fef",
+    "field_hash": "887792c491ae",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 83,
+    "timestamp": 1783114582.0248966,
+    "timestamp_iso": "2026-07-03T23:36:22.024901",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27739,
+      "last_updated": 1783114581.938714,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "e315965dfa1a",
+    "field_hash": "730e13d89832",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 84,
+    "timestamp": 1783114582.218496,
+    "timestamp_iso": "2026-07-03T23:36:22.218505",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29884,
+      "last_updated": 1783114582.15217,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "0149de80946f",
+    "field_hash": "5b8ae2b936c8",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 85,
+    "timestamp": 1783114582.4062726,
+    "timestamp_iso": "2026-07-03T23:36:22.406277",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26701,
+      "last_updated": 1783114582.313892,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "1e2b2e0b2daa",
+    "field_hash": "07df7bdedefc",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 86,
+    "timestamp": 1783114582.5878677,
+    "timestamp_iso": "2026-07-03T23:36:22.587875",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27741,
+      "last_updated": 1783114582.5380828,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "f3dd89227d88",
+    "field_hash": "78f57385247c",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 87,
+    "timestamp": 1783114582.8343916,
+    "timestamp_iso": "2026-07-03T23:36:22.834396",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29886,
+      "last_updated": 1783114582.7615893,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "131735d9c5a1",
+    "field_hash": "526bcfaf0d3b",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 88,
+    "timestamp": 1783114583.0145657,
+    "timestamp_iso": "2026-07-03T23:36:23.014567",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26703,
+      "last_updated": 1783114582.9157832,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "e71c94ef5747",
+    "field_hash": "7f7a741d46f5",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 89,
+    "timestamp": 1783114583.2001982,
+    "timestamp_iso": "2026-07-03T23:36:23.200208",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27743,
+      "last_updated": 1783114583.142857,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "09b0c08b5d13",
+    "field_hash": "f41d8f946aaa",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 90,
+    "timestamp": 1783114583.417263,
+    "timestamp_iso": "2026-07-03T23:36:23.417268",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29888,
+      "last_updated": 1783114583.3615088,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "f5f28e546d66",
+    "field_hash": "30987d997d07",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 91,
+    "timestamp": 1783114583.6252453,
+    "timestamp_iso": "2026-07-03T23:36:23.625250",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26705,
+      "last_updated": 1783114583.5255864,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "48bf093a76dd",
+    "field_hash": "2ee69be2077d",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 92,
+    "timestamp": 1783114583.842254,
+    "timestamp_iso": "2026-07-03T23:36:23.842258",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27745,
+      "last_updated": 1783114583.7553222,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "7b34a02f3776",
+    "field_hash": "17f3e1ed477b",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 93,
+    "timestamp": 1783114584.016624,
+    "timestamp_iso": "2026-07-03T23:36:24.016637",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29370,
+      "last_updated": 1783114583.8784041,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "dfa9e2d54aee",
+    "field_hash": "92b327628206",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 94,
+    "timestamp": 1783114584.2404702,
+    "timestamp_iso": "2026-07-03T23:36:24.240476",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26707,
+      "last_updated": 1783114584.124958,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "7db1a87e7ba2",
+    "field_hash": "16a6ba5a27f2",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 95,
+    "timestamp": 1783114584.407295,
+    "timestamp_iso": "2026-07-03T23:36:24.407300",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27747,
+      "last_updated": 1783114584.3453252,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "9e84bb388d50",
+    "field_hash": "ca952f365e94",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 96,
+    "timestamp": 1783114584.6098218,
+    "timestamp_iso": "2026-07-03T23:36:24.609825",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "3": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 3,
+      "dealer_seat": 4,
+      "state_version": 29892,
+      "last_updated": 1783114584.5634854,
+      "authority_source_bot": "allinstalker"
+    },
+    "textarea_hash": "acb163f2c881",
+    "api_hash": "6b7241495306",
+    "field_hash": "4bf735c6eaba",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: allinstalker (ZAR9.2) [HERO] [Kd "
+  },
+  {
+    "sample_num": 97,
+    "timestamp": 1783114584.8244867,
+    "timestamp_iso": "2026-07-03T23:36:24.824494",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26709,
+      "last_updated": 1783114584.7237291,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "d28c5959ede9",
+    "field_hash": "14ea30b3bc4a",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  },
+  {
+    "sample_num": 98,
+    "timestamp": 1783114585.0278852,
+    "timestamp_iso": "2026-07-03T23:36:25.027897",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 71.44,
+      "board": [
+        "2d",
+        "Ah",
+        "Jh",
+        "6c",
+        "Qh"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "2": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ],
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 2,
+      "dealer_seat": 5,
+      "state_version": 27749,
+      "last_updated": 1783114584.95232,
+      "authority_source_bot": "9HiLikeABOss"
+    },
+    "textarea_hash": "fbcc5165d248",
+    "api_hash": "fc757bf12c4f",
+    "field_hash": "a3237d33ae6e",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 2d Ah Jh\nTURN: 6c\nRIVER: Qh\nSEAT 1: Atros (ZAR24.77) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: 9HiLikeABOss (ZAR253.54) [HERO] [Ac Td"
+  },
+  {
+    "sample_num": 99,
+    "timestamp": 1783114585.231465,
+    "timestamp_iso": "2026-07-03T23:36:25.231472",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "PREFLOP",
+      "pot_zar": 0,
+      "board": [],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "5": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "5": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 5,
+      "dealer_seat": 2,
+      "state_version": 29374,
+      "last_updated": 1783114585.0973692,
+      "authority_source_bot": "PlayaNomore"
+    },
+    "textarea_hash": "09973be669b1",
+    "api_hash": "8d5a125ded0e",
+    "field_hash": "46035b7edb36",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: PREFLOP\nSEAT 1: EMPTY (ZAR0) [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s]\nSEAT 3: EMPTY (ZAR0) [--]\nSEAT 4: EMPTY ("
+  },
+  {
+    "sample_num": 100,
+    "timestamp": 1783114585.3926203,
+    "timestamp_iso": "2026-07-03T23:36:25.392624",
+    "fields": {
+      "table_id": "pb_2589955",
+      "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+      "street": "RIVER",
+      "pot_zar": 25,
+      "board": [
+        "3d",
+        "4h",
+        "6h",
+        "Js",
+        "6d"
+      ],
+      "hole_cards": {
+        "1": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "2": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ]
+      },
+      "needs_action": [],
+      "available_actions": {
+        "1": [
+          "back_to_game"
+        ],
+        "3": [
+          "back_to_game"
+        ]
+      },
+      "hero_seat": 1,
+      "dealer_seat": 1,
+      "state_version": 26711,
+      "last_updated": 1783114585.3266373,
+      "authority_source_bot": "Atros"
+    },
+    "textarea_hash": "56b32e3b7ccb",
+    "api_hash": "58424b6b3376",
+    "field_hash": "33e8c06bf712",
+    "textarea_preview": "TABLE: pb_2589955\nHAND: 1bfedafa-f127-4dfe-9751-451b1eed9ee7\nSTREET: RIVER\nFLOP: 3d 4h 6h\nTURN: Js\nRIVER: 6d\nSEAT 1: Atros (ZAR19.77) [HERO] [Jd Ts 9s 5h 5s 2h]\nSEAT 2: EMPTY (ZAR0) [Ac Td Ts 6d 5c 3s"
+  }
+]

@@ -1572,21 +1572,20 @@ function checkNewHand() {
   var flopStr = Array.isArray(b.flop) ? b.flop.join(',') : '';
   var boardKey = lastTable.street + ':' + flopStr;
   if (lastBoardKey !== null && lastBoardKey !== boardKey) {
-    var isPreflop = boardKey.indexOf('PREFLOP:') === 0;
-    if (isPreflop || flopStr !== lastBoardKey.split(':').slice(1).join(':')) {
       preActionState = {};
       cashoutState = {};
       autoCcPreflop = {};
       khState = {};
       autoCcLastSent = {};
       globalCFExcluded = {};
+      globalAutoCcPreflop = false;
+      globalAutoCF = false;
       console.log('[AUTO_CC_PREFLOP] reset_new_hand');
       seatAmounts = {};
       emgAmount = null;
       renderedSeats = {};
       lastEmgHash = null;
       console.log('[REMOTE] checkbox states reset after hand transition');
-    }
   }
   lastBoardKey = boardKey;
 }

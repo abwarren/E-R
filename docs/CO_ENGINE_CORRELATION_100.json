@@ -1,0 +1,6979 @@
+{
+  "study": "CO-Engine Correlation (100 Sample Study)",
+  "timestamp": "2026-07-03T22:00:40.092691+00:00",
+  "target": "http://127.0.0.1:4000/api/latest",
+  "methodology": "Polled /api/latest at 1500ms intervals. Both CO and Engine consume same endpoint. Engine textarea simulated via formatTableDataToCanonical(). Hash dedup simulated per Engine logic.",
+  "sample_count": 100,
+  "active_samples": 100,
+  "waiting_samples": 0,
+  "total_elapsed_s": 150.0,
+  "field_correlation": {
+    "table_id": {
+      "total": 100,
+      "identical": 100,
+      "match_pct": 100.0,
+      "mismatch": 0,
+      "co_missing": 0,
+      "eng_missing": 0,
+      "partial": 0
+    },
+    "hand_id": {
+      "total": 100,
+      "identical": 100,
+      "match_pct": 100.0,
+      "mismatch": 0,
+      "co_missing": 0,
+      "eng_missing": 0,
+      "partial": 0
+    },
+    "board": {
+      "total": 100,
+      "identical": 100,
+      "match_pct": 100.0,
+      "mismatch": 0,
+      "co_missing": 0,
+      "eng_missing": 0,
+      "partial": 0
+    },
+    "hole_cards": {
+      "total": 100,
+      "identical": 100,
+      "match_pct": 100.0,
+      "mismatch": 0,
+      "co_missing": 0,
+      "eng_missing": 0,
+      "partial": 0
+    },
+    "street": {
+      "total": 100,
+      "identical": 100,
+      "match_pct": 100.0,
+      "mismatch": 0,
+      "co_missing": 0,
+      "eng_missing": 0,
+      "partial": 0
+    },
+    "pot_zar": {
+      "total": 100,
+      "identical": 100,
+      "match_pct": 100.0,
+      "mismatch": 0,
+      "co_missing": 0,
+      "eng_missing": 0,
+      "partial": 0
+    },
+    "action_history": {
+      "total": 100,
+      "identical": 100,
+      "match_pct": 100.0,
+      "mismatch": 0,
+      "co_missing": 0,
+      "eng_missing": 0,
+      "partial": 0
+    },
+    "available_actions": {
+      "total": 100,
+      "identical": 100,
+      "match_pct": 100.0,
+      "mismatch": 0,
+      "co_missing": 0,
+      "eng_missing": 0,
+      "partial": 0
+    },
+    "needs_action": {
+      "total": 100,
+      "identical": 100,
+      "match_pct": 100.0,
+      "mismatch": 0,
+      "co_missing": 0,
+      "eng_missing": 0,
+      "partial": 0
+    },
+    "active_player": {
+      "total": 100,
+      "identical": 100,
+      "match_pct": 100.0,
+      "mismatch": 0,
+      "co_missing": 0,
+      "eng_missing": 0,
+      "partial": 0
+    }
+  },
+  "field_key": [
+    "table_id",
+    "hand_id",
+    "board",
+    "hole_cards",
+    "street",
+    "pot_zar",
+    "action_history",
+    "available_actions",
+    "needs_action",
+    "active_player"
+  ],
+  "match_categories": {
+    "perfect": 100,
+    "partial": 0,
+    "perfect_pct": 100.0,
+    "partial_pct": 0.0
+  },
+  "engine_behavior": {
+    "accepted": 8,
+    "rejected": 92,
+    "empty_textarea": 0,
+    "accept_rate_pct": 8.0
+  },
+  "divergence_count": 25,
+  "divergences": [
+    {
+      "sample_to": 27,
+      "timestamp": "2026-07-03T21:58:49.094594+00:00",
+      "field": "board",
+      "prev": "{'flop': ['2d', 'Ah', 'Jh'], 'river': 'Qh', 'turn': '6c'}",
+      "new": "{'flop': [], 'river': None, 'turn': None}"
+    },
+    {
+      "sample_to": 27,
+      "timestamp": "2026-07-03T21:58:49.094594+00:00",
+      "field": "hole_cards",
+      "prev": "['Ac', 'Td', 'Ts', '6d', '5c', '3s']",
+      "new": "['Qs', 'Tc', '9h', '9d', '6s', '4d']"
+    },
+    {
+      "sample_to": 27,
+      "timestamp": "2026-07-03T21:58:49.094594+00:00",
+      "field": "street",
+      "prev": "RIVER",
+      "new": "PREFLOP"
+    },
+    {
+      "sample_to": 27,
+      "timestamp": "2026-07-03T21:58:49.094594+00:00",
+      "field": "pot_zar",
+      "prev": "71.44",
+      "new": "0"
+    },
+    {
+      "sample_to": 27,
+      "timestamp": "2026-07-03T21:58:49.094594+00:00",
+      "field": "active_player",
+      "prev": "9HiLikeABOss",
+      "new": "PlayaNomore"
+    },
+    {
+      "sample_to": 30,
+      "timestamp": "2026-07-03T21:58:53.600875+00:00",
+      "field": "hole_cards",
+      "prev": "['Qs', 'Tc', '9h', '9d', '6s', '4d']",
+      "new": "['Kd', 'Th', '6c', '3h', '2d', '2c']"
+    },
+    {
+      "sample_to": 30,
+      "timestamp": "2026-07-03T21:58:53.600875+00:00",
+      "field": "active_player",
+      "prev": "PlayaNomore",
+      "new": "allinstalker"
+    },
+    {
+      "sample_to": 35,
+      "timestamp": "2026-07-03T21:59:01.089078+00:00",
+      "field": "board",
+      "prev": "{'flop': [], 'river': None, 'turn': None}",
+      "new": "{'flop': ['3d', '4h', '6h'], 'river': '6d', 'turn': 'Js'}"
+    },
+    {
+      "sample_to": 35,
+      "timestamp": "2026-07-03T21:59:01.089078+00:00",
+      "field": "hole_cards",
+      "prev": "['Kd', 'Th', '6c', '3h', '2d', '2c']",
+      "new": "['Jd', 'Ts', '9s', '5h', '5s', '2h']"
+    },
+    {
+      "sample_to": 35,
+      "timestamp": "2026-07-03T21:59:01.089078+00:00",
+      "field": "street",
+      "prev": "PREFLOP",
+      "new": "RIVER"
+    },
+    {
+      "sample_to": 35,
+      "timestamp": "2026-07-03T21:59:01.089078+00:00",
+      "field": "pot_zar",
+      "prev": "0",
+      "new": "25"
+    },
+    {
+      "sample_to": 35,
+      "timestamp": "2026-07-03T21:59:01.089078+00:00",
+      "field": "active_player",
+      "prev": "allinstalker",
+      "new": "Atros"
+    },
+    {
+      "sample_to": 38,
+      "timestamp": "2026-07-03T21:59:05.597421+00:00",
+      "field": "board",
+      "prev": "{'flop': ['3d', '4h', '6h'], 'river': '6d', 'turn': 'Js'}",
+      "new": "{'flop': ['2d', 'Ah', 'Jh'], 'river': 'Qh', 'turn': '6c'}"
+    },
+    {
+      "sample_to": 38,
+      "timestamp": "2026-07-03T21:59:05.597421+00:00",
+      "field": "hole_cards",
+      "prev": "['Jd', 'Ts', '9s', '5h', '5s', '2h']",
+      "new": "['Ac', 'Td', 'Ts', '6d', '5c', '3s']"
+    },
+    {
+      "sample_to": 38,
+      "timestamp": "2026-07-03T21:59:05.597421+00:00",
+      "field": "pot_zar",
+      "prev": "25",
+      "new": "71.44"
+    },
+    {
+      "sample_to": 38,
+      "timestamp": "2026-07-03T21:59:05.597421+00:00",
+      "field": "active_player",
+      "prev": "Atros",
+      "new": "9HiLikeABOss"
+    },
+    {
+      "sample_to": 77,
+      "timestamp": "2026-07-03T22:00:04.098730+00:00",
+      "field": "board",
+      "prev": "{'flop': ['2d', 'Ah', 'Jh'], 'river': 'Qh', 'turn': '6c'}",
+      "new": "{'flop': [], 'river': None, 'turn': None}"
+    },
+    {
+      "sample_to": 77,
+      "timestamp": "2026-07-03T22:00:04.098730+00:00",
+      "field": "hole_cards",
+      "prev": "['Ac', 'Td', 'Ts', '6d', '5c', '3s']",
+      "new": "['Qs', 'Tc', '9h', '9d', '6s', '4d']"
+    },
+    {
+      "sample_to": 77,
+      "timestamp": "2026-07-03T22:00:04.098730+00:00",
+      "field": "street",
+      "prev": "RIVER",
+      "new": "PREFLOP"
+    },
+    {
+      "sample_to": 77,
+      "timestamp": "2026-07-03T22:00:04.098730+00:00",
+      "field": "pot_zar",
+      "prev": "71.44",
+      "new": "0"
+    },
+    {
+      "sample_to": 77,
+      "timestamp": "2026-07-03T22:00:04.098730+00:00",
+      "field": "active_player",
+      "prev": "9HiLikeABOss",
+      "new": "PlayaNomore"
+    },
+    {
+      "sample_to": 95,
+      "timestamp": "2026-07-03T22:00:31.101658+00:00",
+      "field": "hole_cards",
+      "prev": "['Qs', 'Tc', '9h', '9d', '6s', '4d']",
+      "new": "['Kd', 'Th', '6c', '3h', '2d', '2c']"
+    },
+    {
+      "sample_to": 95,
+      "timestamp": "2026-07-03T22:00:31.101658+00:00",
+      "field": "active_player",
+      "prev": "PlayaNomore",
+      "new": "allinstalker"
+    },
+    {
+      "sample_to": 97,
+      "timestamp": "2026-07-03T22:00:34.097928+00:00",
+      "field": "hole_cards",
+      "prev": "['Kd', 'Th', '6c', '3h', '2d', '2c']",
+      "new": "['Qs', 'Tc', '9h', '9d', '6s', '4d']"
+    },
+    {
+      "sample_to": 97,
+      "timestamp": "2026-07-03T22:00:34.097928+00:00",
+      "field": "active_player",
+      "prev": "allinstalker",
+      "new": "PlayaNomore"
+    }
+  ],
+  "samples": [
+    {
+      "sample_num": 1,
+      "timestamp": "2026-07-03T21:58:10.091490+00:00",
+      "elapsed_s": 0.0,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115889.9911869,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": true,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 2,
+      "timestamp": "2026-07-03T21:58:11.582588+00:00",
+      "elapsed_s": 1.5,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115891.4992132,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 3,
+      "timestamp": "2026-07-03T21:58:13.087025+00:00",
+      "elapsed_s": 3.0,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115893.0024428,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 4,
+      "timestamp": "2026-07-03T21:58:14.587563+00:00",
+      "elapsed_s": 4.5,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115894.5107503,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 5,
+      "timestamp": "2026-07-03T21:58:16.084672+00:00",
+      "elapsed_s": 6.001,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115896.0170097,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 6,
+      "timestamp": "2026-07-03T21:58:17.585712+00:00",
+      "elapsed_s": 7.501,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115897.5257628,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 7,
+      "timestamp": "2026-07-03T21:58:19.085090+00:00",
+      "elapsed_s": 9.001,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115899.0313308,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 8,
+      "timestamp": "2026-07-03T21:58:20.585576+00:00",
+      "elapsed_s": 10.501,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115900.5488727,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 9,
+      "timestamp": "2026-07-03T21:58:22.086554+00:00",
+      "elapsed_s": 12.001,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115902.0445392,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 10,
+      "timestamp": "2026-07-03T21:58:23.585439+00:00",
+      "elapsed_s": 13.501,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115903.54496,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 11,
+      "timestamp": "2026-07-03T21:58:25.086888+00:00",
+      "elapsed_s": 15.001,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115905.053204,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 12,
+      "timestamp": "2026-07-03T21:58:26.587371+00:00",
+      "elapsed_s": 16.501,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115906.5565283,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 13,
+      "timestamp": "2026-07-03T21:58:28.086652+00:00",
+      "elapsed_s": 18.001,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115908.056728,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 14,
+      "timestamp": "2026-07-03T21:58:29.588819+00:00",
+      "elapsed_s": 19.502,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115909.565963,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 15,
+      "timestamp": "2026-07-03T21:58:31.089012+00:00",
+      "elapsed_s": 21.002,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115911.0711331,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 16,
+      "timestamp": "2026-07-03T21:58:32.592478+00:00",
+      "elapsed_s": 22.502,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115912.5773025,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 17,
+      "timestamp": "2026-07-03T21:58:34.087323+00:00",
+      "elapsed_s": 24.002,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115913.1800523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 18,
+      "timestamp": "2026-07-03T21:58:35.592589+00:00",
+      "elapsed_s": 25.502,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115913.1800523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 19,
+      "timestamp": "2026-07-03T21:58:37.089325+00:00",
+      "elapsed_s": 27.002,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115913.1800523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 20,
+      "timestamp": "2026-07-03T21:58:38.589979+00:00",
+      "elapsed_s": 28.502,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115913.1800523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 21,
+      "timestamp": "2026-07-03T21:58:40.089463+00:00",
+      "elapsed_s": 30.002,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115913.1800523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 22,
+      "timestamp": "2026-07-03T21:58:41.586164+00:00",
+      "elapsed_s": 31.502,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115913.1800523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 23,
+      "timestamp": "2026-07-03T21:58:43.089165+00:00",
+      "elapsed_s": 33.002,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115913.1800523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 24,
+      "timestamp": "2026-07-03T21:58:44.596567+00:00",
+      "elapsed_s": 34.503,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115913.1800523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 25,
+      "timestamp": "2026-07-03T21:58:46.090257+00:00",
+      "elapsed_s": 36.004,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115913.1800523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 26,
+      "timestamp": "2026-07-03T21:58:47.588662+00:00",
+      "elapsed_s": 37.504,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115913.1800523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 27,
+      "timestamp": "2026-07-03T21:58:49.094594+00:00",
+      "elapsed_s": 39.004,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115929.0677474,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": true,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 28,
+      "timestamp": "2026-07-03T21:58:50.599402+00:00",
+      "elapsed_s": 40.504,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115930.5744133,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 29,
+      "timestamp": "2026-07-03T21:58:52.105521+00:00",
+      "elapsed_s": 42.004,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115932.0783145,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 30,
+      "timestamp": "2026-07-03T21:58:53.600875+00:00",
+      "elapsed_s": 43.504,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "allinstalker",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115933.5726242,
+        "active_player": "allinstalker"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nKdTh6c3h2d2c",
+      "engine_hash": "d0e9a93ba9587ef9",
+      "engine_accepted": true,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 31,
+      "timestamp": "2026-07-03T21:58:55.094392+00:00",
+      "elapsed_s": 45.004,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "allinstalker",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115935.0736315,
+        "active_player": "allinstalker"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nKdTh6c3h2d2c",
+      "engine_hash": "d0e9a93ba9587ef9",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 32,
+      "timestamp": "2026-07-03T21:58:56.591885+00:00",
+      "elapsed_s": 46.504,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "allinstalker",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115936.578476,
+        "active_player": "allinstalker"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nKdTh6c3h2d2c",
+      "engine_hash": "d0e9a93ba9587ef9",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 33,
+      "timestamp": "2026-07-03T21:58:58.105075+00:00",
+      "elapsed_s": 48.005,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "allinstalker",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115938.0844123,
+        "active_player": "allinstalker"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nKdTh6c3h2d2c",
+      "engine_hash": "d0e9a93ba9587ef9",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 34,
+      "timestamp": "2026-07-03T21:58:59.594520+00:00",
+      "elapsed_s": 49.505,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "allinstalker",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115939.587153,
+        "active_player": "allinstalker"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nKdTh6c3h2d2c",
+      "engine_hash": "d0e9a93ba9587ef9",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 35,
+      "timestamp": "2026-07-03T21:59:01.089078+00:00",
+      "elapsed_s": 51.005,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "Atros",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "3d",
+            "4h",
+            "6h"
+          ],
+          "river": "6d",
+          "turn": "Js"
+        },
+        "pot_zar": 25,
+        "hole_cards": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115941.0704796,
+        "active_player": "Atros"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n3d4h6hJs6d",
+      "engine_hash": "778784667945ef1b",
+      "engine_accepted": true,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 36,
+      "timestamp": "2026-07-03T21:59:02.599288+00:00",
+      "elapsed_s": 52.505,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "Atros",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "3d",
+            "4h",
+            "6h"
+          ],
+          "river": "6d",
+          "turn": "Js"
+        },
+        "pot_zar": 25,
+        "hole_cards": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115942.576438,
+        "active_player": "Atros"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n3d4h6hJs6d",
+      "engine_hash": "778784667945ef1b",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 37,
+      "timestamp": "2026-07-03T21:59:04.098968+00:00",
+      "elapsed_s": 54.005,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "Atros",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "3d",
+            "4h",
+            "6h"
+          ],
+          "river": "6d",
+          "turn": "Js"
+        },
+        "pot_zar": 25,
+        "hole_cards": [
+          "Jd",
+          "Ts",
+          "9s",
+          "5h",
+          "5s",
+          "2h"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115944.0837312,
+        "active_player": "Atros"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n3d4h6hJs6d",
+      "engine_hash": "778784667945ef1b",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 38,
+      "timestamp": "2026-07-03T21:59:05.597421+00:00",
+      "elapsed_s": 55.505,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115945.385894,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": true,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 39,
+      "timestamp": "2026-07-03T21:59:07.090850+00:00",
+      "elapsed_s": 57.005,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115946.8955436,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 40,
+      "timestamp": "2026-07-03T21:59:08.588904+00:00",
+      "elapsed_s": 58.505,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115948.4004464,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 41,
+      "timestamp": "2026-07-03T21:59:10.089245+00:00",
+      "elapsed_s": 60.005,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115949.9047425,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 42,
+      "timestamp": "2026-07-03T21:59:11.591647+00:00",
+      "elapsed_s": 61.506,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115951.4084294,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 43,
+      "timestamp": "2026-07-03T21:59:13.089847+00:00",
+      "elapsed_s": 63.006,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115952.918463,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 44,
+      "timestamp": "2026-07-03T21:59:14.593563+00:00",
+      "elapsed_s": 64.506,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115954.4183903,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 45,
+      "timestamp": "2026-07-03T21:59:16.089998+00:00",
+      "elapsed_s": 66.006,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115955.9267364,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 46,
+      "timestamp": "2026-07-03T21:59:17.593047+00:00",
+      "elapsed_s": 67.506,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115957.4331384,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 47,
+      "timestamp": "2026-07-03T21:59:19.093613+00:00",
+      "elapsed_s": 69.006,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115958.9405887,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 48,
+      "timestamp": "2026-07-03T21:59:20.592739+00:00",
+      "elapsed_s": 70.506,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115960.4467745,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 49,
+      "timestamp": "2026-07-03T21:59:22.091844+00:00",
+      "elapsed_s": 72.007,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115961.948699,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 50,
+      "timestamp": "2026-07-03T21:59:23.592031+00:00",
+      "elapsed_s": 73.507,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115963.4595833,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 51,
+      "timestamp": "2026-07-03T21:59:25.091200+00:00",
+      "elapsed_s": 75.007,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115964.9627204,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 52,
+      "timestamp": "2026-07-03T21:59:26.593953+00:00",
+      "elapsed_s": 76.507,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115966.466605,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 53,
+      "timestamp": "2026-07-03T21:59:28.094116+00:00",
+      "elapsed_s": 78.007,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115967.9716475,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 54,
+      "timestamp": "2026-07-03T21:59:29.594948+00:00",
+      "elapsed_s": 79.507,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115969.4748652,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 55,
+      "timestamp": "2026-07-03T21:59:31.092664+00:00",
+      "elapsed_s": 81.007,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115970.9812148,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 56,
+      "timestamp": "2026-07-03T21:59:32.592931+00:00",
+      "elapsed_s": 82.507,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115972.4843597,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 57,
+      "timestamp": "2026-07-03T21:59:34.093677+00:00",
+      "elapsed_s": 84.007,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115973.3882105,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 58,
+      "timestamp": "2026-07-03T21:59:35.595682+00:00",
+      "elapsed_s": 85.508,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115973.3882105,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 59,
+      "timestamp": "2026-07-03T21:59:37.093918+00:00",
+      "elapsed_s": 87.008,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115973.3882105,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 60,
+      "timestamp": "2026-07-03T21:59:38.593143+00:00",
+      "elapsed_s": 88.508,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115973.3882105,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 61,
+      "timestamp": "2026-07-03T21:59:40.100300+00:00",
+      "elapsed_s": 90.008,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115973.3882105,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 62,
+      "timestamp": "2026-07-03T21:59:41.601821+00:00",
+      "elapsed_s": 91.508,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115973.3882105,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 63,
+      "timestamp": "2026-07-03T21:59:43.094510+00:00",
+      "elapsed_s": 93.008,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115973.3882105,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 64,
+      "timestamp": "2026-07-03T21:59:44.593472+00:00",
+      "elapsed_s": 94.508,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115973.3882105,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 65,
+      "timestamp": "2026-07-03T21:59:46.094869+00:00",
+      "elapsed_s": 96.009,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115973.3882105,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 66,
+      "timestamp": "2026-07-03T21:59:47.593950+00:00",
+      "elapsed_s": 97.509,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115973.3882105,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 67,
+      "timestamp": "2026-07-03T21:59:49.094738+00:00",
+      "elapsed_s": 99.009,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115989.0440521,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 68,
+      "timestamp": "2026-07-03T21:59:50.596209+00:00",
+      "elapsed_s": 100.509,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115990.5474312,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 69,
+      "timestamp": "2026-07-03T21:59:52.097380+00:00",
+      "elapsed_s": 102.009,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115992.0504754,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 70,
+      "timestamp": "2026-07-03T21:59:53.598625+00:00",
+      "elapsed_s": 103.509,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115993.5619397,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 71,
+      "timestamp": "2026-07-03T21:59:55.095654+00:00",
+      "elapsed_s": 105.009,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115995.065462,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 72,
+      "timestamp": "2026-07-03T21:59:56.594430+00:00",
+      "elapsed_s": 106.509,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115996.5684583,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 73,
+      "timestamp": "2026-07-03T21:59:58.095833+00:00",
+      "elapsed_s": 108.009,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115998.081523,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 74,
+      "timestamp": "2026-07-03T21:59:59.598217+00:00",
+      "elapsed_s": 109.51,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783115999.586609,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 75,
+      "timestamp": "2026-07-03T22:00:01.097121+00:00",
+      "elapsed_s": 111.01,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116001.0861158,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 76,
+      "timestamp": "2026-07-03T22:00:02.600869+00:00",
+      "elapsed_s": 112.51,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "9HiLikeABOss",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "RIVER",
+        "board": {
+          "flop": [
+            "2d",
+            "Ah",
+            "Jh"
+          ],
+          "river": "Qh",
+          "turn": "6c"
+        },
+        "pot_zar": 71.44,
+        "hole_cards": [
+          "Ac",
+          "Td",
+          "Ts",
+          "6d",
+          "5c",
+          "3s"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116002.589605,
+        "active_player": "9HiLikeABOss"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\n2dAhJh6cQh",
+      "engine_hash": "af299367b17f526c",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 77,
+      "timestamp": "2026-07-03T22:00:04.098730+00:00",
+      "elapsed_s": 114.01,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116004.0128613,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": true,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 78,
+      "timestamp": "2026-07-03T22:00:05.594637+00:00",
+      "elapsed_s": 115.51,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116005.5210147,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 79,
+      "timestamp": "2026-07-03T22:00:07.102854+00:00",
+      "elapsed_s": 117.01,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116007.0287547,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 80,
+      "timestamp": "2026-07-03T22:00:08.595796+00:00",
+      "elapsed_s": 118.51,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116008.5294194,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 81,
+      "timestamp": "2026-07-03T22:00:10.095335+00:00",
+      "elapsed_s": 120.01,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116010.0300455,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 82,
+      "timestamp": "2026-07-03T22:00:11.596172+00:00",
+      "elapsed_s": 121.511,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116011.5357585,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 83,
+      "timestamp": "2026-07-03T22:00:13.098177+00:00",
+      "elapsed_s": 123.011,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116013.0376601,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 84,
+      "timestamp": "2026-07-03T22:00:14.593074+00:00",
+      "elapsed_s": 124.511,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116014.5482273,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 85,
+      "timestamp": "2026-07-03T22:00:16.104599+00:00",
+      "elapsed_s": 126.011,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116016.0556076,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 86,
+      "timestamp": "2026-07-03T22:00:17.599438+00:00",
+      "elapsed_s": 127.512,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116017.5585015,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 87,
+      "timestamp": "2026-07-03T22:00:19.097807+00:00",
+      "elapsed_s": 129.012,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116019.065101,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 88,
+      "timestamp": "2026-07-03T22:00:20.598008+00:00",
+      "elapsed_s": 130.512,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116020.568509,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 89,
+      "timestamp": "2026-07-03T22:00:22.095616+00:00",
+      "elapsed_s": 132.012,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116022.0720718,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 90,
+      "timestamp": "2026-07-03T22:00:23.599481+00:00",
+      "elapsed_s": 133.512,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116023.5754986,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 91,
+      "timestamp": "2026-07-03T22:00:25.100776+00:00",
+      "elapsed_s": 135.012,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116025.0802546,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 92,
+      "timestamp": "2026-07-03T22:00:26.607023+00:00",
+      "elapsed_s": 136.512,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116026.5863106,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 93,
+      "timestamp": "2026-07-03T22:00:28.103863+00:00",
+      "elapsed_s": 138.012,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116028.0938387,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 94,
+      "timestamp": "2026-07-03T22:00:29.613299+00:00",
+      "elapsed_s": 139.512,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116029.5977576,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 95,
+      "timestamp": "2026-07-03T22:00:31.101658+00:00",
+      "elapsed_s": 141.013,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "allinstalker",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116031.0696933,
+        "active_player": "allinstalker"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nKdTh6c3h2d2c",
+      "engine_hash": "d0e9a93ba9587ef9",
+      "engine_accepted": true,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 96,
+      "timestamp": "2026-07-03T22:00:32.609639+00:00",
+      "elapsed_s": 142.513,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "allinstalker",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Kd",
+          "Th",
+          "6c",
+          "3h",
+          "2d",
+          "2c"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116032.577254,
+        "active_player": "allinstalker"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nKdTh6c3h2d2c",
+      "engine_hash": "d0e9a93ba9587ef9",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 97,
+      "timestamp": "2026-07-03T22:00:34.097928+00:00",
+      "elapsed_s": 144.013,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116033.506625,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": true,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 98,
+      "timestamp": "2026-07-03T22:00:35.601287+00:00",
+      "elapsed_s": 145.513,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116033.506625,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 99,
+      "timestamp": "2026-07-03T22:00:37.101313+00:00",
+      "elapsed_s": 147.013,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116033.506625,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    },
+    {
+      "sample_num": 100,
+      "timestamp": "2026-07-03T22:00:38.599650+00:00",
+      "elapsed_s": 148.513,
+      "table_waiting": false,
+      "co_view": {
+        "table_id": "pb_2589955",
+        "bot_id": "PlayaNomore",
+        "hand_id": "1bfedafa-f127-4dfe-9751-451b1eed9ee7",
+        "street": "PREFLOP",
+        "board": {
+          "flop": [],
+          "river": null,
+          "turn": null
+        },
+        "pot_zar": 0,
+        "hole_cards": [
+          "Qs",
+          "Tc",
+          "9h",
+          "9d",
+          "6s",
+          "4d"
+        ],
+        "available_actions": [
+          "back_to_game"
+        ],
+        "needs_action": false,
+        "action_history": {},
+        "snapshot_seq": null,
+        "last_updated": 1783116033.506625,
+        "active_player": "PlayaNomore"
+      },
+      "engine_text": "JdTs9s5h5s2h\nAcTdTs6d5c3s\nQsTc9h9d6s4d",
+      "engine_hash": "3e06f93c58c03cd6",
+      "engine_accepted": false,
+      "comparison": {
+        "table_id": "identical",
+        "hand_id": "identical",
+        "street": "identical",
+        "pot_zar": "identical",
+        "needs_action": "identical",
+        "active_player": "identical",
+        "board": "identical",
+        "hole_cards": "identical",
+        "available_actions": "identical",
+        "action_history": "identical"
+      },
+      "co_raw_keys": [
+        "authority",
+        "board",
+        "collector_batch",
+        "dealer_seat",
+        "hand_id",
+        "last_updated",
+        "pot_zar",
+        "seats",
+        "snapshot_seq",
+        "state_version",
+        "street",
+        "table_id",
+        "variant"
+      ]
+    }
+  ],
+  "final_question_answer": "PENDING \u2014 see terminal output"
+}
