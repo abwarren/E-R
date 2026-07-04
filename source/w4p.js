@@ -369,6 +369,7 @@
   var _lastHash = null;
   var _lastSendTime = 0;
   var _n = 0;
+  var _snapshotSeq = 0;            // TRACER: local monotonic snapshot counter
   var _sessionId = 'w4p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
   var _lastButtons = null;
   var _cashoutPre = false;   // when true, hyper-poll for cashout DOM element
@@ -1401,11 +1402,13 @@
     }
 
     // ── Save as last good snapshot ──────────────────────────────
+    _snapshotSeq++;
     var snap = {
       table_id:      tableId,
       bot_id:        heroName,
       session_id:    _sessionId,
       hand_id:       _handId,       // ADR-001: echoed from backend
+      snapshot_seq:  _snapshotSeq,  // TRACER: local monotonic counter
       seats:         seats,
       board: {
         flop:  boardCards.slice(0, 3),
@@ -1418,10 +1421,24 @@
       variant:       'plo',
       buttons:       buttons,
       available_actions: avail,
+      needs_action:     avail.length > 0,  // MVP-1: authoritative action signal
       active_player: activePlayerName,
       ts:            new Date().toISOString(),
       source_key:    'w4p_inject'
     };
+    // ── TRACER: Log snapshot before POST ──────────────────────
+    console.log(JSON.stringify({
+      tracer: 'EXT',
+      ts: snap.ts,
+      table_id: snap.table_id,
+      hand_id: (snap.hand_id || 'NONE').substr(0, 8),
+      snapshot_seq: snap.snapshot_seq,
+      street: snap.street,
+      board: (snap.board.flop || []).join('') + (snap.board.turn || '') + (snap.board.river || ''),
+      action_history: snap.available_actions.join(','),
+      seats: snap.seats.length,
+      hash: stateHash(snap).substr(0, 16)
+    }));
     _lastGoodSnapshot = JSON.parse(JSON.stringify(snap));  // deep copy
     _bootstrapped = true;  // bootstrap complete — enable normal debounce from now on
     return snap;

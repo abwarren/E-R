@@ -199,8 +199,10 @@ _TABLE_INACTIVE_TTL = 30  # seconds: mark table inactive if no snapshot received
 
 # ── Authority model (Phase A) ────────────────────────────────────────────────────
 # POKER_ACTIONS: actions that confer structural field authority (Signal 1).
-# back_to_game, resume_hand, show, run_it_twice are NOT poker actions.
-POKER_ACTIONS = frozenset({"fold", "check", "call", "bet", "raise", "all_in"})
+# v1-production: back_to_game and resume_hand indicate a seated bot at a live table.
+# They are valid poker states and MUST confer authority so street/board/pot are set.
+POKER_ACTIONS = frozenset({"fold", "check", "call", "bet", "raise", "all_in",
+                            "back_to_game", "resume_hand"})
 STREET_RANK = {"PREFLOP": 0, "FLOP": 1, "TURN": 2, "RIVER": 3}
 
 # ── Hand history (multi-hand ASCII log, FIFO last 20) ──────────────────────────
@@ -905,25 +907,42 @@ def _table_view(table):
     # Scan all siblings for the same table to populate every hero's
     # hole_cards so the engine textarea sees all hands for equity.
     table_id = table.get("table_id")
-    sibling_hero_cards = {}  # seat_no → hole_cards
+    sibling_hero_cards = {}  # hero_name → hole_cards
     for (tid, bid), t in _tables.items():
         if tid != table_id or bid == table.get("bot_id"):
             continue
         for sno, seat in t.get("seats", {}).items():
             hc = seat.get("hole_cards", [])
             if hc and len(hc) > 0 and seat.get("is_hero"):
-                sibling_hero_cards[sno] = hc
+                name = seat.get("name")
+                if name:
+                    sibling_hero_cards[name] = hc
                 break  # one hero per bot entry
 
+    matched_names = set()
     for seat in seats:
-        sno = seat.get("seat_no")
-        if sno in sibling_hero_cards and not seat.get("hole_cards"):
-            seat["hole_cards"] = sibling_hero_cards[sno]
+        name = seat.get("name")
+        if name and name in sibling_hero_cards and not seat.get("hole_cards"):
+            seat["hole_cards"] = sibling_hero_cards[name]
             seat["cards_source"] = "sibling_merge"
+            matched_names.add(name)
+
+    # Fallback: any sibling cards that couldn't be matched by name still
+    # need to reach the Engine textarea. Fill empty anonymous seat slots.
+    unmatched = {n: hc for n, hc in sibling_hero_cards.items() if n not in matched_names}
+    if unmatched:
+        for seat in seats:
+            if not unmatched:
+                break
+            if seat.get("name") is None and not seat.get("hole_cards"):
+                _, cards = unmatched.popitem()
+                seat["hole_cards"] = cards
+                seat["cards_source"] = "sibling_merge_fallback"
 
     view = {
         "table_id":      table["table_id"],
         "hand_id":       table.get("hand_id"),  # ADR-001
+        "snapshot_seq":  table.get("snapshot_seq"),  # TRACER
         "variant":       table["variant"],
         "street":        table["street"],
         "pot_zar":       table["pot_zar"],
@@ -1234,6 +1253,22 @@ def post_snapshot():
     cashout_cmd = None   # built outside lock, queued inside
     response_hand_id = None  # ADR-001: captured inside lock, used in response
 
+    # ── TRACER: Log received snapshot ─────────────────────────────────
+    app.logger.info(
+        '[TRACE][POST] table_id=%s hand_id=%s snapshot_seq=%s street=%s '
+        'board=%s aa=%s received_ts=%.3f',
+        table_id,
+        (payload.get('hand_id') or 'NONE')[:8],
+        payload.get('snapshot_seq', 'NONE'),
+        payload.get('street', 'PREFLOP'),
+        (''.join(str(c) for c in (payload.get('board') or {}).get('flop', []))
+         + str((payload.get('board') or {}).get('turn') or '')
+         + str((payload.get('board') or {}).get('river') or '')),
+        ','.join(payload.get('available_actions', [])),
+        ts
+    )
+    # ── End TRACER ──────────────────────────────────────────────────
+
     with _store_lock:
         table = get_or_create_table(table_id, bot_id)
 
@@ -1444,6 +1479,8 @@ def post_snapshot():
             else:
                 table["seats"][sno] = sdata
         table["last_ts"]       = ts
+        table["snapshot_seq"]  = payload.get('snapshot_seq')  # TRACER: from extension
+        table["needs_action"]  = len(payload.get('available_actions', [])) > 0  # MVP-1
         table["state_version"] += 1
 
         # ── Multi-hero: cache each hero's cards by bot_id (stable across seat_map changes) ──
@@ -1638,7 +1675,7 @@ def get_table(table_id):
         if table_id == 'latest':
             if not _tables:
                 return jsonify({'ok': False, 'error': 'No active tables'}), 404
-            table = _select_best_table()
+            table = _find_active_bot()
         else:
             # _tables keyed by (table_id, bot_id) — find all matching entries
             candidates = [t for (tid, _bid), t in _tables.items() if tid == table_id]
@@ -1661,80 +1698,121 @@ def _find_table_for_bot(bot_id):
     return None
 
 
-# ── API Selection: Multi-criteria scoring for /api/latest ───────────────────
-# When multiple bot entries exist for the same table_id, select the best one
-# using a deterministic total order: freshness > street rank > last_ts > hash.
-# See ADR-002 for full rationale.
+# ── MVP Selection: needs_action-based active bot finder ──────────────────────
+# Replaces the multi-criteria scoring system (_entry_score / _select_best_table).
+# Production v1 rule: return the bot that currently needs action.
+# If none needs action, return the last active bot (sticky). Never return null
+# when data exists. See W4P_MVP_REQUIREMENTS.md §5.
 
-FRESHNESS_WINDOW = 30        # seconds — must be recent to be a "live" candidate
-# STREET_RANK now defined at module level (line ~204) as part of Phase A authority model
+FRESHNESS_WINDOW = 30              # seconds — must be recent to be a "live" candidate
+_ACTIVE_CACHE_TTL = 60             # seconds — how long to retain last active bot
+_last_active_bot = {}              # table_id → table_entry (cached for stickiness)
 
-# Authority reason priority for selection tiebreaking.
-# When entries have equal freshness + street rank, prefer the bot with higher
-# authority signal: poker_actions (actively playing) > street_advanced (observer
-# in live hand) > cards_and_pot/board_present > never authoritative.
-_AUTH_REASON_RANK = {
-    "poker_actions": 3,
-    "street_advanced": 2,
-    "cards_and_pot": 1,
-    "board_present": 1,
-}
+def _find_active_bot(table_id=None):
+    """Return the table entry for the bot that currently needs action.
 
-
-def _entry_score(t, now):
-    """Score an entry for comparison. Higher = better.
-
-    Priority: freshness > street rank > authority reason > last_ts > tiebreak.
-
-    Returns a 5-tuple where each component is compared in order.
-    """
-    is_recent = 1 if (now - t.get("last_ts", 0)) < FRESHNESS_WINDOW else 0
-    street_rank = STREET_RANK.get(t.get("street", "PREFLOP"), 0)
-    reason_rank = _AUTH_REASON_RANK.get(t.get("_last_auth_reason"), 0)
-    last_ts = t.get("last_ts", 0)
-    tiebreak = hash(t.get("bot_id", "")) % 1000000
-    return (is_recent, street_rank, reason_rank, last_ts, tiebreak)
-
-
-def _select_best_table(table_id=None):
-    """Return the best entry for the given table_id.
-
-    When called without table_id (default /api/latest path):
-    selects the best entry per unique table_id, returns overall best.
-
-    When called with a specific table_id:
-    selects the best entry for that table only.
-
-    Selection priority (higher wins):
-    1. FRESHNESS — entry must be recent (< FRESHNESS_WINDOW seconds)
-    2. STREET RANK — RIVER > TURN > FLOP > PREFLOP
-    3. LAST_TS — most recently updated
-    4. HASH(bot_id) — deterministic tiebreak
+    Selection rule (in order):
+    1. Group all recent bots by table_id
+    2. Within each table: pick the bot with needs_action == true (most recent if tie)
+    3. Across tables: return the active bot with the most recent snapshot
+    4. If no bot anywhere needs action → return last active from cache
+    5. If cache miss → return any recent bot (best-effort fallback)
     """
     now = time.time()
 
-    if table_id:
-        candidates = [(t, bid) for (tid, bid), t in _tables.items()
-                       if tid == table_id]
-    else:
-        best_per_table = {}
-        for (tid, bid), t in _tables.items():
-            score = _entry_score(t, now)
-            if tid not in best_per_table or score > _entry_score(best_per_table[tid][0], now):
+    # Phase 1: group recent entries by table_id, pick best per table
+    best_per_table = {}  # table_id → (table_entry, bot_id)
+    for (tid, bid), t in _tables.items():
+        if table_id and tid != table_id:
+            continue
+        if (now - t.get("last_ts", 0)) >= FRESHNESS_WINDOW:
+            continue
+        current_best = best_per_table.get(tid)
+        if current_best is None:
+            best_per_table[tid] = (t, bid)
+        else:
+            # Prefer needs_action, then most recent
+            curr_active = current_best[0].get("needs_action")
+            new_active = t.get("needs_action")
+            if new_active and not curr_active:
                 best_per_table[tid] = (t, bid)
-        candidates = list(best_per_table.values())
+            elif new_active == curr_active:
+                if t.get("last_ts", 0) > current_best[0].get("last_ts", 0):
+                    best_per_table[tid] = (t, bid)
 
-    if not candidates:
-        return None
+    # Phase 2: find active bots across all per-table winners
+    active = [(t, bid, tid) for tid, (t, bid) in best_per_table.items()
+              if t.get("needs_action")]
 
-    # Prefer recent entries. Fall back to all if none are recent
-    # (system-wide outage — better stale data than nothing).
-    recent = [(t, bid) for t, bid in candidates
-              if (now - t.get("last_ts", 0)) < FRESHNESS_WINDOW]
+    # ── TRACER ──
+    tracer_active = [{
+        'table_id': str(tid)[:15],
+        'bot_id': str(bid)[:20],
+        'hand_id': (t.get('hand_id') or 'NONE')[:8],
+        'street': t.get('street', '?'),
+        'needs_action': t.get('needs_action'),
+        'last_ts': '%.3f' % t.get('last_ts', 0)
+    } for t, bid, tid in active]
+    tracer_best = [{
+        'table_id': str(tid)[:15],
+        'bot_id': str(bid)[:20],
+        'needs_action': t.get('needs_action'),
+        'last_ts': '%.3f' % t.get('last_ts', 0)
+    } for tid, (t, bid) in best_per_table.items()]
 
-    pool = recent if recent else candidates
-    pool.sort(key=lambda x: _entry_score(x[0], now), reverse=True)
-    return pool[0][0]
+    selected = None
+    reason = 'none'
+
+    if len(active) == 1:
+        selected = active[0][0]
+        reason = 'single_active'
+    elif len(active) > 1:
+        active.sort(key=lambda x: x[0].get("last_ts", 0), reverse=True)
+        selected = active[0][0]
+        reason = 'multiple_active_most_recent'
+
+    if selected is not None:
+        tid = selected.get('table_id')
+        if tid:
+            _last_active_bot[tid] = selected
+        app.logger.info(
+            '[TRACE][SELECT] best_per_table=%s active=%s selected=%s reason=%s',
+            json.dumps(tracer_best, default=str),
+            json.dumps(tracer_active, default=str),
+            str(selected.get('bot_id', '?'))[:20],
+            reason
+        )
+        return selected
+
+    # Phase 3: no bot needs action — use cached last active
+    target_tid = table_id
+    if not target_tid and best_per_table:
+        # Pick most recent table's ID
+        all_best = sorted(best_per_table.items(),
+                          key=lambda x: x[1][0].get('last_ts', 0), reverse=True)
+        target_tid = all_best[0][0]
+
+    if target_tid and target_tid in _last_active_bot:
+        cached = _last_active_bot[target_tid]
+        if (now - cached.get('last_ts', 0)) < _ACTIVE_CACHE_TTL:
+            app.logger.info(
+                '[TRACE][SELECT] no_active_bot cached=%s table=%s',
+                str(cached.get('bot_id', '?'))[:20], target_tid
+            )
+            return cached
+
+    # Phase 4: ultimate fallback — any recent entry
+    if best_per_table:
+        fallback = sorted(best_per_table.items(),
+                          key=lambda x: x[1][0].get('last_ts', 0), reverse=True)
+        fb_entry, fb_bot = fallback[0][1]
+        app.logger.info(
+            '[TRACE][SELECT] fallback selected=%s table=%s',
+            str(fb_bot)[:20], fallback[0][0]
+        )
+        return fb_entry
+
+    return None
 
 
 @app.route('/api/latest', methods=['GET'])
@@ -1770,7 +1848,7 @@ def _handle_table_latest():
             with _store_lock:
                 table = _find_table_for_bot(bot_id) if bot_id else None
                 if not table:
-                    table = _select_best_table()
+                    table = _find_active_bot()
                 if table:
                     # New data available!
                     if table['last_ts'] > last_ts_seen:
@@ -1824,7 +1902,7 @@ def _handle_table_latest():
 
         table = _find_table_for_bot(bot_id) if bot_id else None
         if not table:
-            table = _select_best_table()
+            table = _find_active_bot()
 
         # ── Staleness guard: if no snapshot for _TABLE_INACTIVE_TTL seconds,
         #     return the empty waiting placeholder.  Prevents stale board/pot
@@ -1873,6 +1951,16 @@ def _handle_table_latest():
                 'long_poll': False
             })
 
+    # ── TRACER: Log API response ──────────────────────────────────
+    app.logger.info(
+        '[TRACE][API] table_id=%s hand_id=%s snapshot_seq=%s street=%s hash=%s',
+        view.get('table_id', 'NONE'),
+        (view.get('hand_id') or 'NONE')[:8] if view.get('hand_id') else 'NONE',
+        view.get('snapshot_seq', 'NONE'),
+        view.get('street', '?'),
+        hashlib.md5(json.dumps(view, sort_keys=True, default=str).encode()).hexdigest()[:16]
+    )
+    # ── End TRACER ──────────────────────────────────────────────────
     return jsonify({'ok': True, 'table': view, 'long_poll': False})
 
 

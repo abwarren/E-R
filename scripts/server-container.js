@@ -89,6 +89,15 @@ app.get('/engine/', (_req, res) => {
 });
 app.use('/engine/', express.static(ENGINE_STATIC_CONTAINER, { maxAge: 0 }));
 
+// ── Source static assets (w4p.js, engine_flow_controls.js, etc.) ───────────────
+app.use('/source/', express.static(SOURCE_DIR, {
+  maxAge: 0,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+}));
+
 // ── Frontend API config (served directly — NOT proxied) ────────────────────
 // Must be defined BEFORE the /api proxy because http-proxy-middleware strips
 // the /api prefix, turning /api-config.js into /-config.js (404).

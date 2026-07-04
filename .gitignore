@@ -12,3 +12,5 @@ tests/profiles/
 tests/logs/
 tests/reports/
 *.log
+__pycache__/
+*.pyc

@@ -42,6 +42,19 @@ def push_snapshot(snapshot_dict):
             'hand_epoch': _hand_epoch,
         }
         SNAPSHOT_BUFFER.append(frame)
+        # ── TRACER: Log buffer insert ──────────────────────
+        d = snapshot_dict
+        print(json.dumps({
+            'tracer': 'BUFFER',
+            'ts': time.time(),
+            'table_id': d.get('table_id', 'NONE'),
+            'bot_id': d.get('bot_id', 'NONE'),
+            'hand_id': (d.get('hand_id') or 'NONE')[:8],
+            'snapshot_seq': d.get('snapshot_seq', 'NONE'),
+            'buffer_seq': _seq,
+            'buffer_size': len(SNAPSHOT_BUFFER),
+            'hand_epoch': _hand_epoch
+        }), flush=True)
 
 
 def get_latest_snapshot():

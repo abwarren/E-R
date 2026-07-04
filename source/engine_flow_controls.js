@@ -272,6 +272,19 @@
       nativeSetter.call(textarea, value);
       textarea.dispatchEvent(new Event("input", { bubbles: true }));
       textarea.dispatchEvent(new Event("change", { bubbles: true }));
+      // ── TRACER: Log textarea write ──────────────────────────
+      const lines = value.split('\n').filter(Boolean);
+      const handLine = lines[0] || 'NONE';
+      const chars = value.length;
+      console.log(JSON.stringify({
+        tracer: 'TEXTAREA',
+        ts: new Date().toISOString(),
+        hand_id: handLine.substring(0, 8),
+        snapshot_seq: 'NONE',
+        chars: chars,
+        lines: lines.length
+      }));
+      // ── End TRACER ──────────────────────────────────────────
     } catch (e) { console.error('[AUTO] Failed to set textarea value:', e); }
   }
 
@@ -285,8 +298,43 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       if (!data.ok || !data.table) return;
+      // ── TRACER: Log Engine fetch ─────────────────────────────
+      const t = data.table;
+      console.log(JSON.stringify({
+        tracer: 'ENGINE_FETCH',
+        ts: new Date().toISOString(),
+        table_id: t.table_id || 'NONE',
+        hand_id: (t.hand_id || 'NONE').substring(0, 8),
+        snapshot_seq: t.snapshot_seq || 'NONE',
+        street: t.street || '?',
+        hash: (data._hash || 'NONE').substring(0, 16)
+      }));
       const text = formatTableDataToCanonical(data.table);
-      if (!text || text === lastSnapshotHash) return;
+      if (!text || text === lastSnapshotHash) {
+        // ── TRACER: Log diff decision (rejected) ──────────────
+        if (text && text === lastSnapshotHash) {
+          console.log(JSON.stringify({
+            tracer: 'DIFF',
+            ts: new Date().toISOString(),
+            decision: 'REJECTED',
+            reason: 'Hash identical to lastSnapshotHash',
+            hand_id: (t.hand_id || 'NONE').substring(0, 8),
+            snapshot_seq: t.snapshot_seq || 'NONE'
+          }));
+        }
+        return;
+      }
+      // ── TRACER: Log diff decision (accepted) ────────────────
+      console.log(JSON.stringify({
+        tracer: 'DIFF',
+        ts: new Date().toISOString(),
+        decision: 'ACCEPTED',
+        reason: 'New hash differs from lastSnapshotHash',
+        hand_id: (t.hand_id || 'NONE').substring(0, 8),
+        snapshot_seq: t.snapshot_seq || 'NONE',
+        prev_hash: (lastSnapshotHash || 'NONE').substring(0, 16),
+        new_hash: text.substring(0, 16)
+      }));
       lastSnapshotHash = text;
       lastDataChange = Date.now();
       consecutiveErrors = 0;
