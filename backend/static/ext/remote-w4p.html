@@ -189,6 +189,19 @@
     border-color: #ffd54f;
     box-shadow: 0 0 6px rgba(255,213,79,0.3), 0 2px 6px rgba(0,0,0,0.4);
   }
+  .seat-box.sitting-out {
+    opacity: 0.45;
+    border-color: #424242;
+    box-shadow: none;
+  }
+  .seat-box.sitting-out .seat-sitting-label {
+    display: block;
+    font-size: 0.6em;
+    color: #757575;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
 
   /* Debug badge */
   .dbg-badge {
@@ -293,8 +306,8 @@
   .global-autocc-btn { padding:3px 10px; border:1px solid #555; border-radius:4px; background:transparent; color:#888; font-size:11px; font-weight:700; cursor:pointer; }
   .global-autocc-btn.active { background:rgba(255,193,7,0.25); border-color:#ffc107; color:#ffc107; }
   .global-autocc-btn.active-cf { background:rgba(76,175,80,0.25); border-color:#4caf50; color:#4caf50; }
-  .global-autocc-btn.active-si { background:rgba(33,150,243,0.25); border-color:#2196f3; color:#2196f3; }
-.global-autocc-btn.active-kh { background:rgba(233,30,99,0.25); border-color:#e91e63; color:#e91e63; }
+  .global-autocc-btn.active-kh { background:rgba(233,30,99,0.25); border-color:#e91e63; color:#e91e63; }
+  .global-autocc-btn.active-si { background:rgba(26,154,108,0.25); border-color:#1a9a6c; color:#1a9a6c; }
   .kh-toggle { border-color:#e91e63 !important; }
   .kh-toggle.active { background:rgba(233,30,99,0.3) !important; border-color:#e91e63 !important; color:#e91e63 !important; }
   .seat-box.kh-marked { border-color:#4caf50 !important; box-shadow: 0 0 12px rgba(76,175,80,0.5), 0 4px 12px rgba(0,0,0,0.5) !important; }
@@ -346,6 +359,17 @@
   .sa-btn:disabled { opacity: 0.2; cursor: default; }
   .sa-btn:not(:disabled):hover { filter: brightness(1.2); }
   .sa-btn:not(:disabled):active { transform: scale(0.95); }
+
+  /* Optimistic click feedback — flash on send */
+  @keyframes btn-flash {
+    0%   { filter: brightness(2.0); }
+    100% { filter: brightness(1.0); }
+  }
+  .sa-btn.sending {
+    animation: btn-flash 0.15s ease-out;
+    opacity: 0.5;
+    pointer-events: none;
+  }
 
   .sa-btn.fold    { background: #b82030; }
   .sa-btn.check   { background: #2d6a4f; }
@@ -462,6 +486,11 @@
   }
   .emg-btn:disabled { opacity: 0.2; cursor: default; }
   .emg-btn:not(:disabled):hover { filter: brightness(1.15); }
+  .emg-btn.sending {
+    animation: btn-flash 0.15s ease-out;
+    opacity: 0.5;
+    pointer-events: none;
+  }
   .emg-btn.fold  { background: #b82030; }
   .emg-btn.check { background: #2d6a4f; }
   .emg-btn.call  { background: #1e5eb8; }
@@ -525,6 +554,7 @@
   .log-err { color: #f44336; }
 </style>
 </head>
+<script src="/api-config.js"></script>
 <body>
 
 <header>
@@ -541,7 +571,7 @@
   <button class="global-autocc-btn" id="global-autocc-btn" onclick="toggleGlobalAutoCC()">AUTO C/C PREFLOP — ALL</button>
   <button class="global-autocc-btn" id="global-cf-btn" onclick="toggleGlobalAutoCF()" style="border-color:#4caf50;">SELECT ALL AUTO C/F</button>
   <button class="global-autocc-btn" id="execute-kh-btn" onclick="executeKH()" style="border-color:#e91e63;">EXECUTE KH</button>
-  <button class="global-autocc-btn" id="sit-in-all-btn" onclick="toggleGlobalAutoSitIn()" style="border-color:#2196f3;">AUTO SIT-IN</button>
+  <button class="global-autocc-btn" id="sit-in-all-btn" onclick="toggleGlobalAutoSitIn()" style="border-color:#1a9a6c;">AUTO SIT-IN</button>
 </div>
 
 <div class="main-area">
@@ -588,7 +618,7 @@ var globalAutoCcPreflop = false; // global AUTO C/C PREFLOP — persists across 
 var globalAutoCF = false;        // master SELECT ALL AUTO C/F — new players default to C/F when on
 var globalAutoSitIn = false;     // master AUTO SIT-IN — continuously seat in sitting-out players
 var _autoSitInPending = {};      // seatNo -> timestamp (debounce per seat)
-var globalCFExcluded = {};       // seats manually unticked while globalAutoCF is on       // seats manually unticked while globalAutoCF is on
+var globalCFExcluded = {};       // seats manually unticked while globalAutoCF is on
 var khState = {};                // seatNo -> true (KH = Keep Hand, manual input required)
 var autoCcLastSent = {};         // seatNo -> timestamp (throttle re-sends to every 3s)
 var lastBoardKey = null;
@@ -597,7 +627,8 @@ var lastBoardKey = null;
 var seatAmounts = {};      // seatNo -> current amount
 
 // Seat ownership tracking (stable player key -> seat_no)
-var seatOwners = {};       // "tableId:playerName" -> seat_no
+var seatOwners = {};       // "tableId:playerName" -> slot (1-9, IMMUTABLE after first assignment)
+var seatOwnersBySlot = {};  // slot (1-9) -> "tableId:playerName" (reverse lookup)
 var lastSeatAssign = {};   // seat_no -> player name (for collision detection)
 
 // Diff rendering state
@@ -663,11 +694,13 @@ function logCmd(seatNo, cmd, amount, ok, detail) {
   while (log.children.length > 60) log.removeChild(log.firstChild);
 }
 
-// -- Adaptive poll scheduler (250ms active / 750ms idle) --
+// -- Long-poll scheduler (server push, 25s timeout) --
 
 function schedulePoll() {
   if (pollTimer) clearTimeout(pollTimer);
-  pollTimer = setTimeout(fetchTable, heroIsActive ? POLL_ACTIVE_MS : POLL_IDLE_MS);
+  // Long-poll: fetchTable holds connection open until data changes or 25s timeout.
+  // No client-side timer needed — server controls the wakeup cadence.
+  fetchTable();
 }
 
 // -- rAF render batching (dedup multiple renders per frame) --
@@ -688,7 +721,13 @@ function fetchTable() {
   fetchInFlight = true;
   var dot = document.getElementById('conn-dot');
   var label = document.getElementById('conn-label');
-  fetch(API + '/table/latest')
+  // Long-poll: hold connection open until new data or 25s timeout.
+  // Extracts last_ts from previous response so backend can wake immediately on new snapshot.
+  var lastTs = 0;
+  if (_lastTableJSON) {
+    try { var prev = JSON.parse(_lastTableJSON); lastTs = prev.last_updated || 0; } catch(e) {}
+  }
+  fetch(API + '/table/latest?timeout=25&last_ts=' + lastTs)
     .then(function(r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
@@ -791,7 +830,7 @@ function seatHash(seat) {
     seat.bet + '|' + seat.is_dealer + '|' + acts + '|' +
     (preActionState[sn] || '') + '|' + (cashoutState[sn] || false) +
     '|' + (autoCcPreflop[sn] || false) + '|' + globalAutoCcPreflop +
-    '|' + (seat.action_on || false);
+    '|' + (seat.action_on || false) + '|' + (seat.status || '');
 }
 
 // -- Action validation helpers --
@@ -837,6 +876,7 @@ function buildSeatBoxHtml(seat) {
   var cls = 'seat-box';
   if (isHero) cls += ' hero';
   if (isActive) cls += ' expanded';
+  if (seat.status === 'sitting_out') cls += ' sitting-out';
   if (khState[sn]) cls += ' kh-marked';
   else if (isHero && preActionState[sn] === 'check_fold') cls += ' kh-auto';
 
@@ -856,6 +896,11 @@ function buildSeatBoxHtml(seat) {
   html += '<div class="seat-stack"><span class="amount">R ' +
     (seat.stack_zar != null ? seat.stack_zar.toFixed(2) : '0.00') + '</span></div>';
 
+  // Sitting-out label — render AFTER name+stack so it appears as a state badge
+  if (seat.status === 'sitting_out') {
+    html += '<div class="seat-sitting-label">SITTING OUT</div>';
+  }
+
   if (Array.isArray(seat.hole_cards) && seat.hole_cards.length > 0) {
     html += '<div class="seat-cards-area"><div class="hole-cards-row">';
     seat.hole_cards.forEach(function(c) { html += renderCardHtml(c); });
@@ -868,7 +913,7 @@ function buildSeatBoxHtml(seat) {
     var curPa = preActionState[sn] || null;
     var curCo = cashoutState[sn] || false;
 
-    html += '<div class="seat-compact' + (isActive ? '' : ' inactive') + '">';
+    html += '<div class="seat-compact">';
     html += '<span class="sc-toggle' + (curPa === 'check_fold' ? ' active' : '') +
       '" data-sc-preact="check_fold" data-sc-seat="' + sn + '">C/F</span>';
     html += '<span class="sc-toggle' + (curPa === 'check_call' ? ' active' : '') +
@@ -958,8 +1003,30 @@ function buildSeatBoxHtml(seat) {
 
 // -- Render seats --
 
+var __DIAG = { seq: 0, lastSeatState: {}, renderCount: 0, history: [] };
+
+function diagState(snapshotSeq, reason, seatNo, prev, next) {
+  var changed = [];
+  if (prev && next) {
+    var keys = ['name','status','is_active','stack_zar','bet','is_self_player','is_dealer'];
+    for (var k = 0; k < keys.length; k++) {
+      if (prev[keys[k]] !== next[keys[k]]) changed.push(keys[k] + ':' + prev[keys[k]] + '>' + next[keys[k]]);
+    }
+    var prevActs = (prev.available_actions||[]).join(','), nextActs = (next.available_actions||[]).join(',');
+    if (prevActs !== nextActs) changed.push('actions:' + prevActs + '>' + nextActs);
+  }
+  var entry = { ts: Date.now(), seq: snapshotSeq, seat: seatNo, reason: reason, changed: changed.join(';') || '(none)', hash: next ? (next._hash || '?') : '?' };
+  __DIAG.history.push(entry);
+  if (__DIAG.history.length > 500) __DIAG.history.shift();
+  __DIAG.seq = snapshotSeq;
+  if (changed.length > 0 || reason === 'RENDER') {
+    console.log('[REMOTE][DIAG] seq=' + snapshotSeq + ' seat=' + seatNo + ' reason=' + reason + ' changed=[' + (changed.join(', ') || 'none') + ']');
+  }
+}
+
 function renderSeats() {
   var container = document.getElementById('seats-container');
+  __DIAG.renderCount++;
 
   if (!slotsCreated) {
     if (!container) return;  // DOM not ready yet
@@ -975,13 +1042,49 @@ function renderSeats() {
 
   var posSeatMap = {};
   heroIsActive = false;  // recalculate each render
+  var tableId = lastTable ? lastTable.table_id : '?';
+
+  // ═══ DIAG: Dump raw API seat data ═══
+  var rawSeats = [];
+  if (lastTable && Array.isArray(lastTable.seats)) {
+    lastTable.seats.forEach(function(s) {
+      if (s && s.name) {
+        rawSeats.push({ name: s.name, seat_no: s.seat_no, seat_index: s.seat_index, bot_id: s.bot_id, status: s.status, is_hero: s.is_self_player });
+      }
+    });
+  }
+  console.log('╔═══ RAW API SEATS ═══');
+  console.log(JSON.stringify(rawSeats));
+  console.log('╚═══ end raw seats');
+
+  // ── SEAT IMMUTABILITY: assign locked slot per player ──────────
+  // Players get a slot on first appearance; it never changes.
   if (lastTable && Array.isArray(lastTable.seats)) {
     lastTable.seats.forEach(function(seat) {
-      if (seat.name != null) {
-        var rawPos = seat.seat_no != null ? seat.seat_no : seat.seat_index;
-        var pos = rawPos >= 1 ? rawPos - 1 : rawPos;  // map 1-9 → 0-8
-        if (pos != null && pos >= 0 && pos < 9) posSeatMap[pos] = seat;
+      if (!seat.name) return;
+      var stableKey = tableId + ':' + seat.name;
+      var lockedSlot = seatOwners[stableKey];
+      if (!lockedSlot) {
+        // First time seeing this player — assign lowest free slot
+        for (var s = 1; s <= 9; s++) {
+          if (!seatOwnersBySlot[s]) {
+            lockedSlot = s;
+            seatOwners[stableKey] = s;
+            seatOwnersBySlot[s] = stableKey;
+            console.log('[SEAT_LOCK] player="' + seat.name + '" locked=slot' + s + ' (backend_seat=' + getSeatNo(seat) + ')');
+            break;
+          }
+        }
+        if (!lockedSlot) {
+          // Shouldn't happen (9 slots for 9 max players), but fallback
+          lockedSlot = getSeatNo(seat) || 1;
+          seatOwners[stableKey] = lockedSlot;
+          seatOwnersBySlot[lockedSlot] = stableKey;
+          console.log('[SEAT_LOCK] player="' + seat.name + '" fallback=slot' + lockedSlot);
+        }
       }
+      // Place this player at their locked slot
+      posSeatMap[lockedSlot - 1] = seat;
       // detect if any hero has pending actions (drives adaptive poll rate)
       if (seat.is_self_player && seat.available_actions && seat.available_actions.length > 0) {
         heroIsActive = true;
@@ -991,48 +1094,50 @@ function renderSeats() {
 
   for (var pos = 0; pos < 9; pos++) {
     var seat = posSeatMap[pos];
-    // ---- Seat ownership tracking ----
-    var tableId = lastTable ? lastTable.table_id : '?';
-    if (seat && seat.name) {
-      var stableKey = tableId + ':' + seat.name;
-      var sn = getSeatNo(seat);
-      var prevOwner = lastSeatAssign[sn];
-      if (prevOwner && prevOwner !== seat.name) {
-        // Different player now occupying this seat
-        console.log('[REMOTE][SEAT_COLLISION] seat=' + sn + ' was="' + prevOwner + '" now="' + seat.name + '"');
-      }
-      if (prevOwner !== seat.name) {
-        console.log('[REMOTE][SEAT_ASSIGN] player="' + seat.name + '" seat=' + sn + ' pos=' + pos);
-        lastSeatAssign[sn] = seat.name;
-      }
-      // Track player->seat mapping
-      if (!seatOwners[stableKey] || seatOwners[stableKey] !== sn) {
-        var oldSn = seatOwners[stableKey];
-        seatOwners[stableKey] = sn;
-        console.log('[REMOTE][SEAT_STABLE] player="' + seat.name + '" seat=' + sn + (oldSn ? ' (was seat ' + oldSn + ')' : ''));
-      }
-    }
     // ---- Action-on highlight (CSS only, not ownership) ----
     if (seat && seat.action_on) {
       console.log('[REMOTE][ACTIVE_REFRESH] seat=' + getSeatNo(seat) + ' player="' + seat.name + '" action_on=true');
     }
     // ---- Diff-based render ----
     var hash = seat ? seatHash(seat) : 'empty';
-    if (renderedSeats[pos] === hash) continue;
+    var sn = seat ? getSeatNo(seat) : pos;
+    var prevState = __DIAG.lastSeatState[sn] || null;
+    var nextState = seat ? { name: seat.name, status: seat.status, is_active: seat.is_active, stack_zar: seat.stack_zar, bet: seat.bet, is_self_player: seat.is_self_player, is_dealer: seat.is_dealer, available_actions: seat.available_actions, _hash: hash } : null;
+    if (renderedSeats[pos] === hash) {
+      diagState(__DIAG.seq, 'SKIP', sn, prevState, nextState);
+      continue;
+    }
 
     var slot = seatSlots[pos];  // use cached ref
     if (!slot) continue;  // guard: skip if DOM not ready
     if (seat) {
+      // ═══ DIAG: Trace render write ═══
+      console.log('[DIAG][RENDER_WRITE] name="' + seat.name + '" sn=' + sn + ' pos=' + pos + ' hash=' + hash);
+      diagState(__DIAG.seq, 'RENDER', sn, prevState, nextState);
+      __DIAG.lastSeatState[sn] = nextState;
       slot.style.display = '';
       slot.innerHTML = buildSeatBoxHtml(seat);
       // Apply action-on CSS class without changing seat ownership
       slot.querySelector('.seat-box').classList.toggle('action-on', !!seat.action_on);
     } else {
+      diagState(__DIAG.seq, 'HIDE', sn, prevState, nextState);
+      __DIAG.lastSeatState[sn] = null;
       slot.style.display = '';
       slot.innerHTML = '<div class="seat-box empty">Slot ' + (pos + 1) + '</div>';
     }
     renderedSeats[pos] = hash;
   }
+  // ═══ DIAG: Final seat → slot mapping ═══
+  var seatMap = [];
+  for (var p = 0; p < 9; p++) {
+    var sl = seatSlots[p];
+    if (sl) {
+      var box = sl.querySelector('.seat-box');
+      var displayName = box ? (box.querySelector('.seat-name') ? box.querySelector('.seat-name').textContent : '?') : 'empty';
+      seatMap.push({ slot: p, player: displayName });
+    }
+  }
+  console.log('[DIAG][FINAL_MAP] ' + JSON.stringify(seatMap));
 }
 
 // -- Find hero seat --
@@ -1184,6 +1289,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saBtn && !saBtn.disabled) {
       var sn = Number(saBtn.dataset.saSeat);
       var cmd = saBtn.dataset.saCmd;
+      // Optimistic feedback — button reacts INSTANTLY, poll cycle replaces with real state
+      saBtn.classList.add('sending');
+      saBtn.disabled = true;
       if (saBtn.dataset.saUseAmount) {
         var amEl = document.querySelector('[data-sa-amount="' + sn + '"]');
         var amt = amEl ? Number(amEl.value) : null;
@@ -1216,6 +1324,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (emgBtn && !emgBtn.disabled) {
       var esn = Number(emgBtn.dataset.emgSeat);
       var ecmd = emgBtn.dataset.emgCmd;
+      emgBtn.classList.add('sending');
+      emgBtn.disabled = true;
       if (emgBtn.dataset.emgUseAmount) {
         var eam = document.getElementById('emg-amount');
         sendCmd(esn, ecmd, eam ? Number(eam.value) : null);
@@ -1380,6 +1490,7 @@ function executeKH() {
   renderedSeats = {}; lastEmgHash = null; render();
 }
 
+// -- Auto Sit-In All toggle --
 function toggleGlobalAutoSitIn() {
   globalAutoSitIn = !globalAutoSitIn;
   var btn = document.getElementById('sit-in-all-btn');
@@ -1398,7 +1509,6 @@ function fireAutoSitIn() {
   if (!globalAutoSitIn || !lastTable || !Array.isArray(lastTable.seats)) return;
   var now = Date.now();
   lastTable.seats.forEach(function(seat) {
-    if (!seat.is_self_player) return;
     var isSittingOut = seat.status === 'sitting_out' || (seat.sitting_out && !seat.is_dealer);
     if (!isSittingOut) return;
     var sn = getSeatNo(seat);
@@ -1511,7 +1621,19 @@ function render() {
   renderSeats();
   renderEmergencyPanel();
   applyGlobalCFToNewSeats();
+  fireAutoSitIn();
   fireAutoCcPreflop();
+  // Diagnostic flush — post render summary every 10 cycles
+  if (__DIAG.renderCount % 10 === 0 && __DIAG.history.length > 0) {
+    var recent = __DIAG.history.slice(-20);
+    var renders = recent.filter(function(e){return e.reason==='RENDER'}).length;
+    var skips = recent.filter(function(e){return e.reason==='SKIP'}).length;
+    var changed = recent.filter(function(e){return e.changed!=='(none)'});
+    fetch(API + '/diag/render', {method:'POST',body:JSON.stringify({
+      seq: __DIAG.seq, renderCount: __DIAG.renderCount, renders: renders, skips: skips,
+      lastChanges: changed.slice(-5).map(function(e){return e.seat+':'+e.reason+':'+e.changed;})
+    }),headers:{'Content-Type':'application/json'}}).catch(function(){});
+  }
 }
 
 // -- Init & poll --

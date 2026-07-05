@@ -369,6 +369,7 @@
   var _lastHash = null;
   var _lastSendTime = 0;
   var _n = 0;
+  var _snapshotSeq = 0;            // TRACER: local monotonic snapshot counter
   var _sessionId = 'w4p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
   var _lastButtons = null;
   var _cashoutPre = false;   // when true, hyper-poll for cashout DOM element
@@ -688,12 +689,12 @@
     }
 
     // ── Diagnostics (compact, every 10 ticks) ──
-    if (_n % 10 === 1 && avail.length > 0) {
+    if (_n % 50 === 1 && avail.length > 0) {
       var srcs = [];
       for (var ak in _detectedBtns) {
         srcs.push(ak + '=' + _detectedBtns[ak].source);
       }
-      console.log('[W4P][DETECT] actions=' + avail.length + ' [' + avail.join(',') + '] sources=' + JSON.stringify(meta) + ' detail=' + srcs.join('|'));
+      console.log('[W4P] actions=' + avail.length + ' [' + avail.join(',') + ']');
     }
 
     // Update global meta
@@ -813,20 +814,11 @@
       });
     }
 
-    // Log every tick (compact)
-    var _foundNames = _validation.filter(function(v){return v.found;}).map(function(v){return v.name+(v.visible?'[V]':'[H]')+(v.disabled?'[D]':'');});
-    console.log('[W4P][VALID] hero=' + (heroSeat?'Y':'N') + ' active=' + _heroActive +
-      ' | selectors: ' + (_foundNames.length > 0 ? _foundNames.join(',') : 'NONE') +
-      ' | .control-b-view-p=' + _allCtrl.length);
-
-    // Full dump every 10 ticks (or when any selector found)
-    if (_n % 10 === 1 || _foundNames.length > 0) {
-      console.log('[W4P][VALID-FULL]', JSON.stringify({
-        tick: _n, heroSeat: !!heroSeat, heroActive: _heroActive,
-        heroClasses: heroSeat ? heroSeat.className.substring(0, 100) : null,
-        selectors: _validation,
-        rawControls: _ctrlDump
-      }));
+    // Summary every 50 ticks only (reduces console noise)
+    if (_n % 50 === 1) {
+      var _foundNames = _validation.filter(function(v){return v.found;}).map(function(v){return v.name+(v.visible?'[V]':'[H]')+(v.disabled?'[D]':'');});
+      console.log('[W4P] tick=' + _n + ' hero=' + (heroSeat?'Y':'N') + ' active=' + _heroActive +
+        ' | ' + (_foundNames.length > 0 ? _foundNames.join(',') : 'NONE'));
     }
 
     // Store on window for console inspection: _w4p_lastValidation
@@ -909,9 +901,9 @@
       };
     }
 
-    // ── DIAGNOSTIC: log when we actually detect buttons ──
-    if (result.actions.length > 0) {
-      console.log('[W4P][DIAG] DETECTED BUTTONS:', JSON.stringify(result.actions.map(function(a) { return a.action + '(' + (a.amount || '-') + ')'; })));
+    // ── DIAGNOSTIC: log every 50 ticks only ──
+    if (result.actions.length > 0 && _n % 50 === 1) {
+      console.log('[W4P] buttons: ' + result.actions.map(function(a) { return a.action; }).join(','));
     }
 
     // Pipe diagnostics through API (can't see Chrome console remotely)
@@ -1226,10 +1218,6 @@
     var buttons = detectButtons();
     var avail = buttons.actions.map(function(a) { return a.action; });
 
-    // ── STEP 2 DIAG: Log detected buttons EVERY tick ──
-    console.log('[W4P][DIAG] DETECTED BUTTONS:', JSON.stringify(buttons.actions.map(function(a){return a.action;})));
-    console.log('[W4P][DIAG] available_actions:', JSON.stringify(avail));
-
     // ── Detect active seat (whose turn to act) from PokerBet DOM ──
     // self-player with visible action buttons = hero's turn (primary signal)
     // .active class is checked as secondary hint only
@@ -1414,11 +1402,13 @@
     }
 
     // ── Save as last good snapshot ──────────────────────────────
+    _snapshotSeq++;
     var snap = {
       table_id:      tableId,
       bot_id:        heroName,
       session_id:    _sessionId,
       hand_id:       _handId,       // ADR-001: echoed from backend
+      snapshot_seq:  _snapshotSeq,  // TRACER: local monotonic counter
       seats:         seats,
       board: {
         flop:  boardCards.slice(0, 3),
@@ -1431,10 +1421,24 @@
       variant:       'plo',
       buttons:       buttons,
       available_actions: avail,
+      needs_action:     avail.length > 0,  // MVP-1: authoritative action signal
       active_player: activePlayerName,
       ts:            new Date().toISOString(),
       source_key:    'w4p_inject'
     };
+    // ── TRACER: Log snapshot before POST ──────────────────────
+    console.log(JSON.stringify({
+      tracer: 'EXT',
+      ts: snap.ts,
+      table_id: snap.table_id,
+      hand_id: (snap.hand_id || 'NONE').substr(0, 8),
+      snapshot_seq: snap.snapshot_seq,
+      street: snap.street,
+      board: (snap.board.flop || []).join('') + (snap.board.turn || '') + (snap.board.river || ''),
+      action_history: snap.available_actions.join(','),
+      seats: snap.seats.length,
+      hash: stateHash(snap).substr(0, 16)
+    }));
     _lastGoodSnapshot = JSON.parse(JSON.stringify(snap));  // deep copy
     _bootstrapped = true;  // bootstrap complete — enable normal debounce from now on
     return snap;
@@ -1780,6 +1784,28 @@
     _actionCooldowns[action] = Date.now();
   }
 
+  // ── Text-based button finder (fallback when DIRECT selector misses) ──
+  function _findButtonByText(action) {
+    if (!action) return null;
+    var searches = [
+      action.replace(/_/g, ' '),                     // "back_to_game" → "back to game"
+      action.replace(/_/g, ' ').toUpperCase(),        // "BACK TO GAME"
+      action.replace(/_/g, ' ').replace(/\b\w/g, function(c){return c.toUpperCase();}), // "Back To Game"
+    ];
+    var all = document.querySelectorAll('button, a, [role="button"], span, div');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (el.offsetParent === null) continue;
+      var txt = (el.textContent || '').trim();
+      for (var s = 0; s < searches.length; s++) {
+        if (txt.toLowerCase() === searches[s].toLowerCase() || txt.toLowerCase().indexOf(searches[s].toLowerCase()) >= 0) {
+          return el;
+        }
+      }
+    }
+    return null;
+  }
+
   // ── Command handler ──────────────────────────────────────────
   function handleCommand(cmd) {
     var action = (cmd.type || cmd.command || '').toLowerCase();
@@ -1825,6 +1851,15 @@
         console.log('[W4P][EXEC] ' + action + ' — clicked ' + DIRECT[action]);
       } else {
         console.log('[W4P][MISS] ' + action + ' — selector ' + DIRECT[action] + ' not visible');
+        // Fallback: try to find and click by visible text
+        var textBtn = _findButtonByText(action);
+        if (textBtn) {
+          nativeClick(textBtn);
+          markCooldown(action);
+          console.log('[W4P][EXEC] ' + action + ' — clicked by text (fallback)');
+        } else {
+          console.log('[W4P][MISS] ' + action + ' — no visible button found by text either');
+        }
       }
       return;
     }

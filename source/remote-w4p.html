@@ -307,6 +307,7 @@
   .global-autocc-btn.active { background:rgba(255,193,7,0.25); border-color:#ffc107; color:#ffc107; }
   .global-autocc-btn.active-cf { background:rgba(76,175,80,0.25); border-color:#4caf50; color:#4caf50; }
   .global-autocc-btn.active-kh { background:rgba(233,30,99,0.25); border-color:#e91e63; color:#e91e63; }
+  .global-autocc-btn.active-si { background:rgba(26,154,108,0.25); border-color:#1a9a6c; color:#1a9a6c; }
   .kh-toggle { border-color:#e91e63 !important; }
   .kh-toggle.active { background:rgba(233,30,99,0.3) !important; border-color:#e91e63 !important; color:#e91e63 !important; }
   .seat-box.kh-marked { border-color:#4caf50 !important; box-shadow: 0 0 12px rgba(76,175,80,0.5), 0 4px 12px rgba(0,0,0,0.5) !important; }
@@ -626,7 +627,8 @@ var lastBoardKey = null;
 var seatAmounts = {};      // seatNo -> current amount
 
 // Seat ownership tracking (stable player key -> seat_no)
-var seatOwners = {};       // "tableId:playerName" -> seat_no
+var seatOwners = {};       // "tableId:playerName" -> slot (1-9, IMMUTABLE after first assignment)
+var seatOwnersBySlot = {};  // slot (1-9) -> "tableId:playerName" (reverse lookup)
 var lastSeatAssign = {};   // seat_no -> player name (for collision detection)
 
 // Diff rendering state
@@ -911,7 +913,7 @@ function buildSeatBoxHtml(seat) {
     var curPa = preActionState[sn] || null;
     var curCo = cashoutState[sn] || false;
 
-    html += '<div class="seat-compact' + (isActive ? '' : ' inactive') + '">';
+    html += '<div class="seat-compact">';
     html += '<span class="sc-toggle' + (curPa === 'check_fold' ? ' active' : '') +
       '" data-sc-preact="check_fold" data-sc-seat="' + sn + '">C/F</span>';
     html += '<span class="sc-toggle' + (curPa === 'check_call' ? ' active' : '') +
@@ -1040,6 +1042,7 @@ function renderSeats() {
 
   var posSeatMap = {};
   heroIsActive = false;  // recalculate each render
+  var tableId = lastTable ? lastTable.table_id : '?';
 
   // ═══ DIAG: Dump raw API seat data ═══
   var rawSeats = [];
@@ -1054,21 +1057,34 @@ function renderSeats() {
   console.log(JSON.stringify(rawSeats));
   console.log('╚═══ end raw seats');
 
+  // ── SEAT IMMUTABILITY: assign locked slot per player ──────────
+  // Players get a slot on first appearance; it never changes.
   if (lastTable && Array.isArray(lastTable.seats)) {
     lastTable.seats.forEach(function(seat) {
-      // Include sitting-out players — they hold their seat position.
-      // Sitting out is a player state, not a seat removal event.
-      if (seat.name != null) {
-        var rawPos = seat.seat_no != null ? seat.seat_no : seat.seat_index;
-        var pos = rawPos >= 1 ? rawPos - 1 : rawPos;  // map 1-9 → 0-8
-        if (pos != null && pos >= 0 && pos < 9) {
-          // ═══ DIAG: Detect posSeatMap overwrite ═══
-          if (posSeatMap[pos] && posSeatMap[pos].name !== seat.name) {
-            console.log('[DIAG][OVERWRITE] pos=' + pos + ' seat_no=' + (pos+1) + ' "' + posSeatMap[pos].name + '" OVERWRITTEN by "' + seat.name + '"');
+      if (!seat.name) return;
+      var stableKey = tableId + ':' + seat.name;
+      var lockedSlot = seatOwners[stableKey];
+      if (!lockedSlot) {
+        // First time seeing this player — assign lowest free slot
+        for (var s = 1; s <= 9; s++) {
+          if (!seatOwnersBySlot[s]) {
+            lockedSlot = s;
+            seatOwners[stableKey] = s;
+            seatOwnersBySlot[s] = stableKey;
+            console.log('[SEAT_LOCK] player="' + seat.name + '" locked=slot' + s + ' (backend_seat=' + getSeatNo(seat) + ')');
+            break;
           }
-          posSeatMap[pos] = seat;
+        }
+        if (!lockedSlot) {
+          // Shouldn't happen (9 slots for 9 max players), but fallback
+          lockedSlot = getSeatNo(seat) || 1;
+          seatOwners[stableKey] = lockedSlot;
+          seatOwnersBySlot[lockedSlot] = stableKey;
+          console.log('[SEAT_LOCK] player="' + seat.name + '" fallback=slot' + lockedSlot);
         }
       }
+      // Place this player at their locked slot
+      posSeatMap[lockedSlot - 1] = seat;
       // detect if any hero has pending actions (drives adaptive poll rate)
       if (seat.is_self_player && seat.available_actions && seat.available_actions.length > 0) {
         heroIsActive = true;
@@ -1078,27 +1094,6 @@ function renderSeats() {
 
   for (var pos = 0; pos < 9; pos++) {
     var seat = posSeatMap[pos];
-    // ---- Seat ownership tracking ----
-    var tableId = lastTable ? lastTable.table_id : '?';
-    if (seat && seat.name) {
-      var stableKey = tableId + ':' + seat.name;
-      var sn = getSeatNo(seat);
-      var prevOwner = lastSeatAssign[sn];
-      if (prevOwner && prevOwner !== seat.name) {
-        // Different player now occupying this seat
-        console.log('[REMOTE][SEAT_COLLISION] seat=' + sn + ' was="' + prevOwner + '" now="' + seat.name + '"');
-      }
-      if (prevOwner !== seat.name) {
-        console.log('[REMOTE][SEAT_ASSIGN] player="' + seat.name + '" seat=' + sn + ' pos=' + pos);
-        lastSeatAssign[sn] = seat.name;
-      }
-      // Track player->seat mapping
-      if (!seatOwners[stableKey] || seatOwners[stableKey] !== sn) {
-        var oldSn = seatOwners[stableKey];
-        seatOwners[stableKey] = sn;
-        console.log('[REMOTE][SEAT_STABLE] player="' + seat.name + '" seat=' + sn + (oldSn ? ' (was seat ' + oldSn + ')' : ''));
-      }
-    }
     // ---- Action-on highlight (CSS only, not ownership) ----
     if (seat && seat.action_on) {
       console.log('[REMOTE][ACTIVE_REFRESH] seat=' + getSeatNo(seat) + ' player="' + seat.name + '" action_on=true');
@@ -1514,7 +1509,6 @@ function fireAutoSitIn() {
   if (!globalAutoSitIn || !lastTable || !Array.isArray(lastTable.seats)) return;
   var now = Date.now();
   lastTable.seats.forEach(function(seat) {
-    if (!seat.is_self_player) return;
     var isSittingOut = seat.status === 'sitting_out' || (seat.sitting_out && !seat.is_dealer);
     if (!isSittingOut) return;
     var sn = getSeatNo(seat);
@@ -1627,6 +1621,7 @@ function render() {
   renderSeats();
   renderEmergencyPanel();
   applyGlobalCFToNewSeats();
+  fireAutoSitIn();
   fireAutoCcPreflop();
   // Diagnostic flush — post render summary every 10 cycles
   if (__DIAG.renderCount % 10 === 0 && __DIAG.history.length > 0) {
@@ -1634,7 +1629,7 @@ function render() {
     var renders = recent.filter(function(e){return e.reason==='RENDER'}).length;
     var skips = recent.filter(function(e){return e.reason==='SKIP'}).length;
     var changed = recent.filter(function(e){return e.changed!=='(none)'});
-    fetch('/diag/render', {method:'POST',body:JSON.stringify({
+    fetch(API + '/diag/render', {method:'POST',body:JSON.stringify({
       seq: __DIAG.seq, renderCount: __DIAG.renderCount, renders: renders, skips: skips,
       lastChanges: changed.slice(-5).map(function(e){return e.seat+':'+e.reason+':'+e.changed;})
     }),headers:{'Content-Type':'application/json'}}).catch(function(){});

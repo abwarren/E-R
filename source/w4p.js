@@ -1784,6 +1784,28 @@
     _actionCooldowns[action] = Date.now();
   }
 
+  // ── Text-based button finder (fallback when DIRECT selector misses) ──
+  function _findButtonByText(action) {
+    if (!action) return null;
+    var searches = [
+      action.replace(/_/g, ' '),                     // "back_to_game" → "back to game"
+      action.replace(/_/g, ' ').toUpperCase(),        // "BACK TO GAME"
+      action.replace(/_/g, ' ').replace(/\b\w/g, function(c){return c.toUpperCase();}), // "Back To Game"
+    ];
+    var all = document.querySelectorAll('button, a, [role="button"], span, div');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (el.offsetParent === null) continue;
+      var txt = (el.textContent || '').trim();
+      for (var s = 0; s < searches.length; s++) {
+        if (txt.toLowerCase() === searches[s].toLowerCase() || txt.toLowerCase().indexOf(searches[s].toLowerCase()) >= 0) {
+          return el;
+        }
+      }
+    }
+    return null;
+  }
+
   // ── Command handler ──────────────────────────────────────────
   function handleCommand(cmd) {
     var action = (cmd.type || cmd.command || '').toLowerCase();
@@ -1829,6 +1851,15 @@
         console.log('[W4P][EXEC] ' + action + ' — clicked ' + DIRECT[action]);
       } else {
         console.log('[W4P][MISS] ' + action + ' — selector ' + DIRECT[action] + ' not visible');
+        // Fallback: try to find and click by visible text
+        var textBtn = _findButtonByText(action);
+        if (textBtn) {
+          nativeClick(textBtn);
+          markCooldown(action);
+          console.log('[W4P][EXEC] ' + action + ' — clicked by text (fallback)');
+        } else {
+          console.log('[W4P][MISS] ' + action + ' — no visible button found by text either');
+        }
       }
       return;
     }

@@ -1033,8 +1033,9 @@ def _table_view(table) -> TableView:
             if not unmatched:
                 break
             if seat.get("name") is None and not seat.get("hole_cards"):
-                _, cards = unmatched.popitem()
+                name, cards = unmatched.popitem()
                 seat["hole_cards"] = cards
+                seat["name"] = name
                 seat["cards_source"] = "sibling_merge_fallback"
 
     view = {
@@ -1701,11 +1702,19 @@ def get_pending_command():
         return jsonify({'ok': False, 'error': 'Missing token or bot_id'}), 400
 
     with _store_lock:
-        # If bot_id provided (from bot containers), scan all pending commands
+        # If bot_id provided (from bot containers), resolve to seat token and filter
         if bot_id and not token:
-            for qtoken, cmd in list(_command_queue.items()):
+            bot_info = _bot_seats.get(bot_id)
+            if bot_info:
+                if 'seat_no' in bot_info:
+                    bot_token = generate_seat_token(bot_info['table_id'], bot_info['seat_no'])
+                elif 'seat_index' in bot_info:
+                    bot_token = generate_seat_token(bot_info['table_id'], bot_info['seat_index'])
+                else:
+                    return jsonify({'ok': True, 'command': None})
+                cmd = _command_queue.get(bot_token)
                 if cmd and cmd.get('status') == 'pending':
-                    cmd['_token'] = qtoken  # include token so bot can ack
+                    cmd['_token'] = bot_token
                     return jsonify({'ok': True, 'command': cmd})
             return jsonify({'ok': True, 'command': None})
 
@@ -1766,8 +1775,10 @@ def queue_command():
                 break
         if not table:
             return jsonify({'ok': False, 'error': 'Table not found'}), 404
-        if int(seat_no) not in table["seats"]:
-            return jsonify({'ok': False, 'error': 'Seat not connected'}), 404
+        # Allow commands for any seat 1-9, even if no bot is connected yet.
+        # The command sits pending until a bot polls for it or expires by TTL.
+        if int(seat_no) < 1 or int(seat_no) > 9:
+            return jsonify({'ok': False, 'error': 'Invalid seat number'}), 400
 
         command_id = str(uuid.uuid4())[:8]
         cmd_obj = {
@@ -2111,6 +2122,19 @@ def list_tables():
             reverse=True,
         )
     return jsonify({'ok': True, 'tables': tables})
+
+# ── Endpoint 6b: POST /api/diag/render ─────────────────────────────────────────
+
+@app.route('/api/diag/render', methods=['POST'])
+def diag_render():
+    """Receive render diagnostics from the remote UI frontend."""
+    payload = request.get_json(silent=True) or {}
+    app.logger.debug(
+        '[DIAG_RENDER] seq=%s renders=%s skips=%s changes=%s',
+        payload.get('seq'), payload.get('renders'), payload.get('skips'),
+        payload.get('lastChanges')
+    )
+    return jsonify({'ok': True})
 
 # ── Endpoint 7: GET /api/health ───────────────────────────────────────────────
 
