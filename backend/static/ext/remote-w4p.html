@@ -977,7 +977,7 @@ function renderSeats() {
   heroIsActive = false;  // recalculate each render
   if (lastTable && Array.isArray(lastTable.seats)) {
     lastTable.seats.forEach(function(seat) {
-      if (seat.name != null && seat.status !== "sitting_out") {
+      if (seat.name != null) {
         var rawPos = seat.seat_no != null ? seat.seat_no : seat.seat_index;
         var pos = rawPos >= 1 ? rawPos - 1 : rawPos;  // map 1-9 → 0-8
         if (pos != null && pos >= 0 && pos < 9) posSeatMap[pos] = seat;
@@ -1028,8 +1028,8 @@ function renderSeats() {
       // Apply action-on CSS class without changing seat ownership
       slot.querySelector('.seat-box').classList.toggle('action-on', !!seat.action_on);
     } else {
-      slot.style.display = 'none';
-      slot.innerHTML = '';
+      slot.style.display = '';
+      slot.innerHTML = '<div class="seat-box empty">Slot ' + (pos + 1) + '</div>';
     }
     renderedSeats[pos] = hash;
   }

@@ -1105,8 +1105,8 @@ function renderSeats() {
     } else {
       diagState(__DIAG.seq, 'HIDE', sn, prevState, nextState);
       __DIAG.lastSeatState[sn] = null;
-      slot.style.display = 'none';
-      slot.innerHTML = '';
+      slot.style.display = '';
+      slot.innerHTML = '<div class="seat-box empty">Slot ' + (pos + 1) + '</div>';
     }
     renderedSeats[pos] = hash;
   }
