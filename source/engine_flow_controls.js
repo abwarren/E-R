@@ -21,6 +21,7 @@
 
   let lastStateKey = null;
   let lastSnapshotHash = null;
+  let lastHandId = null;
   let isRunning = false;
   const FAST_POLL = 1500;
   const SLOW_POLL = 5000;
@@ -151,8 +152,8 @@
   }
 
   function isEngineTabActive() {
-    const activeTab = document.querySelector('.tab-btn.active');
-    return activeTab && /engine/i.test(activeTab.textContent);
+    // Check if this page has the engine textarea (is the engine page)
+    return document.querySelector('textarea[rows="14"]') !== null;
   }
 
   function ensureControls() {
@@ -204,7 +205,7 @@
     return buttons.find(b => /run.*engine/i.test((b.innerText || "").trim()));
   }
 
-  async function maybeAutoRun(text) {
+  async function maybeAutoRun(text, table_id, hand_id) {
     const state = loadState();
     if (!state.autoRunFlop || isRunning) return;
     const variant = getSelectedVariant();
@@ -219,7 +220,13 @@
     else if (boardStreet === 'RIVER') { if (state.clearRiver) { console.log('[AUTO] Skip: RIVER but clearRiver ON'); return; } }
     else { console.log('[AUTO] Skip: no valid board (pre-flop)'); return; }
     if (hands.length < 2) { console.log('[AUTO] Skip: only', hands.length, 'hands'); return; }
-    const stateKey = hands.join('|') + '||' + (board || '') + '||' + boardStreet;
+    // Reset on new hand
+    if (hand_id && hand_id !== lastHandId) {
+      lastStateKey = null;
+      lastHandId = hand_id;
+      console.log('[AUTO] New hand detected:', hand_id);
+    }
+    const stateKey = (table_id || '?') + '|' + (hand_id || '?') + '|' + hands.join('|') + '||' + (board || '') + '||' + boardStreet;
     if (stateKey === lastStateKey) { console.log('[AUTO] Skip: same state'); return; }
     const boardCards = board ? parseCards(board) : [];
     const allUsedCards = [...boardCards];
@@ -331,16 +338,27 @@
         decision: 'ACCEPTED',
         reason: 'New hash differs from lastSnapshotHash',
         hand_id: (t.hand_id || 'NONE').substring(0, 8),
-        snapshot_seq: t.snapshot_seq || 'NONE',
-        prev_hash: (lastSnapshotHash || 'NONE').substring(0, 16),
-        new_hash: text.substring(0, 16)
-      }));
-      lastSnapshotHash = text;
-      lastDataChange = Date.now();
-      consecutiveErrors = 0;
-      if (state.autoFill && text) { detectAndSetVariant(text); setTextareaValue(textarea, text); }
-      await maybeAutoRun(text);
-      adjustPollSpeed();
+        const data = await res.json();
+        if (!data.ok || !data.table) return;
+        const t = data.table;
+        const text = formatTableDataToCanonical(t);
+        if (!text || text === lastSnapshotHash) {
+          if (t.hand_id && t.hand_id !== lastHandId) {
+            // Hand ID changed but cards are identical — force re-fill
+            lastSnapshotHash = null;
+            lastHandId = t.hand_id;
+            lastStateKey = null;
+            console.log('[AUTO] Hand ID change detected (same cards):', t.hand_id);
+          } else {
+            return;
+          }
+        }
+        lastSnapshotHash = text;
+        lastDataChange = Date.now();
+        consecutiveErrors = 0;
+        if (state.autoFill && text) { detectAndSetVariant(text); setTextareaValue(textarea, text); }
+        await maybeAutoRun(text, t.table_id, t.hand_id);
+        adjustPollSpeed();
     } catch (err) {
       consecutiveErrors++;
       console.error('[AUTO] Poll failed (' + consecutiveErrors + '/' + MAX_CONSECUTIVE_ERRORS + '):', err.message);
