@@ -1064,7 +1064,7 @@ function renderSeats() {
         if (pos != null && pos >= 0 && pos < 9) {
           // ═══ DIAG: Detect posSeatMap overwrite ═══
           if (posSeatMap[pos] && posSeatMap[pos].name !== seat.name) {
-            console.log('[DIAG][OVERWRITE] pos=' + pos + ' seat_no=' + (pos+1) + ' \"' + posSeatMap[pos].name + '\" OVERWRITTEN by \"' + seat.name + '\"');
+            console.log('[DIAG][OVERWRITE] pos=' + pos + ' seat_no=' + (pos+1) + ' "' + posSeatMap[pos].name + '" OVERWRITTEN by "' + seat.name + '"');
           }
           posSeatMap[pos] = seat;
         }
