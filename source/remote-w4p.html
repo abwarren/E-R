@@ -1040,6 +1040,20 @@ function renderSeats() {
 
   var posSeatMap = {};
   heroIsActive = false;  // recalculate each render
+
+  // ═══ DIAG: Dump raw API seat data ═══
+  var rawSeats = [];
+  if (lastTable && Array.isArray(lastTable.seats)) {
+    lastTable.seats.forEach(function(s) {
+      if (s && s.name) {
+        rawSeats.push({ name: s.name, seat_no: s.seat_no, seat_index: s.seat_index, bot_id: s.bot_id, status: s.status, is_hero: s.is_self_player });
+      }
+    });
+  }
+  console.log('╔═══ RAW API SEATS ═══');
+  console.log(JSON.stringify(rawSeats));
+  console.log('╚═══ end raw seats');
+
   if (lastTable && Array.isArray(lastTable.seats)) {
     lastTable.seats.forEach(function(seat) {
       // Include sitting-out players — they hold their seat position.
@@ -1047,7 +1061,13 @@ function renderSeats() {
       if (seat.name != null) {
         var rawPos = seat.seat_no != null ? seat.seat_no : seat.seat_index;
         var pos = rawPos >= 1 ? rawPos - 1 : rawPos;  // map 1-9 → 0-8
-        if (pos != null && pos >= 0 && pos < 9) posSeatMap[pos] = seat;
+        if (pos != null && pos >= 0 && pos < 9) {
+          // ═══ DIAG: Detect posSeatMap overwrite ═══
+          if (posSeatMap[pos] && posSeatMap[pos].name !== seat.name) {
+            console.log('[DIAG][OVERWRITE] pos=' + pos + ' seat_no=' + (pos+1) + ' \"' + posSeatMap[pos].name + '\" OVERWRITTEN by \"' + seat.name + '\"');
+          }
+          posSeatMap[pos] = seat;
+        }
       }
       // detect if any hero has pending actions (drives adaptive poll rate)
       if (seat.is_self_player && seat.available_actions && seat.available_actions.length > 0) {
@@ -1096,6 +1116,8 @@ function renderSeats() {
     var slot = seatSlots[pos];  // use cached ref
     if (!slot) continue;  // guard: skip if DOM not ready
     if (seat) {
+      // ═══ DIAG: Trace render write ═══
+      console.log('[DIAG][RENDER_WRITE] name="' + seat.name + '" sn=' + sn + ' pos=' + pos + ' hash=' + hash);
       diagState(__DIAG.seq, 'RENDER', sn, prevState, nextState);
       __DIAG.lastSeatState[sn] = nextState;
       slot.style.display = '';
@@ -1110,6 +1132,17 @@ function renderSeats() {
     }
     renderedSeats[pos] = hash;
   }
+  // ═══ DIAG: Final seat → slot mapping ═══
+  var seatMap = [];
+  for (var p = 0; p < 9; p++) {
+    var sl = seatSlots[p];
+    if (sl) {
+      var box = sl.querySelector('.seat-box');
+      var displayName = box ? (box.querySelector('.seat-name') ? box.querySelector('.seat-name').textContent : '?') : 'empty';
+      seatMap.push({ slot: p, player: displayName });
+    }
+  }
+  console.log('[DIAG][FINAL_MAP] ' + JSON.stringify(seatMap));
 }
 
 // -- Find hero seat --
