@@ -1,0 +1,13 @@
+{
+  "metrics": {
+    "events_dispatched": 17,
+    "events_skipped_stale": 0,
+    "replay_log_capacity": 10000,
+    "replay_log_size": 17,
+    "sse_clients_current": 1,
+    "sse_clients_peak": 2
+  },
+  "ok": true,
+  "service": "tb-001-eventbus-sandbox",
+  "table_state": "PREFLOP"
+}

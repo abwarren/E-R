@@ -1,0 +1,575 @@
+{
+  "event_count": 17,
+  "events": [
+    {
+      "data": {
+        "diff": false,
+        "hand_id": null,
+        "table": {
+          "_version": 1,
+          "board": {
+            "flop": [],
+            "river": null,
+            "turn": null
+          },
+          "dealer_seat": null,
+          "hand_id": null,
+          "hand_state": "SEATED",
+          "pot_zar": 0,
+          "seats": [
+            {
+              "available_actions": [],
+              "hole_cards": [],
+              "is_hero": true,
+              "name": "Hero",
+              "seat_no": 1,
+              "stack_zar": 1000
+            },
+            {
+              "available_actions": [],
+              "hole_cards": [],
+              "is_hero": false,
+              "name": "Villain",
+              "seat_no": 2,
+              "stack_zar": 1000
+            }
+          ],
+          "street": "PREFLOP",
+          "table_id": "pb_test_001"
+        },
+        "table_id": "pb_test_001"
+      },
+      "hand_id": null,
+      "ts": 1784586592.6630754,
+      "type": "table_update",
+      "version": 1
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 2,
+          "hand_id": "hand-001-abc12345",
+          "hand_state": "PREFLOP",
+          "pot_zar": 15,
+          "seat_changes": [
+            {
+              "changes": {
+                "available_actions": [
+                  "fold",
+                  "check",
+                  "call",
+                  "raise"
+                ],
+                "hole_cards": [
+                  "Ah",
+                  "Kh",
+                  "Qd",
+                  "Jd"
+                ],
+                "stack_zar": 995
+              },
+              "seat_no": 1,
+              "type": "modified"
+            },
+            {
+              "changes": {
+                "stack_zar": 990
+              },
+              "seat_no": 2,
+              "type": "modified"
+            }
+          ],
+          "seats_count": {
+            "after": 2,
+            "before": 2
+          }
+        },
+        "diff": true,
+        "hand_id": "hand-001-abc12345",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-001-abc12345",
+      "ts": 1784586592.6721275,
+      "type": "table_update",
+      "version": 2
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 3,
+          "board": {
+            "flop": [
+              "Kc",
+              "Qc",
+              "7d"
+            ],
+            "river": null,
+            "turn": null
+          },
+          "hand_state": "FLOP",
+          "pot_zar": 35,
+          "seat_changes": [
+            {
+              "changes": {
+                "available_actions": [
+                  "fold",
+                  "check",
+                  "bet",
+                  "raise"
+                ],
+                "stack_zar": 975
+              },
+              "seat_no": 1,
+              "type": "modified"
+            }
+          ],
+          "seats_count": {
+            "after": 2,
+            "before": 2
+          },
+          "street": "FLOP"
+        },
+        "diff": true,
+        "hand_id": "hand-001-abc12345",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-001-abc12345",
+      "ts": 1784586592.675273,
+      "type": "table_update",
+      "version": 3
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 4,
+          "board": {
+            "flop": [
+              "Kc",
+              "Qc",
+              "7d"
+            ],
+            "river": null,
+            "turn": "As"
+          },
+          "hand_state": "TURN",
+          "pot_zar": 55,
+          "seat_changes": [
+            {
+              "changes": {
+                "stack_zar": 955
+              },
+              "seat_no": 1,
+              "type": "modified"
+            }
+          ],
+          "seats_count": {
+            "after": 2,
+            "before": 2
+          },
+          "street": "TURN"
+        },
+        "diff": true,
+        "hand_id": "hand-001-abc12345",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-001-abc12345",
+      "ts": 1784586592.6785913,
+      "type": "table_update",
+      "version": 4
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 5,
+          "board": {
+            "flop": [
+              "Kc",
+              "Qc",
+              "7d"
+            ],
+            "river": "2h",
+            "turn": "As"
+          },
+          "hand_state": "RIVER",
+          "pot_zar": 100,
+          "street": "RIVER"
+        },
+        "diff": true,
+        "hand_id": "hand-001-abc12345",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-001-abc12345",
+      "ts": 1784586592.6806154,
+      "type": "table_update",
+      "version": 5
+    },
+    {
+      "data": {
+        "from": "hand-001",
+        "hand_id": "hand-002-def67890",
+        "to": "hand-002",
+        "transition": "old_hand_complete"
+      },
+      "hand_id": "hand-002-def67890",
+      "ts": 1784586592.6827655,
+      "type": "hand_event",
+      "version": 6
+    },
+    {
+      "data": {
+        "diff": false,
+        "hand_id": "hand-002-def67890",
+        "table": {
+          "_version": 6,
+          "board": {
+            "flop": [],
+            "river": null,
+            "turn": null
+          },
+          "dealer_seat": null,
+          "hand_id": "hand-002-def67890",
+          "hand_state": "PREFLOP",
+          "pot_zar": 15,
+          "seats": [
+            {
+              "available_actions": [
+                "fold",
+                "check",
+                "call",
+                "raise"
+              ],
+              "hole_cards": [
+                "Ad",
+                "Kd",
+                "Qs",
+                "Js"
+              ],
+              "is_hero": true,
+              "name": "Hero",
+              "seat_no": 1,
+              "stack_zar": 1055
+            },
+            {
+              "available_actions": [],
+              "hole_cards": [],
+              "is_hero": false,
+              "name": "Villain",
+              "seat_no": 2,
+              "stack_zar": 945
+            }
+          ],
+          "street": "PREFLOP",
+          "table_id": "pb_test_001"
+        },
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-002-def67890",
+      "ts": 1784586592.6828997,
+      "type": "table_update",
+      "version": 7
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 7
+        },
+        "diff": true,
+        "hand_id": "hand-002-def67890",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-002-def67890",
+      "ts": 1784586594.705407,
+      "type": "table_update",
+      "version": 8
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 8,
+          "hand_state": "SEATED",
+          "pot_zar": 0,
+          "seat_changes": [
+            {
+              "changes": {
+                "available_actions": [],
+                "hole_cards": [],
+                "stack_zar": 1000
+              },
+              "seat_no": 1,
+              "type": "modified"
+            },
+            {
+              "changes": {
+                "stack_zar": 1000
+              },
+              "seat_no": 2,
+              "type": "modified"
+            }
+          ],
+          "seats_count": {
+            "after": 2,
+            "before": 2
+          }
+        },
+        "diff": true,
+        "hand_id": "hand-002-def67890",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-002-def67890",
+      "ts": 1784586620.6645339,
+      "type": "table_update",
+      "version": 9
+    },
+    {
+      "data": {
+        "from": "hand-002",
+        "hand_id": "hand-001-abc12345",
+        "to": "hand-001",
+        "transition": "old_hand_complete"
+      },
+      "hand_id": "hand-001-abc12345",
+      "ts": 1784586620.6669838,
+      "type": "hand_event",
+      "version": 10
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 9,
+          "hand_id": "hand-001-abc12345",
+          "hand_state": "PREFLOP",
+          "pot_zar": 15,
+          "seat_changes": [
+            {
+              "changes": {
+                "available_actions": [
+                  "fold",
+                  "check",
+                  "call",
+                  "raise"
+                ],
+                "hole_cards": [
+                  "Ah",
+                  "Kh",
+                  "Qd",
+                  "Jd"
+                ],
+                "stack_zar": 995
+              },
+              "seat_no": 1,
+              "type": "modified"
+            },
+            {
+              "changes": {
+                "stack_zar": 990
+              },
+              "seat_no": 2,
+              "type": "modified"
+            }
+          ],
+          "seats_count": {
+            "after": 2,
+            "before": 2
+          }
+        },
+        "diff": true,
+        "hand_id": "hand-001-abc12345",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-001-abc12345",
+      "ts": 1784586620.6670704,
+      "type": "table_update",
+      "version": 11
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 10,
+          "board": {
+            "flop": [
+              "Kc",
+              "Qc",
+              "7d"
+            ],
+            "river": null,
+            "turn": null
+          },
+          "hand_state": "FLOP",
+          "pot_zar": 35,
+          "seat_changes": [
+            {
+              "changes": {
+                "available_actions": [
+                  "fold",
+                  "check",
+                  "bet",
+                  "raise"
+                ],
+                "stack_zar": 975
+              },
+              "seat_no": 1,
+              "type": "modified"
+            }
+          ],
+          "seats_count": {
+            "after": 2,
+            "before": 2
+          },
+          "street": "FLOP"
+        },
+        "diff": true,
+        "hand_id": "hand-001-abc12345",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-001-abc12345",
+      "ts": 1784586620.6731243,
+      "type": "table_update",
+      "version": 12
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 11,
+          "board": {
+            "flop": [
+              "Kc",
+              "Qc",
+              "7d"
+            ],
+            "river": null,
+            "turn": "As"
+          },
+          "hand_state": "TURN",
+          "pot_zar": 55,
+          "seat_changes": [
+            {
+              "changes": {
+                "stack_zar": 955
+              },
+              "seat_no": 1,
+              "type": "modified"
+            }
+          ],
+          "seats_count": {
+            "after": 2,
+            "before": 2
+          },
+          "street": "TURN"
+        },
+        "diff": true,
+        "hand_id": "hand-001-abc12345",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-001-abc12345",
+      "ts": 1784586620.685043,
+      "type": "table_update",
+      "version": 13
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 12,
+          "board": {
+            "flop": [
+              "Kc",
+              "Qc",
+              "7d"
+            ],
+            "river": "2h",
+            "turn": "As"
+          },
+          "hand_state": "RIVER",
+          "pot_zar": 100,
+          "street": "RIVER"
+        },
+        "diff": true,
+        "hand_id": "hand-001-abc12345",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-001-abc12345",
+      "ts": 1784586620.6914604,
+      "type": "table_update",
+      "version": 14
+    },
+    {
+      "data": {
+        "from": "hand-001",
+        "hand_id": "hand-002-def67890",
+        "to": "hand-002",
+        "transition": "old_hand_complete"
+      },
+      "hand_id": "hand-002-def67890",
+      "ts": 1784586620.694745,
+      "type": "hand_event",
+      "version": 15
+    },
+    {
+      "data": {
+        "diff": false,
+        "hand_id": "hand-002-def67890",
+        "table": {
+          "_version": 13,
+          "board": {
+            "flop": [],
+            "river": null,
+            "turn": null
+          },
+          "dealer_seat": null,
+          "hand_id": "hand-002-def67890",
+          "hand_state": "PREFLOP",
+          "pot_zar": 15,
+          "seats": [
+            {
+              "available_actions": [
+                "fold",
+                "check",
+                "call",
+                "raise"
+              ],
+              "hole_cards": [
+                "Ad",
+                "Kd",
+                "Qs",
+                "Js"
+              ],
+              "is_hero": true,
+              "name": "Hero",
+              "seat_no": 1,
+              "stack_zar": 1055
+            },
+            {
+              "available_actions": [],
+              "hole_cards": [],
+              "is_hero": false,
+              "name": "Villain",
+              "seat_no": 2,
+              "stack_zar": 945
+            }
+          ],
+          "street": "PREFLOP",
+          "table_id": "pb_test_001"
+        },
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-002-def67890",
+      "ts": 1784586620.6948597,
+      "type": "table_update",
+      "version": 16
+    },
+    {
+      "data": {
+        "changes": {
+          "_version": 14
+        },
+        "diff": true,
+        "hand_id": "hand-002-def67890",
+        "table_id": "pb_test_001"
+      },
+      "hand_id": "hand-002-def67890",
+      "ts": 1784586622.7150698,
+      "type": "table_update",
+      "version": 17
+    }
+  ],
+  "ok": true
+}
