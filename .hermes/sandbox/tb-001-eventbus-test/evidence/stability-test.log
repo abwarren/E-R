@@ -1,0 +1,25 @@
+=== STABILITY: FLICKER & STALENESS ===
+
+─── Inject baseline hand ───
+
+─── Flicker check: 20 consecutive polls ───
+  ✅ True
+  ✅ True
+  ✅ True
+  ✅ True
+  ✅ True
+  20 polls, 1 hand_ids, 1 streets
+
+─── Board progression: no backwards flicker ───
+  ❌ street flickered backwards: got FLOP expected TURN
+  ❌ turn card disappeared
+
+─── Hand transition: no stale data ───
+  ✅ True
+  ✅ True
+  ✅ True
+
+─── Health stability: no zero readings ───
+  ✅ True
+
+=== 9/11 pass, 2 fail ===
