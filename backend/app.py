@@ -29,6 +29,20 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from buffer import push_snapshot, extract_hands_and_board, should_accept_snapshot, detect_board_change, bump_hand_epoch, get_hand_epoch
 from typing import NotRequired, TypedDict
+from config import flag
+from event_bus import bus
+
+# ── PostgreSQL state management (replaces JSON file persistence) ──────────
+from app_integration import (
+    init_pg_state, get_mgr, load_pg_state,
+    sync_table_to_pg, delete_table_from_pg,
+    sync_bot_mapping_to_pg, delete_bot_mapping_from_pg,
+    sync_command_to_pg, sync_hero_cards_to_pg,
+    delete_hero_cards_from_pg, sync_bot_actions_to_pg,
+    delete_bot_actions_from_pg, sync_hand_history_to_pg,
+    sync_cashout_state_to_pg, delete_cashout_state_from_pg,
+    pg_health, start_pg_cleanup_thread,
+)
 
 # ── TypedDict schema definitions (data contract for critical DTOs) ──────────────
 
@@ -197,6 +211,22 @@ def _service_unavailable(e):
     return jsonify(ok=False, error='service_unavailable'), 503
 
 
+# ── PostgreSQL State Manager (replaces JSON file persistence) ──────────────
+# Initializes the PG connection pool and runs migrations.
+_PG_MANAGER = None
+_PG_CLEANUP_THREAD = None
+
+try:
+    _PG_MANAGER = init_pg_state(app)
+    if not _PG_MANAGER or not _PG_MANAGER.health():
+        app.logger.warning("[PG] PostgreSQL unavailable — falling back to in-memory only (state will be lost on restart)")
+    else:
+        app.logger.info("[PG] PostgreSQL state backend active")
+except Exception as e:
+    app.logger.warning("[PG] PostgreSQL init failed: %s — falling back to in-memory only", e)
+    _PG_MANAGER = None
+
+
 # ── Auth & Session Management ──────────────────────────────────────────────────
 
 from flask_login import LoginManager, login_required, current_user
@@ -302,6 +332,34 @@ _TABLE_INACTIVE_TTL = 30  # seconds: mark table inactive if no snapshot received
 POKER_ACTIONS = frozenset({"fold", "check", "call", "bet", "raise", "all_in",
                             "back_to_game", "resume_hand"})
 STREET_RANK = {"PREFLOP": 0, "FLOP": 1, "TURN": 2, "RIVER": 3}
+
+# ── Hand Lifecycle State Machine (Phase D) ────────────────────────────────────
+# Explicit state transitions guard against invalid street progression.
+# Used when W4P_USE_HAND_FSM=true via flag("USE_HAND_FSM").
+HAND_LIFECYCLE = {
+    "WAITING":        frozenset({"SEATED", "NEW_HAND", "PREFLOP"}),
+    "SEATED":         frozenset({"NEW_HAND", "PREFLOP", "WAITING"}),
+    "PREFLOP":        frozenset({"FLOP", "HAND_COMPLETE", "WAITING"}),
+    "FLOP":           frozenset({"TURN", "RIVER", "HAND_COMPLETE", "WAITING"}),
+    "TURN":           frozenset({"RIVER", "HAND_COMPLETE", "WAITING"}),
+    "RIVER":          frozenset({"HAND_COMPLETE", "WAITING"}),
+    "HAND_COMPLETE":  frozenset({"ARCHIVED", "NEW_HAND", "SEATED", "WAITING"}),
+    "ARCHIVED":       frozenset({"READY", "WAITING"}),
+    "READY":          frozenset({"NEW_HAND", "PREFLOP", "SEATED", "WAITING"}),
+}
+
+def validate_hand_transition(current: str | None, next_state: str) -> str:
+    """Validate hand lifecycle transition. Returns the validated next state.
+    If invalid, returns current state and logs a warning."""
+    if not current or current not in HAND_LIFECYCLE:
+        return next_state  # First transition — accept
+    if next_state in HAND_LIFECYCLE.get(current, frozenset()):
+        return next_state
+    app.logger.warning(
+        "[FSM] Invalid transition %s → %s (rejected, staying in %s)",
+        current, next_state, current
+    )
+    return current
 
 # ── Hand history (multi-hand ASCII log, FIFO last 20) ──────────────────────────
 _hand_history  = []   # list of ASCII hand strings, newest last, max 20
@@ -444,6 +502,9 @@ def _archive_hand(table):
         _hand_history.append(hand_text)
         if len(_hand_history) > HAND_HISTORY_MAX:
             _hand_history[:] = _hand_history[-HAND_HISTORY_MAX:]
+
+    # Sync to PostgreSQL
+    sync_hand_history_to_pg(hand_text)
 
 
 def _safe_float(val, default=0):
@@ -624,7 +685,13 @@ def get_or_create_table(table_id, bot_id=None):
             "board":         {"flop": [], "turn": None, "river": None},
             "dealer_seat":   None,
         }
+        # New table: sync to PostgreSQL immediately
+        sync_table_to_pg(table_id, bot_id or '__observer__', _tables[key])
     return _tables[key]
+
+
+
+
 
 
 def update_bot_seat_mapping(bot_id, table_id, seat_no):
@@ -653,6 +720,9 @@ def update_bot_seat_mapping(bot_id, table_id, seat_no):
     seat_key = (table_id, seat_no)
     _seat_bots[seat_key] = bot_id
 
+    # Sync to PostgreSQL
+    sync_bot_mapping_to_pg(bot_id, table_id, seat_no)
+
     app.logger.info(f'[BOT_SYNC] {bot_id} → {table_id}:seat_no={seat_no}')
 
 
@@ -669,6 +739,10 @@ def clear_bot_seat(bot_id):
         del _seat_bots[seat_key]
 
     del _bot_seats[bot_id]
+
+    # Sync to PostgreSQL
+    delete_bot_mapping_from_pg(bot_id)
+
     app.logger.info(f'[BOT_SYNC] {bot_id} unseated')
 
 
@@ -1127,50 +1201,73 @@ def _serialise_state():
     return result
 
 def _load_state():
-    """Load persisted state from disk into _tables on startup."""
-    if not STATE_FILE.exists():
-        app.logger.info("[PERSIST] No state file found at %s — starting fresh", STATE_FILE.name)
-        return
-    try:
-        raw = json.loads(STATE_FILE.read_text(encoding='utf-8'))
-        # Restore bot->seat ownership so cross-bot merge works after restart
-        bot_state = raw.pop("__bot_state__", None)
-        if bot_state:
-            for key, bid in bot_state.get("seat_bots", {}).items():
-                parts = key.split(":", 1)
+    """Load persisted state into _tables on startup.
+    Primary source: PostgreSQL. Falls back to JSON file for backward compat."""
+    loaded_from_pg = False
+    if _PG_MANAGER and _PG_MANAGER.health():
+        try:
+            state = load_pg_state(app)
+            if state and state.get("tables"):
+                tables = state["tables"]
+                # Load tables into _tables dict
+                for (tid, bid), data in tables.items():
+                    # Reconstruct the nested structure from JSONB
+                    key = _table_key(tid, bid)
+                    _tables[key] = data
+                app.logger.info("[PERSIST] Loaded %d table(s) from PostgreSQL",
+                                len(tables))
+                loaded_from_pg = True
+        except Exception as e:
+            app.logger.warning("[PERSIST] PG load failed: %s — trying JSON file", e)
+
+    if not loaded_from_pg:
+        # Fallback to JSON file (old format)
+        if not STATE_FILE.exists():
+            app.logger.info("[PERSIST] No state file found at %s — starting fresh", STATE_FILE.name)
+            return
+        try:
+            raw = json.loads(STATE_FILE.read_text(encoding='utf-8'))
+            # Restore bot->seat ownership so cross-bot merge works after restart
+            bot_state = raw.pop("__bot_state__", None)
+            if bot_state:
+                for key, bid in bot_state.get("seat_bots", {}).items():
+                    parts = key.split(":", 1)
+                    if len(parts) == 2:
+                        _seat_bots[(parts[0], int(parts[1]))] = bid
+                for bid, info in bot_state.get("bot_seats", {}).items():
+                    _bot_seats[bid] = info
+                app.logger.info(f"[PERSIST] Restored {len(_seat_bots)} bot->seat mapping(s)")
+            for tid, t in raw.items():
+                t["seats"] = {int(k): v for k, v in t.get("seats", {}).items()}
+                parts = tid.split("|", 1)
                 if len(parts) == 2:
-                    _seat_bots[(parts[0], int(parts[1]))] = bid
-            for bid, info in bot_state.get("bot_seats", {}).items():
-                _bot_seats[bid] = info
-            app.logger.info(f"[PERSIST] Restored {len(_seat_bots)} bot->seat mapping(s)")
-        for tid, t in raw.items():
-            t["seats"] = {int(k): v for k, v in t.get("seats", {}).items()}
-            parts = tid.split("|", 1)
-            if len(parts) == 2:
-                _tables[(parts[0], parts[1])] = t
-            else:
-                # Backward compat: old format (plain table_id, no bot_id)
-                _tables[(tid, "__observer__")] = t
-        app.logger.info(f"[PERSIST] Loaded {len(_tables)} table(s) from {STATE_FILE.name} "
-                        f"({STATE_FILE.stat().st_size / 1024:.0f} KB, "
-                        f"last modified {datetime.fromtimestamp(STATE_FILE.stat().st_mtime).isoformat()})")
-    except Exception as e:
-        app.logger.warning(f"[PERSIST] Could not load state: {e}")
+                    _tables[(parts[0], parts[1])] = t
+                else:
+                    # Backward compat: old format (plain table_id, no bot_id)
+                    _tables[(tid, "__observer__")] = t
+            app.logger.info(f"[PERSIST] Loaded {len(_tables)} table(s) from {STATE_FILE.name} "
+                            f"({STATE_FILE.stat().st_size / 1024:.0f} KB, "
+                            f"last modified {datetime.fromtimestamp(STATE_FILE.stat().st_mtime).isoformat()})")
+        except Exception as e:
+            app.logger.warning(f"[PERSIST] Could not load state: {e}")
 
 
 def _persist_loop():
-    """Background thread: snapshot state to disk every PERSIST_INT seconds."""
+    """Background thread: sync state to PostgreSQL every PERSIST_INT seconds.
+    Replaces the old JSON file persistence. Each write already went to PG
+    via the sync functions; this catch-up loop handles edge cases where
+    internal dict mutation happened without an explicit sync call."""
     while True:
         time.sleep(PERSIST_INT)
+        if not _PG_MANAGER:
+            continue
         try:
             with _store_lock:
-                snapshot = _serialise_state()
-            # Disk write outside lock
-            tmp = STATE_FILE.with_suffix('.tmp')
-            tmp.write_text(json.dumps(snapshot, default=str), encoding='utf-8')
-            tmp.replace(STATE_FILE)
+                for (tid, bid), t in list(_tables.items()):
+                    sync_table_to_pg(tid, bid, t)
+                app.logger.info(f'[PERSIST] Synced {len(_tables)} table(s) to PostgreSQL')
         except Exception as e:
-            app.logger.warning(f"[PERSIST] Write failed: {e}")
+            app.logger.warning(f'[PERSIST] PG sync failed: {e}')
 
 # ── P2: Stale seat eviction + command expiry ───────────────────────────────────
 
@@ -1198,10 +1295,22 @@ def _cleanup_loop():
                                 _bot_seats.pop(evicted_bot, None)
                                 _bot_actions.pop(evicted_bot, None)
                                 _bot_buttons.pop(evicted_bot, None)
+                                # Sync: remove bot mappings from PG
+                                delete_bot_mapping_from_pg(evicted_bot)
+                                delete_bot_actions_from_pg(evicted_bot)
                             tok = generate_seat_token(table['table_id'], sno)
                             _command_queue.pop(tok, None)
                             _cashout_state.pop(tok, None)
+                            # Sync: remove hero cards + cashout from PG
+                            delete_hero_cards_from_pg(table['table_id'], sno)
+                            delete_cashout_state_from_pg(tok)
                         table["seats"] = live
+                        # Sync: table state after eviction
+                        sync_table_to_pg(
+                            table['table_id'],
+                            table.get('bot_id', '__observer__'),
+                            table,
+                        )
                         app.logger.info(
                             f"[CLEANUP] table={table['table_id']} evicted {len(evicted_snos)} stale seat(s) + cleaned state"
                         )
@@ -1223,6 +1332,9 @@ def _cleanup_loop():
                     if not t["seats"] and (now - t["last_ts"]) > 60
                 ]
                 for tkey in stale_tables:
+                    tid, bid = tkey
+                    # Sync: remove from PostgreSQL
+                    delete_table_from_pg(tid, bid)
                     del _tables[tkey]
                     app.logger.info(f"[CLEANUP] Removed empty table {tkey}")
 
@@ -1273,6 +1385,29 @@ def sse_stream():
                     _sse_clients.remove(q)
     return Response(generate(), mimetype="text/event-stream",
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.route('/api/events')
+def sse_events():
+    """Upgraded SSE endpoint with typed events (table_update, hand_event, engine_update).
+    Used when W4P_USE_EVENT_BUS=true. Falls back to /api/stream."""
+    q = bus.connect_sse()
+    def generate():
+        try:
+            yield "event: connected\ndata: {}\n\n"
+            while True:
+                try:
+                    event = q.get(timeout=30)
+                    yield event.to_sse()
+                except _queue.Empty:
+                    yield ": keepalive\n\n"
+        except GeneratorExit:
+            pass
+        finally:
+            bus.disconnect_sse(q)
+    return Response(generate(), mimetype="text/event-stream",
+                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
 
 # ── Endpoint 1: POST /api/snapshot ────────────────────────────────────────────
 
@@ -1619,6 +1754,39 @@ def post_snapshot():
         table["needs_action"]  = len(payload.get('available_actions', [])) > 0  # MVP-1
         table["state_version"] += 1
 
+        # ── Hand Lifecycle FSM (Phase D) ────────────────────────────────────
+        if flag("USE_HAND_FSM"):
+            # Derive lifecycle state from payload
+            street = payload.get("street", "PREFLOP")
+            board = payload.get("board", {})
+            flop = board.get("flop", [])
+            turn = board.get("turn")
+            river = board.get("river")
+            pot = payload.get("pot_zar", 0)
+            has_cards = any(s.get("hole_cards") for s in seats_raw)
+            seated = any(s.get("name") for s in seats_raw)
+
+            if river:
+                derived_state = "RIVER"
+            elif turn:
+                derived_state = "TURN"
+            elif flop:
+                derived_state = "FLOP"
+            elif has_cards and pot > 0:
+                derived_state = "PREFLOP"
+            elif seated:
+                derived_state = "SEATED"
+            else:
+                derived_state = "WAITING"
+
+            current_state = table.get("_hand_state")
+            validated = validate_hand_transition(current_state, derived_state)
+            table["_hand_state"] = validated
+            if validated != current_state and current_state:
+                app.logger.info("[FSM] %s → %s hand=%s", current_state, validated,
+                               table.get("hand_id", "?")[:8])
+        # ── End FSM ────────────────────────────────────────────────────────
+
         # ── Multi-hero: cache each hero's cards by bot_id (stable across seat_map changes) ──
         # Key by (table_id, bot_id) so the cache survives seat_no reassignment.
         if bot_id:
@@ -1663,6 +1831,20 @@ def post_snapshot():
         # ── ADR-001: Capture hand_id for response (still inside first lock) ──
         response_hand_id = table.get("hand_id")
 
+    # Sync to PostgreSQL (outside the store_lock to avoid nested transactions)
+    try:
+        if _PG_MANAGER and bot_id:
+            sync_table_to_pg(table_id, bot_id or '__observer__', table)
+        # Also sync cashout state if it changed
+        if hero_seat_no and token in _cashout_state:
+            sync_cashout_state_to_pg(
+                token,
+                requested=_cashout_state[token].get('requested'),
+                available=_cashout_state[token].get('available'),
+            )
+    except Exception:
+        pass  # PG sync must never break the snapshot endpoint
+
     # Log outside lock
     if cashout_cmd:
         app.logger.info(f"[CASHOUT] Auto-queued table={table_id} seat_no={hero_seat_no}")
@@ -1671,7 +1853,19 @@ def post_snapshot():
         with _store_lock:
             tkey = _table_key(table_id, bot_id)
             if tkey in _tables:
-                sse_notify(_table_view(_tables[tkey]))
+                view = _table_view(_tables[tkey])
+                sse_notify(view)
+                if flag("USE_EVENT_BUS"):
+                    bus.dispatch("table_update", view, hand_id=view.get("hand_id"))
+                    # Detect hand transitions for hand_event dispatch
+                    cur_state = view.get("street", "WAITING")
+                    if cur_state != _tables[tkey].get("_prev_street", None):
+                        prev = _tables[tkey].get("_prev_street", "WAITING")
+                        bus.dispatch("hand_event", {
+                            "from": prev, "to": cur_state,
+                            "table_id": table_id, "bot_id": bot_id,
+                        }, hand_id=view.get("hand_id"))
+                        _tables[tkey]["_prev_street"] = cur_state
     except Exception:
         pass
 
@@ -1792,6 +1986,9 @@ def queue_command():
         if sel:
             cmd_obj['selector'] = sel
         _command_queue[token] = cmd_obj
+
+        # Sync to PostgreSQL
+        sync_command_to_pg(token, cmd_obj)
 
     app.logger.info(f"[CMD] Queued {command_type} cmd={command_id} table={table_id} seat={seat_no}")
     return jsonify({'ok': True, 'command_id': command_id})
@@ -2136,6 +2333,29 @@ def diag_render():
     )
     return jsonify({'ok': True})
 
+
+# ── Endpoint: GET /api/metrics ────────────────────────────────────────────────
+
+@app.route('/api/metrics', methods=['GET'])
+def get_metrics():
+    return jsonify({
+        "ok": True,
+        "events_dispatched": bus.events_dispatched,
+        "replay_log_size": bus.replay_count(),
+        "replay_log_capacity": bus.replay_log_capacity,
+        "sse_clients": len(bus._sse_clients),
+    })
+
+
+# ── Endpoint: GET /api/events/replay ─────────────────────────────────────────
+
+@app.route('/api/events/replay', methods=['GET'])
+def replay_events():
+    hand_id = request.args.get("hand_id")
+    events = bus.replay(hand_id)
+    return jsonify({"ok": True, "event_count": len(events), "events": events})
+
+
 # ── Endpoint 7: GET /api/health ───────────────────────────────────────────────
 
 @app.route('/api/health', methods=['GET'])
@@ -2186,6 +2406,8 @@ def health():
         'snapshot_age_seconds': snapshot_age_seconds,
         'snapshot_seq':    snapshot_seq,
         'cdp_status':      cdp_status,
+        'pg_active':       bool(_PG_MANAGER),
+        'pg_healthy':      _PG_MANAGER.health() if _PG_MANAGER else False,
     })
 
 

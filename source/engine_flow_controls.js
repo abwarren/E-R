@@ -1,6 +1,14 @@
 (() => {
   'use strict';
 
+  // ╔═══════════════════════════════════════════════════════════════════╗
+  // ║  DEPRECATED — v2.0.0 (2026-07-20)                              ║
+  // ║  Engine polling migrated to Unified Frontend.                   ║
+  // ║  This file is retained for backward compatibility and will be   ║
+  // ║  removed after 2 weeks of stability (target: 2026-08-03).      ║
+  // ║  Use W4P_USE_UNIFIED_LAYOUT=true to enable the new system.      ║
+  // ╚═══════════════════════════════════════════════════════════════════╝
+
   // ══════════════════════════════════════════════════════════════════════════
   // CONFIGURATION
   // ══════════════════════════════════════════════════════════════════════════

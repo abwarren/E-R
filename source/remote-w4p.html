@@ -1639,8 +1639,217 @@ function render() {
 // -- Init & poll --
 
 console.log('[REMOTE] ' + VERSION + ' loaded');
+
+// ════════════════════════════════════════════════════════════════════
+// EVENT BUS — SSE connection for typed events
+// ════════════════════════════════════════════════════════════════════
+
+var _eventSource = null;
+var _busVersion = 0;
+
+function connectEventBus() {
+  if (_eventSource) { _eventSource.close(); }
+  _eventSource = new EventSource('/api/events');
+  _eventSource.addEventListener('connected', function() {
+    console.log('[EVENTBUS] Connected');
+  });
+  _eventSource.addEventListener('table_update', function(e) {
+    try {
+      var event = JSON.parse(e.data);
+      if (event.version && event.version <= _busVersion) return; // stale
+      _busVersion = event.version || _busVersion;
+      if (!event.data) return;
+      var data = event.data;
+      // data can be full table or diff - handle both
+      if (data.table_id) {
+        lastTable = data;
+        _lastTableJSON = JSON.stringify(data);
+        scheduleRender();
+      } else if (data.changes && data.hand_id && lastTable) {
+        // Partial diff merge (Phase C)
+        for (var k in data.changes) {
+          if (k === 'seat_changes') continue;
+          lastTable[k] = data.changes[k];
+        }
+        if (data.changes.hand_id) lastTable.hand_id = data.changes.hand_id;
+        scheduleRender();
+      }
+    } catch(ex) { console.warn('[EVENTBUS] Parse error:', ex); }
+  });
+  _eventSource.addEventListener('hand_event', function(e) {
+    try {
+      var event = JSON.parse(e.data);
+      console.log('[EVENTBUS] Hand event:', event.data.from, '→', event.data.to);
+      if (event.data && event.data.to) {
+        if (lastTable) lastTable._hand_event = event.data;
+      }
+    } catch(ex) {}
+  });
+  _eventSource.addEventListener('engine_update', function(e) {
+    try {
+      var event = JSON.parse(e.data);
+      if (lastTable) lastTable._engine_results = event.data;
+      scheduleRender();
+    } catch(ex) {}
+  });
+  _eventSource.onerror = function() {
+    console.log('[EVENTBUS] Disconnected, falling back to long-poll');
+    _eventSource.close();
+    _eventSource = null;
+    fetchTable();
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════
+// ENGINE PANEL — collapsible equity display (Phase B)
+// ════════════════════════════════════════════════════════════════════
+
+var _enginePanelInjected = false;
+
+function ensureEnginePanel() {
+  if (_enginePanelInjected) return;
+  // Find the cmd-log or bottom area to insert before
+  var cmdLog = document.getElementById('cmd-log');
+  if (!cmdLog) return;
+  
+  var panel = document.createElement('div');
+  panel.id = 'engine-panel';
+  panel.style.cssText = 'border-top:1px solid #30363d;background:#0d1117;';
+  panel.innerHTML =
+    '<div style="display:flex;align-items:center;gap:8px;padding:4px 12px;border-bottom:1px solid #1e2a38;cursor:pointer;" id="engine-panel-toggle" onclick="toggleEnginePanel()">' +
+    '<span style="font-size:11px;font-weight:700;letter-spacing:1px;color:#58a6ff;">▸ ENGINE</span>' +
+    '<span style="font-size:10px;color:#555;" id="engine-status">idle</span>' +
+    '</div>' +
+    '<div id="engine-panel-body" style="display:none;padding:8px 12px;">' +
+    '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:6px;font-size:11px;">' +
+    '<label style="color:#ccc;"><input type="checkbox" id="ep-auto-fill" checked> Auto Fill</label>' +
+    '<label style="color:#ccc;"><input type="checkbox" id="ep-auto-flop" checked> Auto Run Flop</label>' +
+    '<label style="color:#ccc;"><input type="checkbox" id="ep-manual-turn" checked> Manual Turn</label>' +
+    '<label style="color:#ccc;"><input type="checkbox" id="ep-clear-river" checked> Clear River</label>' +
+    '<button id="ep-run-btn" style="font-size:10px;padding:2px 10px;background:#1a9a6c;border:none;border-radius:3px;color:#fff;cursor:pointer;">RUN ENGINE</button>' +
+    '</div>' +
+    '<textarea id="ep-textarea" rows="4" style="width:100%;background:#161b22;border:1px solid #30363d;border-radius:4px;color:#c9d1d9;font-family:monospace;font-size:12px;padding:6px;resize:vertical;" placeholder="Hands appear here..."></textarea>' +
+    '<div id="ep-results" style="margin-top:4px;font-family:monospace;font-size:11px;color:#8b949e;min-height:20px;"></div>' +
+    '</div>';
+  cmdLog.parentNode.insertBefore(panel, cmdLog);
+  _enginePanelInjected = true;
+  
+  // Wire toggles
+  document.getElementById('ep-run-btn').addEventListener('click', function() {
+    var ta = document.getElementById('ep-textarea');
+    if (ta && ta.value) {
+      fetch('/api/run', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hands:ta.value})})
+        .then(function(r){return r.json();})
+        .then(function(j){console.log('[ENGINE] Run result:', j);})
+        .catch(function(e){console.warn('[ENGINE] Run error:', e);});
+    }
+  });
+}
+
+function toggleEnginePanel() {
+  var body = document.getElementById('engine-panel-body');
+  var toggle = document.getElementById('engine-panel-toggle');
+  if (!body || !toggle) return;
+  var visible = body.style.display !== 'none';
+  body.style.display = visible ? 'none' : 'block';
+  toggle.innerHTML = (visible ? '▸' : '▾') + toggle.innerHTML.slice(1);
+}
+
+function updateEnginePanel() {
+  if (!lastTable) return;
+  var ta = document.getElementById('ep-textarea');
+  if (!ta) return;
+  var seats = lastTable.seats || [];
+  var lines = [];
+  for (var i = 0; i < seats.length; i++) {
+    var cards = seats[i].hole_cards || [];
+    if (cards.length > 0) lines.push(cards.join(''));
+  }
+  var board = lastTable.board || {};
+  var boardCards = [].concat(board.flop || [], board.turn || [], board.river || []).filter(Boolean);
+  if (boardCards.length > 0) lines.push(boardCards.join(''));
+  if (lines.length > 0) {
+    ta.value = lines.join('\n');
+    document.getElementById('engine-status').textContent = 'loaded';
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// SYNC INSPECTOR — debug panel (Phase E)
+// ════════════════════════════════════════════════════════════════════
+
+var _inspectorInjected = false;
+
+function ensureSyncInspector() {
+  if (_inspectorInjected) return;
+  var cmdLog = document.getElementById('cmd-log');
+  if (!cmdLog) return;
+  
+  var panel = document.createElement('div');
+  panel.id = 'sync-inspector';
+  panel.style.cssText = 'border-top:1px solid #30363d;background:#080e1c;font-family:monospace;font-size:10px;color:#8b949e;';
+  panel.innerHTML =
+    '<div style="display:flex;align-items:center;gap:8px;padding:4px 12px;cursor:pointer;" id="inspector-toggle" onclick="toggleInspector()">' +
+    '<span style="font-size:11px;font-weight:700;letter-spacing:1px;color:#ffd54f;">▸ SYNC</span>' +
+    '<span id="inspector-status" style="font-size:10px;">connecting...</span>' +
+    '</div>' +
+    '<div id="inspector-body" style="display:none;padding:6px 12px;">' +
+    '<div id="inspector-metrics" style="line-height:1.6;"></div>' +
+    '</div>';
+  cmdLog.parentNode.insertBefore(panel, cmdLog);
+  _inspectorInjected = true;
+}
+
+function toggleInspector() {
+  var body = document.getElementById('inspector-body');
+  var toggle = document.getElementById('inspector-toggle');
+  if (!body || !toggle) return;
+  var visible = body.style.display !== 'none';
+  body.style.display = visible ? 'none' : 'block';
+  toggle.innerHTML = (visible ? '▸' : '▾') + toggle.innerHTML.slice(1);
+}
+
+function updateInspector() {
+  var metricsEl = document.getElementById('inspector-metrics');
+  var statusEl = document.getElementById('inspector-status');
+  if (!metricsEl) return;
+  var html = '';
+  html += 'Connection: ' + (_eventSource ? '<span style=\"color:#4caf50;\">SSE</span>' : '<span style=\"color:#f44336;\">LONG-POLL</span>') + '<br>';
+  html += 'Bus Version: ' + _busVersion + '<br>';
+  html += 'Hand: ' + (lastTable ? (lastTable.hand_id || '--').substring(0, 8) : '--') + '<br>';
+  html += 'Street: ' + (lastTable ? (lastTable.street || '--') : '--') + '<br>';
+  if (lastTable && lastTable.authority) {
+    html += 'Authority: ' + (lastTable.authority.reason || '--') + '<br>';
+  }
+  html += 'Seats: ' + (lastTable && lastTable.seats ? lastTable.seats.filter(function(s){return s&&s.name;}).length : 0) + ' occupied<br>';
+  metricsEl.innerHTML = html;
+  if (statusEl) {
+    statusEl.textContent = _eventSource ? 'SSE v' + _busVersion : (lastTable ? 'polling' : 'waiting');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// OVERRIDE render() — add engine panel + inspector updates
+// ════════════════════════════════════════════════════════════════════
+
+var _origRender = render;
+render = function() {
+  _origRender();
+  ensureEnginePanel();
+  ensureSyncInspector();
+  updateEnginePanel();
+  updateInspector();
+};
+
+// ════════════════════════════════════════════════════════════════════
+// INIT — try EventBus, fall back to long-poll
+// ════════════════════════════════════════════════════════════════════
+
+ensureEnginePanel();
+ensureSyncInspector();
+connectEventBus();
+// Long-poll still runs as fallback — EventBus will suppress it
 fetchTable();
-// schedulePoll() is called inside fetchTable .then/.catch — no setInterval
 </script>
 </body>
 </html>
